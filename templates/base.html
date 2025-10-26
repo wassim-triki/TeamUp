@@ -1,0 +1,78 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{% block title %}SocialV | Django{% endblock %}</title>
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="{% static 'assets/images/favicon.ico' %}" />
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,400i,600,600i,700,800|Raleway:300,400,500,600,700,800,900" rel="stylesheet">
+
+    <!-- ============================
+         CSS STRUCTURE (from template)
+    ============================= -->
+<link rel="shortcut icon" href="{% static 'assets/images/favicon.ico' %}" />
+<link rel="stylesheet" href="{% static 'assets/css/libs.min.css' %}">
+<link rel="stylesheet" href="{% static 'assets/css/socialv.css' %}?v=4.0.0">
+<link rel="stylesheet" href="{% static 'assets/vendor/@fortawesome/fontawesome-free/css/all.min.css' %}">
+<link rel="stylesheet" href="{% static 'assets/vendor/remixicon/fonts/remixicon.css' %}">
+<link rel="stylesheet" href="{% static 'assets/vendor/vanillajs-datepicker/dist/css/datepicker.min.css' %}">
+<link rel="stylesheet" href="{% static 'assets/vendor/font-awesome-line-awesome/css/all.min.css' %}">
+<link rel="stylesheet" href="{% static 'assets/vendor/line-awesome/dist/line-awesome/css/line-awesome.min.css' %}">
+
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    
+
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}
+        <!-- Page-specific content goes here -->
+        {% endblock %}
+    </main>
+
+
+    <!-- ============================
+         JAVASCRIPT STRUCTURE (from template)
+    ============================= -->
+<!-- Backend Bundle JavaScript -->
+<script src="{% static 'assets/js/libs.min.js' %}"></script>
+
+<!-- Slider JavaScript -->
+<script src="{% static 'assets/js/slider.js' %}"></script>
+
+<!-- Masonry JavaScript --> 
+<script src="{% static 'assets/js/masonry.pkgd.min.js' %}"></script>
+
+<!-- Enchanter JavaScript -->
+<script src="{% static 'assets/js/enchanter.js' %}"></script>
+
+<!-- SweetAlert JavaScript -->
+<script src="{% static 'assets/js/sweetalert.js' %}"></script>
+
+<!-- Charts JavaScript -->
+<script src="{% static 'assets/js/charts/weather-chart.js' %}"></script>
+
+<!-- Main App JavaScript -->
+<script src="{% static 'assets/js/app.js' %}"></script>
+
+<!-- VanillaJS Datepicker -->
+<script src="{% static 'assets/vendor/vanillajs-datepicker/dist/js/datepicker.min.js' %}"></script>
+
+<!-- Lottie Animations -->
+<script src="{% static 'assets/js/lottie.js' %}"></script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
