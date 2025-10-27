@@ -30,7 +30,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # Add your apps here
+    # Local apps (project structure) - Medium layout: core, users, api
+    'apps.core',         # main public site / landing pages (+ dashboard UI)
+    'apps.users',        # user accounts, auth, profiles
+    'apps.api',          # REST API endpoints (if/when added)
 ]
 
 MIDDLEWARE = [

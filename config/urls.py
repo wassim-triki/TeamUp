@@ -21,7 +21,14 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    # Add your app URLs here
+    # Public site / landing
+    path('', include('apps.core.urls', namespace='core')),
+
+    # Accounts and auth (users app)
+    path('accounts/', include('apps.users.urls', namespace='users')),
+
+    # API endpoints
+    path('api/', include('apps.api.urls', namespace='api')),
 ]
 
 # Serve media files in development
