@@ -1,44 +1,32 @@
-TeamUp — Architecture (Medium layout)
-===================================
+# TeamUp — Architecture (brief)
 
-Overview
---------
-This repo uses a compact, collaborator-friendly "Medium" layout with three main local apps:
+## Overview
 
-- apps/core — public site (landing pages) and the dashboard UI. Templates live under `templates/core/`.
-- apps/users — authentication, profiles, and user-related business logic. Templates live under `templates/users/`.
-- apps/api  — JSON / REST endpoints. (Consider DRF later.)
+This repository uses a compact, collaborator-friendly "Medium" layout with three local apps:
 
-Why this layout
-----------------
-- Low cognitive overhead for new contributors: only three local apps to learn.
-- Logical separation: UI (core), user domain (users), and API surface (api).
-- Easy to split further later if features grow.
+- apps/core — public site (landing pages) + dashboard UI. Templates: `templates/core/`.
+- apps/users — authentication, profiles, and user-related logic. Templates: `templates/users/`.
+- apps/api — JSON / REST endpoints (ready for DRF later).
 
-Developer notes
----------------
-- URLs:
-  - Root include in `config/urls.py` points to `apps.core.urls` for the public site.
-  - `accounts/` routes point to `apps.users.urls` (namespace `users`).
-  - `api/` routes point to `apps.api.urls` (namespace `api`).
+## Why this layout
 
-- Templates should be namespaced under `templates/<app_label>/...` so it's clear where to find them.
-- Add tests under `apps/<app>/tests/` to keep tests close to code ownership.
+- Low cognitive overhead for new contributors: three local apps to learn.
+- Clear ownership: UI (core), users, and API.
 
-Migration / refactor notes
--------------------------
-- Dashboard app was merged into `apps.core`. If you need to split later, move dashboard views into `apps/dashboard` and add it to `INSTALLED_APPS`.
-- The previous `apps.accounts` and `apps.dashboard` folders are kept as compatibility stubs to avoid breaking local branches; use `apps.users` and `apps.core` going forward.
+## Notes
 
-Next steps
-----------
-- Add `.env.sample` describing environment variables (SECRET_KEY, DEBUG, DB_*).
-- Add a short CONTRIBUTING.md and a minimal test to demonstrate the test pattern.
+- URLs: `config/urls.py` includes `apps.core`, `apps.users` (mounted at `/accounts/`), and `apps.api` (at `/api/`).
+- Templates are namespaced under `templates/<app_label>/`.
+- Tests should live under `apps/<app>/tests/`.
+
+If you need to expand, split an app into a focused app (e.g., move dashboard to `apps/dashboard`).
+
 # TeamUp — Project architecture
 
 This document explains the base folder structure created to help collaborators get started.
 
 Top-level layout
+
 - `manage.py` — Django CLI
 - `config/` — Django project settings, urls, wsgi/asgi
 - `apps/` — local Django apps (core, accounts, dashboard, api)
@@ -46,12 +34,14 @@ Top-level layout
 - `static/` — shared static assets
 
 Apps created (skeletons)
+
 - `apps.core` — public-facing routes and landing pages. Template: `core/index.html`.
 - `apps.accounts` — authentication-related pages (login), template: `accounts/login.html`.
 - `apps.dashboard` — admin/user dashboard UI skeleton.
 - `apps.api` — JSON endpoints and future REST API.
 
 Routing
+
 - Root `config/urls.py` includes:
   - `/` -> `apps.core`
   - `/accounts/` -> `apps.accounts`
@@ -59,10 +49,12 @@ Routing
   - `/api/` -> `apps.api`
 
 How to extend
+
 - Add views, templates, and models inside each `apps.<app>` package.
 - Register models in the app's `admin.py`.
 - Add app-specific static files to `static/` or `apps/<app>/static/`.
 
 Next steps
+
 - Implement authentication, permissions, and real dashboard pages.
 - Add tests for each app (unit + integration).

@@ -6,6 +6,11 @@ Repository: https://github.com/KamilChakroun/TeamUp.git
 
 This repository was scaffolded from a previous project. The README and settings have been updated to provide a minimal, local-first development setup.
 
+## Quick links
+
+- Architecture: `ARCHITECTURE.md` (brief overview of the app layout)
+- Contributing: `CONTRIBUTING.md` (how to run, branch & PR guidance)
+
 ## Quick local setup (development)
 
 These steps will get the project running locally using a Python virtual environment and SQLite (no external DB required).
