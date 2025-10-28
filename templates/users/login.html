@@ -130,7 +130,7 @@ TeamUp{% endblock %} {% block head %}
           </div>
           {% endfor %}
 
-          <form class="mt-4" method="post" action="">
+          <form class="mt-4" method="post" action="" id="loginForm" novalidate>
             {% csrf_token %}
             <div class="form-group">
               <label class="form-label" for="id_email">Email address</label>
@@ -140,7 +140,12 @@ TeamUp{% endblock %} {% block head %}
                 class="form-control mb-0"
                 id="id_email"
                 placeholder="Enter email"
+                value="{{ request.POST.email|default:'' }}"
+                required
               />
+              <div class="invalid-feedback">
+                Please enter a valid email address.
+              </div>
             </div>
             <div class="form-group">
               <label class="form-label" for="id_password">Password</label>
@@ -151,7 +156,11 @@ TeamUp{% endblock %} {% block head %}
                 class="form-control mb-0"
                 id="id_password"
                 placeholder="Password"
+                required
               />
+              <div class="invalid-feedback">
+                Please enter your password.
+              </div>
             </div>
             <div class="d-inline-block w-100">
               <div class="form-check d-inline-block mt-2 pt-1">
@@ -192,4 +201,53 @@ TeamUp{% endblock %} {% block head %}
     </div>
   </div>
 </section>
+
+<script>
+  // Client-side validation for login form
+  document.getElementById('loginForm').addEventListener('submit', function(e) {
+    const emailInput = document.getElementById('id_email');
+    const passwordInput = document.getElementById('id_password');
+    const email = emailInput.value.trim();
+    const password = passwordInput.value.trim();
+    
+    let isValid = true;
+    
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email) {
+      e.preventDefault();
+      emailInput.classList.add('is-invalid');
+      isValid = false;
+    } else if (!emailRegex.test(email)) {
+      e.preventDefault();
+      emailInput.classList.add('is-invalid');
+      isValid = false;
+    } else {
+      emailInput.classList.remove('is-invalid');
+      emailInput.classList.add('is-valid');
+    }
+    
+    // Password validation
+    if (!password) {
+      e.preventDefault();
+      passwordInput.classList.add('is-invalid');
+      isValid = false;
+    } else {
+      passwordInput.classList.remove('is-invalid');
+      passwordInput.classList.add('is-valid');
+    }
+    
+    return isValid;
+  });
+  
+  // Remove invalid state on input
+  document.getElementById('id_email').addEventListener('input', function() {
+    this.classList.remove('is-invalid');
+  });
+  
+  document.getElementById('id_password').addEventListener('input', function() {
+    this.classList.remove('is-invalid');
+  });
+</script>
+
 {% endblock %}

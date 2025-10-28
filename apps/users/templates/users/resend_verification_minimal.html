@@ -95,6 +95,8 @@
                       method="post"
                       action="{% url 'users:resend_verification' %}"
                       class="mt-4"
+                      id="resendVerificationForm"
+                      novalidate
                     >
                       {% csrf_token %}
 
@@ -108,8 +110,12 @@
                           id="email"
                           name="email"
                           placeholder="Enter your email address"
+                          value="{{ request.POST.email|default:'' }}"
                           required
                         />
+                        <div class="invalid-feedback">
+                          Please enter a valid email address.
+                        </div>
                         <small class="form-text text-muted">
                           Enter the email you used to sign up
                         </small>
@@ -148,5 +154,37 @@
 
     <script src="{% static 'core/js/libs.min.js' %}"></script>
     <script src="{% static 'core/js/app.js' %}"></script>
+    
+    <script>
+      // Client-side validation for resend verification form
+      document.getElementById('resendVerificationForm').addEventListener('submit', function(e) {
+        const emailInput = document.getElementById('email');
+        const email = emailInput.value.trim();
+        
+        // Email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        
+        if (!email) {
+          e.preventDefault();
+          emailInput.classList.add('is-invalid');
+          return false;
+        }
+        
+        if (!emailRegex.test(email)) {
+          e.preventDefault();
+          emailInput.classList.add('is-invalid');
+          return false;
+        }
+        
+        emailInput.classList.remove('is-invalid');
+        emailInput.classList.add('is-valid');
+        // Form will submit normally
+      });
+      
+      // Remove invalid state on input
+      document.getElementById('email').addEventListener('input', function() {
+        this.classList.remove('is-invalid');
+      });
+    </script>
   </body>
 </html>
