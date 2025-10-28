@@ -2,8 +2,25 @@
 {% block content %}
 <div class="py-5 text-center">
   <h1 class="display-4">Welcome to TeamUp</h1>
-  <p class="lead">This is the landing page wired to the new base layout.</p>
-  <p>
+  <p class="lead">
+    Find compatible sports partners and groups near you. TeamUp uses AI to
+    recommend teammates based on interests, skill level and availability — then
+    suggests convenient meeting times so you actually train together.
+  </p>
+  <div class="row justify-content-center mt-4">
+    <div class="col-md-8">
+      <ul class="list-unstyled lead text-start">
+        <li>
+          • Match with partners who share your sport, skill level and schedule
+        </li>
+        <li>
+          • AI-powered recommendations for better compatibility and motivation
+        </li>
+        <li>• Smart scheduling suggestions to make meetup planning painless</li>
+      </ul>
+    </div>
+  </div>
+  <p class="mt-3">
     <a
       class="btn btn-primary btn-lg"
       href="{% url 'users:login' %}"
