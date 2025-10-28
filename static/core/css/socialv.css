@@ -1,0 +1,13 @@
+/* Minimal placeholder socialv styles to avoid missing asset errors during early integration */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial;
+  background: #f8f9fa;
+  color: #222;
+}
+.container {
+  max-width: 1000px;
+}
+.header-logo img {
+  height: 36px;
+}

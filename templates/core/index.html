@@ -1,0 +1,15 @@
+{% extends 'core/base.html' %} {% block title %}Welcome to TeamUp{% endblock %}
+{% block content %}
+<div class="py-5 text-center">
+  <h1 class="display-4">Welcome to TeamUp</h1>
+  <p class="lead">This is the landing page wired to the new base layout.</p>
+  <p>
+    <a
+      class="btn btn-primary btn-lg"
+      href="{% url 'users:login' %}"
+      role="button"
+      >Login</a
+    >
+  </p>
+</div>
+{% endblock %}
