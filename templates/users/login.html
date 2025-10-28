@@ -111,7 +111,8 @@ TeamUp{% endblock %} {% block content %}
             </div>
             <div class="sign-info mt-3">
               <span class="dark-color d-inline-block line-height-2"
-                >Don't have an account? <a href="#">Sign up</a></span
+                >Don't have an account?
+                <a href="{% url 'users:signup' %}">Sign up</a></span
               >
             </div>
           </form>
