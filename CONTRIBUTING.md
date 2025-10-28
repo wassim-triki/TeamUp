@@ -8,7 +8,7 @@ Thanks for helping — this file keeps things simple. It covers how to run the p
 
   ```bash
   python -m venv .venv
-  source .venv/Scripts/activate   # Git Bash / bash.exe on Windows
+  source ./venv/Scripts/activate   # Git Bash / bash.exe on Windows
   ```
 
 - Install dependencies:
