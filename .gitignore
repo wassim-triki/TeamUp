@@ -58,3 +58,6 @@ htmlcov/
 *.sql
 *.sqlite
 *.sqlite3
+
+./template-files/*
+template-files
