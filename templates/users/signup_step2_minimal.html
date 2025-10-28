@@ -111,22 +111,34 @@
                   ></div>
                 </div>
 
-                {% if error_messages %}
-                  {% for error in error_messages %}
-                    <div class="alert alert-solid alert-danger alert-dismissible fade show mb-3" role="alert">
-                      <span><i class="ri-alert-line"></i></span>
-                      <span> {{ error }}</span>
-                      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                  {% endfor %}
-                {% endif %}
-                
-                {% if warning_message %}
-                  <div class="alert alert-solid alert-warning alert-dismissible fade show mb-3" role="alert">
-                    <span><i class="ri-error-warning-line"></i></span>
-                    <span> {{ warning_message }}</span>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
-                  </div>
+                {% if error_messages %} {% for error in error_messages %}
+                <div
+                  class="alert alert-solid alert-danger alert-dismissible fade show mb-3"
+                  role="alert"
+                >
+                  <span><i class="ri-alert-line"></i></span>
+                  <span> {{ error }}</span>
+                  <button
+                    type="button"
+                    class="btn-close btn-close-white"
+                    data-bs-dismiss="alert"
+                    aria-label="Close"
+                  ></button>
+                </div>
+                {% endfor %} {% endif %} {% if warning_message %}
+                <div
+                  class="alert alert-solid alert-warning alert-dismissible fade show mb-3"
+                  role="alert"
+                >
+                  <span><i class="ri-error-warning-line"></i></span>
+                  <span> {{ warning_message }}</span>
+                  <button
+                    type="button"
+                    class="btn-close btn-close-white"
+                    data-bs-dismiss="alert"
+                    aria-label="Close"
+                  ></button>
+                </div>
                 {% endif %}
 
                 <form
@@ -177,9 +189,7 @@
                       placeholder="Re-enter password"
                       required
                     />
-                    <div class="invalid-feedback">
-                      Passwords do not match.
-                    </div>
+                    <div class="invalid-feedback">Passwords do not match.</div>
                   </div>
 
                   <div class="form-group">
@@ -339,7 +349,11 @@
                         </div>
                       </div>
                     </div>
-                    <div class="invalid-feedback d-block" id="sports-error" style="display: none !important;">
+                    <div
+                      class="invalid-feedback d-block"
+                      id="sports-error"
+                      style="display: none !important"
+                    >
                       Please select at least one sport.
                     </div>
                   </div>
@@ -388,89 +402,106 @@
     <script src="{% static 'core/js/slider.js' %}"></script>
     <script src="{% static 'core/js/app.js' %}"></script>
     <script src="{% static 'core/js/lottie.js' %}"></script>
-    
+
     <script>
       // Client-side validation for signup step 2
-      document.getElementById('signupStep2Form').addEventListener('submit', function(e) {
-        const password = document.getElementById('password');
-        const passwordConfirm = document.getElementById('password_confirm');
-        const availability = document.getElementById('availability');
-        const sportsCheckboxes = document.querySelectorAll('input[name="sports"]:checked');
-        const sportsError = document.getElementById('sports-error');
-        
-        let isValid = true;
-        
-        // Password validation
-        if (!password.value.trim() || password.value.length < 8) {
-          e.preventDefault();
-          password.classList.add('is-invalid');
-          isValid = false;
-        } else {
-          password.classList.remove('is-invalid');
-          password.classList.add('is-valid');
-        }
-        
-        // Password confirmation validation
-        if (!passwordConfirm.value.trim() || password.value !== passwordConfirm.value) {
-          e.preventDefault();
-          passwordConfirm.classList.add('is-invalid');
-          isValid = false;
-        } else {
-          passwordConfirm.classList.remove('is-invalid');
-          passwordConfirm.classList.add('is-valid');
-        }
-        
-        // Sports validation
-        if (sportsCheckboxes.length === 0) {
-          e.preventDefault();
-          sportsError.style.display = 'block';
-          isValid = false;
-        } else {
-          sportsError.style.display = 'none';
-        }
-        
-        // Availability validation
-        if (!availability.value.trim()) {
-          e.preventDefault();
-          availability.classList.add('is-invalid');
-          isValid = false;
-        } else {
-          availability.classList.remove('is-invalid');
-          availability.classList.add('is-valid');
-        }
-        
-        return isValid;
-      });
-      
-      // Remove invalid state on input
-      document.getElementById('password').addEventListener('input', function() {
-        this.classList.remove('is-invalid');
-        // Re-validate password match
-        const passwordConfirm = document.getElementById('password_confirm');
-        if (passwordConfirm.value && this.value === passwordConfirm.value) {
-          passwordConfirm.classList.remove('is-invalid');
-          passwordConfirm.classList.add('is-valid');
-        }
-      });
-      
-      document.getElementById('password_confirm').addEventListener('input', function() {
-        this.classList.remove('is-invalid');
-      });
-      
-      document.getElementById('availability').addEventListener('input', function() {
-        this.classList.remove('is-invalid');
-      });
-      
-      // Hide sports error when a checkbox is selected
-      document.querySelectorAll('input[name="sports"]').forEach(function(checkbox) {
-        checkbox.addEventListener('change', function() {
+      document
+        .getElementById('signupStep2Form')
+        .addEventListener('submit', function (e) {
+          const password = document.getElementById('password');
+          const passwordConfirm = document.getElementById('password_confirm');
+          const availability = document.getElementById('availability');
+          const sportsCheckboxes = document.querySelectorAll(
+            'input[name="sports"]:checked'
+          );
           const sportsError = document.getElementById('sports-error');
-          const sportsCheckboxes = document.querySelectorAll('input[name="sports"]:checked');
-          if (sportsCheckboxes.length > 0) {
+
+          let isValid = true;
+
+          // Password validation
+          if (!password.value.trim() || password.value.length < 8) {
+            e.preventDefault();
+            password.classList.add('is-invalid');
+            isValid = false;
+          } else {
+            password.classList.remove('is-invalid');
+            password.classList.add('is-valid');
+          }
+
+          // Password confirmation validation
+          if (
+            !passwordConfirm.value.trim() ||
+            password.value !== passwordConfirm.value
+          ) {
+            e.preventDefault();
+            passwordConfirm.classList.add('is-invalid');
+            isValid = false;
+          } else {
+            passwordConfirm.classList.remove('is-invalid');
+            passwordConfirm.classList.add('is-valid');
+          }
+
+          // Sports validation
+          if (sportsCheckboxes.length === 0) {
+            e.preventDefault();
+            sportsError.style.display = 'block';
+            isValid = false;
+          } else {
             sportsError.style.display = 'none';
           }
+
+          // Availability validation
+          if (!availability.value.trim()) {
+            e.preventDefault();
+            availability.classList.add('is-invalid');
+            isValid = false;
+          } else {
+            availability.classList.remove('is-invalid');
+            availability.classList.add('is-valid');
+          }
+
+          return isValid;
         });
-      });
+
+      // Remove invalid state on input
+      document
+        .getElementById('password')
+        .addEventListener('input', function () {
+          this.classList.remove('is-invalid');
+          // Re-validate password match
+          const passwordConfirm = document.getElementById('password_confirm');
+          if (passwordConfirm.value && this.value === passwordConfirm.value) {
+            passwordConfirm.classList.remove('is-invalid');
+            passwordConfirm.classList.add('is-valid');
+          }
+        });
+
+      document
+        .getElementById('password_confirm')
+        .addEventListener('input', function () {
+          this.classList.remove('is-invalid');
+        });
+
+      document
+        .getElementById('availability')
+        .addEventListener('input', function () {
+          this.classList.remove('is-invalid');
+        });
+
+      // Hide sports error when a checkbox is selected
+      document
+        .querySelectorAll('input[name="sports"]')
+        .forEach(function (checkbox) {
+          checkbox.addEventListener('change', function () {
+            const sportsError = document.getElementById('sports-error');
+            const sportsCheckboxes = document.querySelectorAll(
+              'input[name="sports"]:checked'
+            );
+            if (sportsCheckboxes.length > 0) {
+              sportsError.style.display = 'none';
+            }
+          });
+        });
     </script>
   </body>
 </html>
