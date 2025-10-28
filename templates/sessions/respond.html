@@ -1,0 +1,90 @@
+<!-- templates/sessions/respond.html -->
+{% extends 'sessions/base.html' %}
+{% block title %}Respond to Invite - TeamUp{% endblock %}
+{% block header %}
+<div class="header-for-bg">
+  <div class="background-header position-relative">
+    <img src="{% static 'assets/images/page-img/profile-bg7.jpg' %}" class="img-fluid w-100" alt="header-bg">
+    <div class="title-on-header">
+      <div class="data-block">
+        <h2>Respond to Invite</h2>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header">
+        <h4 class="card-title mb-0">{{ session.get_sport_type_display }} Session</h4>
+        <p class="mb-0 text-muted">{{ session.start_datetime|date:"M d, Y H:i" }} at {{ session.location }}</p>
+      </div>
+      <div class="card-body">
+        <form method="post">
+          {% csrf_token %}
+          <div class="mb-4">
+            <label class="form-label fw-bold">Your Response</label>
+            <div class="row g-3">
+              <div class="col-md-4">
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="action" id="accept" value="accept">
+                  <label class="form-check-label d-block p-3 border rounded text-center" for="accept">
+                    <i class="ri-check-double-line ri-lg mb-1 d-block text-success"></i>
+                    <strong>Accept</strong>
+                  </label>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="action" id="refuse" value="refuse">
+                  <label class="form-check-label d-block p-3 border rounded text-center" for="refuse">
+                    <i class="ri-close-line ri-lg mb-1 d-block text-danger"></i>
+                    <strong>Refuse</strong>
+                  </label>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="action" id="reschedule" value="reschedule">
+                  <label class="form-check-label d-block p-3 border rounded text-center" for="reschedule">
+                    <i class="ri-refresh-line ri-lg mb-1 d-block text-warning"></i>
+                    <strong>Reschedule</strong>
+                  </label>
+                </div>
+              </div>
+            </div>
+            {% if form.action.errors %}<div class="alert alert-danger">{{ form.action.errors }}</div>{% endif %}
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Notes (optional)</label>
+            <textarea name="notes" class="form-control" rows="3" placeholder="Add any notes..."></textarea>
+            {% if form.notes.errors %}<div class="text-danger">{{ form.notes.errors }}</div>{% endif %}
+          </div>
+          <div id="reschedule-section" class="mb-3" style="display: none;">
+            <label class="form-label">New DateTime</label>
+            <input type="datetime-local" name="new_datetime" class="form-control">
+            {% if form.new_datetime.errors %}<div class="text-danger">{{ form.new_datetime.errors }}</div>{% endif %}
+          </div>
+          <div class="d-flex justify-content-end gap-2">
+            <a href="{% url 'sessions:list' %}" class="btn btn-secondary">Back</a>
+            <button type="submit" class="btn btn-primary">Submit Response</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  document.querySelectorAll('input[name="action"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+      document.getElementById('reschedule-section').style.display = this.value === 'reschedule' ? 'block' : 'none';
+      document.querySelectorAll('.form-check-label').forEach(label => label.classList.remove('border-primary', 'bg-light'));
+      this.parentElement.querySelector('label').classList.add('border-primary', 'bg-light');
+    });
+  });
+  const checked = document.querySelector('input[name="action"]:checked');
+  if (checked) checked.dispatchEvent(new Event('change'));
+</script>
+{% endblock %}

@@ -1,0 +1,190 @@
+<!-- templates/sessions/invite.html -->
+{% extends 'sessions/base.html' %}
+{% load static %}
+
+{% block title %}Invite Users - TeamUp{% endblock %}
+
+{% block header %}
+<div class="header-for-bg">
+  <div class="background-header position-relative">
+    <img src="{% static 'assets/images/page-img/profile-bg7.jpg' %}" class="img-fluid w-100" alt="Invite Users Header">
+    <div class="title-on-header">
+      <div class="data-block">
+        <h2>Invite to {{ session.get_sport_type_display }}</h2>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row mt-4">
+  <div class="col-lg-12">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <div>
+          <h4 class="card-title mb-0">Select Users to Invite</h4>
+          <small class="text-muted">Choose teammates for your {{ session.get_sport_type_display }} session</small>
+        </div>
+        <a href="{% url 'sessions:detail' session.pk %}" class="btn btn-sm btn-soft-secondary">
+          <i class="ri-arrow-left-line"></i> Back to Session
+        </a>
+      </div>
+      <div class="card-body">
+        <form method="post" id="invite-form">
+          {% csrf_token %}
+          
+          <!-- Search Box -->
+          <div class="input-group mb-4">
+            <span class="input-group-text"><i class="ri-search-line"></i></span>
+            <input type="text" class="form-control" placeholder="Search users by name or email..." id="user-search" autocomplete="off">
+          </div>
+
+          <!-- Form Errors -->
+          {% if form.users.errors %}
+            <div class="alert alert-danger alert-dismissible fade show mb-3" role="alert">
+              <i class="ri-error-warning-line me-2"></i>
+              {{ form.users.errors.0 }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          {% endif %}
+          
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger alert-dismissible fade show mb-3" role="alert">
+              <i class="ri-error-warning-line me-2"></i>
+              {{ form.non_field_errors.0 }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          {% endif %}
+
+          <!-- User List -->
+          <div class="row" id="user-list">
+            {% if available_users %}
+              {% for user in available_users %}
+                <div class="col-md-6 col-lg-4 mb-3 user-item" data-name="{{ user.username|lower }}" data-email="{{ user.email|lower }}">
+                  <div class="form-check p-3 border rounded hover-card">
+                    <input class="form-check-input" type="checkbox" value="{{ user.pk }}" id="id_users_{{ user.pk }}" name="users">
+                    <label class="form-check-label d-flex align-items-center w-100" for="id_users_{{ user.pk }}">
+                      <img src="{% static 'assets/images/user/1.jpg' %}" class="rounded-circle me-3" width="48" height="48" alt="{{ user.username }}">
+                      <div class="flex-grow-1">
+                        <strong class="d-block">{{ user.username }}</strong>
+                        <small class="text-muted">{{ user.email }}</small>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+              {% endfor %}
+            {% else %}
+              <div class="col-12">
+                <div class="alert alert-info text-center">
+                  <i class="ri-information-line me-2"></i>
+                  No users available to invite. All users have already been invited!
+                </div>
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- No Results Message (Hidden by default) -->
+          <div id="no-results" class="alert alert-warning text-center" style="display: none;">
+            <i class="ri-search-line me-2"></i>
+            No users found matching your search.
+          </div>
+
+          <!-- Action Buttons -->
+          {% if available_users %}
+            <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+              <div>
+                <span class="text-muted">
+                  <span id="selected-count">0</span> user(s) selected
+                </span>
+              </div>
+              <div class="d-flex gap-2">
+                <a href="{% url 'sessions:detail' session.pk %}" class="btn btn-secondary">
+                  <i class="ri-close-line me-1"></i>Cancel
+                </a>
+                <button type="submit" class="btn btn-primary" id="submit-btn" disabled>
+                  <i class="ri-send-plane-line me-1"></i>Send Invites
+                </button>
+              </div>
+            </div>
+          {% endif %}
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .hover-card {
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .hover-card:hover {
+    background-color: #f8f9fa;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  
+  .form-check-input:checked ~ .form-check-label .hover-card {
+    background-color: #e7f3ff;
+    border-color: #0d6efd;
+  }
+</style>
+
+<script>
+  // Search functionality
+  const searchInput = document.getElementById('user-search');
+  const userItems = document.querySelectorAll('.user-item');
+  const noResults = document.getElementById('no-results');
+  const userList = document.getElementById('user-list');
+
+  searchInput.addEventListener('input', function(e) {
+    const term = e.target.value.toLowerCase().trim();
+    let visibleCount = 0;
+
+    userItems.forEach(item => {
+      const name = item.dataset.name || '';
+      const email = item.dataset.email || '';
+      const matches = name.includes(term) || email.includes(term);
+      
+      item.style.display = matches ? 'block' : 'none';
+      if (matches) visibleCount++;
+    });
+
+    // Show/hide no results message
+    if (userItems.length > 0) {
+      noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+      userList.style.display = visibleCount === 0 ? 'none' : 'flex';
+    }
+  });
+
+  // Count selected users and enable/disable submit button
+  const checkboxes = document.querySelectorAll('input[name="users"]');
+  const selectedCount = document.getElementById('selected-count');
+  const submitBtn = document.getElementById('submit-btn');
+
+  function updateSelectedCount() {
+    const count = document.querySelectorAll('input[name="users"]:checked').length;
+    selectedCount.textContent = count;
+    submitBtn.disabled = count === 0;
+    submitBtn.innerHTML = count > 0 
+      ? `<i class="ri-send-plane-line me-1"></i>Send ${count} Invite${count !== 1 ? 's' : ''}`
+      : `<i class="ri-send-plane-line me-1"></i>Send Invites`;
+  }
+
+  checkboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', updateSelectedCount);
+  });
+
+  // Click on label to toggle checkbox
+  document.querySelectorAll('.hover-card').forEach(card => {
+    card.addEventListener('click', function(e) {
+      if (e.target.type !== 'checkbox') {
+        const checkbox = this.querySelector('input[type="checkbox"]');
+        checkbox.checked = !checkbox.checked;
+        updateSelectedCount();
+      }
+    });
+  });
+</script>
+{% endblock %}

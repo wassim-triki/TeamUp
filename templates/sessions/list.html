@@ -1,0 +1,201 @@
+<!-- templates/sessions/list.html -->
+{% extends 'sessions/base.html' %}
+{% load static %}
+
+{% block title %}Sessions - TeamUp{% endblock %}
+
+{% block header %}
+<div class="header-for-bg">
+  <div class="background-header position-relative">
+    <img src="{% static 'assets/images/page-img/profile-bg7.jpg' %}" class="img-fluid w-100" alt="Sessions Header">
+    <div class="title-on-header">
+      <div class="data-block">
+        <h2>Sessions</h2>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row mt-4">
+  <div class="col-lg-12">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <div class="header-title">
+          <h4 class="card-title mb-0">Your Sessions</h4>
+          <small class="text-muted">Upcoming and past sessions you've created or been invited to.</small>
+        </div>
+        {% if user.is_authenticated %}
+        <a href="{% url 'sessions:create' %}" class="btn btn-primary">
+          <i class="ri-add-line me-1"></i>New Session
+        </a>
+        {% endif %}
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-striped table-hover mb-0">
+            <thead>
+              <tr>
+                <th>Sport</th>
+                <th>Date & Time</th>
+                <th>Duration</th>
+                <th>Location</th>
+                <th>Status</th>
+                <th class="text-center">Invitees</th>
+                <th class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for session in object_list %}
+              <tr>
+                <td>
+                  <div class="d-flex align-items-center">
+                    <i class="{% if session.sport_type == 'soccer' %}ri-football-line{% elif session.sport_type == 'basketball' %}ri-basketball-line{% elif session.sport_type == 'tennis' %}ri-ping-pong-line{% elif session.sport_type == 'running' %}ri-run-line{% else %}ri-trophy-line{% endif %} text-primary me-2"></i>
+                    <div>
+                      <strong class="text-capitalize">{{ session.get_sport_type_display }}</strong>
+                      {% if session.creator == user %}
+                        <span class="badge bg-primary badge-sm ms-1">Creator</span>
+                      {% endif %}
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div>
+                    <strong>{{ session.start_datetime|date:"M d, Y" }}</strong>
+                    <br>
+                    <small class="text-muted">
+                      <i class="ri-time-line"></i> {{ session.start_datetime|time:"g:i A" }}
+                    </small>
+                  </div>
+                </td>
+                <td>
+                  <span class="badge bg-light text-dark">{{ session.duration_minutes }} min</span>
+                </td>
+                <td>
+                  <div class="d-flex align-items-center">
+                    <i class="ri-map-pin-line text-muted me-1"></i>
+                    <small title="{{ session.location }}">{{ session.location|truncatechars:30 }}</small>
+                  </div>
+                </td>
+                <td>
+                  <span class="badge bg-{% if session.status == 'confirmed' %}success{% elif session.status == 'proposed' %}warning{% elif session.status == 'cancelled' %}danger{% elif session.status == 'draft' %}secondary{% else %}info{% endif %}">
+                    {{ session.get_status_display }}
+                  </span>
+                </td>
+                <td class="text-center">
+                  <span class="badge bg-secondary">
+                    <i class="ri-group-line"></i> {{ session.invitation_set.count }}
+                  </span>
+                </td>
+                <td>
+                  <div class="btn-group btn-group-sm float-end">
+                    <a href="{% url 'sessions:detail' session.pk %}" class="btn btn-soft-info" title="View Details">
+                      <i class="ri-eye-line"></i>
+                    </a>
+                    {% if user == session.creator %}
+                    <a href="#" class="btn btn-soft-warning" title="Edit" onclick="alert('Edit functionality coming soon!'); return false;">
+                      <i class="ri-edit-line"></i>
+                    </a>
+                    <button type="button" class="btn btn-soft-danger" title="Delete" onclick="if(confirm('Delete this session? All invites will be cancelled.')) { alert('Delete functionality coming soon!'); }">
+                      <i class="ri-delete-bin-line"></i>
+                    </button>
+                    {% endif %}
+                  </div>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="7" class="text-center py-5">
+                  <div class="empty-state">
+                    <i class="ri-calendar-line text-muted mb-3" style="font-size: 64px; opacity: 0.3;"></i>
+                    <h5 class="text-muted mb-2">No Sessions Found</h5>
+                    <p class="text-muted mb-3">You haven't created or been invited to any sessions yet.</p>
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'sessions:create' %}" class="btn btn-primary">
+                      <i class="ri-add-line me-1"></i>Create Your First Session
+                    </a>
+                    {% else %}
+                    <a href="{% url 'users:login' %}" class="btn btn-outline-primary">
+                      <i class="ri-login-box-line me-1"></i>Sign In to Get Started
+                    </a>
+                    {% endif %}
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if is_paginated %}
+        <nav class="d-flex justify-content-center mt-4" aria-label="Sessions pagination">
+          <ul class="pagination">
+            {% if page_obj.has_previous %}
+              <li class="page-item">
+                <a class="page-link" href="?page=1" aria-label="First">
+                  <i class="ri-arrow-left-s-line"></i><i class="ri-arrow-left-s-line"></i>
+                </a>
+              </li>
+              <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                  <i class="ri-arrow-left-s-line"></i>
+                </a>
+              </li>
+            {% else %}
+              <li class="page-item disabled">
+                <span class="page-link">
+                  <i class="ri-arrow-left-s-line"></i><i class="ri-arrow-left-s-line"></i>
+                </span>
+              </li>
+              <li class="page-item disabled">
+                <span class="page-link">
+                  <i class="ri-arrow-left-s-line"></i>
+                </span>
+              </li>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+              {% if page_obj.number == num %}
+                <li class="page-item active" aria-current="page">
+                  <span class="page-link">{{ num }}</span>
+                </li>
+              {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                </li>
+              {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+                  <i class="ri-arrow-right-s-line"></i>
+                </a>
+              </li>
+              <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}" aria-label="Last">
+                  <i class="ri-arrow-right-s-line"></i><i class="ri-arrow-right-s-line"></i>
+                </a>
+              </li>
+            {% else %}
+              <li class="page-item disabled">
+                <span class="page-link">
+                  <i class="ri-arrow-right-s-line"></i>
+                </span>
+              </li>
+              <li class="page-item disabled">
+                <span class="page-link">
+                  <i class="ri-arrow-right-s-line"></i><i class="ri-arrow-right-s-line"></i>
+                </span>
+              </li>
+            {% endif %}
+          </ul>
+        </nav>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

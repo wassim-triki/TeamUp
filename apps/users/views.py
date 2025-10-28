@@ -15,23 +15,47 @@ import uuid
 def login_view(request):
     """Simple login handler: renders form and authenticates by email/password."""
     if request.method == 'POST':
-        email = request.POST.get('email')
-        password = request.POST.get('password')
+        email = request.POST.get('email', '').strip().lower()
+        password = request.POST.get('password', '')
+        
+        print("=" * 50)
+        print(f"Login attempt - Email: '{email}'")
+        print(f"Password provided: {bool(password)}")
         
         if email and password:
             try:
                 user_obj = User.objects.get(email=email)
+                print(f"✓ User found: {user_obj.username}")
+                print(f"  - Email: {user_obj.email}")
+                print(f"  - Is Active: {user_obj.is_active}")
+                print(f"  - Has usable password: {user_obj.has_usable_password()}")
+                
                 user = authenticate(request, username=user_obj.username, password=password)
+                print(f"  - Authentication result: {user}")
+                
                 if user is not None:
                     if user.is_active:
                         login(request, user)
-                        return redirect('core:dashboard')
+                        print("✓ Login successful!")
+                        # Use 'next' parameter if provided, otherwise use LOGIN_REDIRECT_URL
+                        next_url = request.GET.get('next') or request.POST.get('next')
+                        redirect_url = next_url if next_url else settings.LOGIN_REDIRECT_URL
+                        print(f"  - Redirecting to: {redirect_url}")
+                        return redirect(redirect_url)
                     else:
+                        print("✗ User is NOT active")
                         messages.error(request, 'Please verify your email before logging in.')
                 else:
+                    print("✗ Authentication failed - wrong password")
                     messages.error(request, 'Invalid email or password.')
             except User.DoesNotExist:
+                print(f"✗ User with email '{email}' does not exist")
                 messages.error(request, 'Invalid email or password.')
+        else:
+            print("✗ Missing email or password")
+            messages.error(request, 'Please provide both email and password.')
+        
+        print("=" * 50)
 
     return render(request, 'users/login.html')
 
@@ -153,7 +177,7 @@ def signup_step3_confirm(request):
         display_name = request.session.get('signup_display_name', '')
         city = request.session.get('signup_city', '')
         
-        # Create User (inactive until email verification)
+        # Create User (active for testing - change to False for production with email verification)
         username = email.split('@')[0]
         base_username = username
         counter = 1
@@ -161,12 +185,15 @@ def signup_step3_confirm(request):
             username = f"{base_username}{counter}"
             counter += 1
         
+        # TEMPORARY: Set is_active=True for testing (change back to False when email is working)
         user = User.objects.create_user(
             username=username,
             email=email,
             password=password,
-            is_active=False
+            is_active=True  # Changed to True for testing
         )
+        
+        print(f"✓ User created: {user.username}, Email: {user.email}, Active: {user.is_active}")
         
         # Create UserProfile
         profile = UserProfile.objects.create(
@@ -181,31 +208,35 @@ def signup_step3_confirm(request):
         token = EmailVerificationToken.objects.create(user=user)
         
         # Send verification email
-        verification_link = request.build_absolute_uri(
-            reverse('users:verify_email', kwargs={'token': token.token})
-        )
-        
-        html_message = render_to_string('users/email_verification.html', {
-            'user': user,
-            'verification_link': verification_link,
-        })
-        plain_message = strip_tags(html_message)
-        
-        send_mail(
-            subject='Verify your TeamUp account',
-            message=plain_message,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[user.email],
-            html_message=html_message,
-            fail_silently=False,
-        )
+        try:
+            verification_link = request.build_absolute_uri(
+                reverse('users:verify_email', kwargs={'token': token.token})
+            )
+            
+            html_message = render_to_string('users/email_verification.html', {
+                'user': user,
+                'verification_link': verification_link,
+            })
+            plain_message = strip_tags(html_message)
+            
+            send_mail(
+                subject='Verify your TeamUp account',
+                message=plain_message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[user.email],
+                html_message=html_message,
+                fail_silently=False,
+            )
+            print(f"✓ Verification email sent to {user.email}")
+        except Exception as e:
+            print(f"✗ Failed to send email: {e}")
         
         # Clear session data
         for key in required_keys + ['signup_display_name', 'signup_city']:
             request.session.pop(key, None)
         
-        messages.success(request, 'Account created! Please check your email to verify your account.')
-        return redirect('users:email_sent')
+        messages.success(request, 'Account created successfully! You can now log in.')
+        return redirect('users:login')
     
     # Display confirmation page
     context = {
@@ -300,4 +331,3 @@ def resend_verification(request):
 def signup_view(request):
     """Redirect to new multi-step signup wizard."""
     return redirect('users:signup_step1')
-
