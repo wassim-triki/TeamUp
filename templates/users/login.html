@@ -1,5 +1,19 @@
 {% extends 'core/auth_base.html' %} {% load static %} {% block title %}Sign in -
-TeamUp{% endblock %} {% block content %}
+TeamUp{% endblock %} {% block head %}
+<style>
+  .alert-solid {
+    color: #fff;
+    border: none;
+  }
+  .alert-solid .btn-close {
+    filter: brightness(0) invert(1);
+  }
+  .alert-solid i {
+    font-size: 18px;
+    margin-right: 8px;
+  }
+</style>
+{% endblock %} {% block content %}
 <section class="sign-in-page">
   <div id="container-inside">
     <div id="circle-small"></div>
@@ -70,6 +84,52 @@ TeamUp{% endblock %} {% block content %}
             Enter your email and password to access TeamUp — your AI-powered
             partner-matching and scheduling hub.
           </p>
+
+          <!-- Error/Warning/Success Messages -->
+          {% if error_message %}
+          <div
+            class="alert alert-solid alert-danger alert-dismissible fade show mb-3"
+            role="alert"
+          >
+            <span><i class="ri-alert-line"></i></span>
+            <span> {{ error_message }}</span>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="alert"
+              aria-label="Close"
+            ></button>
+          </div>
+          {% endif %} {% if warning_message %}
+          <div
+            class="alert alert-solid alert-warning alert-dismissible fade show mb-3"
+            role="alert"
+          >
+            <span><i class="ri-error-warning-line"></i></span>
+            <span> {{ warning_message }}</span>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="alert"
+              aria-label="Close"
+            ></button>
+          </div>
+          {% endif %} {% for message in success_messages %}
+          <div
+            class="alert alert-solid alert-success alert-dismissible fade show mb-3"
+            role="alert"
+          >
+            <span><i class="ri-checkbox-circle-line"></i></span>
+            <span> {{ message }}</span>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="alert"
+              aria-label="Close"
+            ></button>
+          </div>
+          {% endfor %}
+
           <form class="mt-4" method="post" action="">
             {% csrf_token %}
             <div class="form-group">

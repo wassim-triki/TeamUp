@@ -11,6 +11,10 @@
     <link rel="shortcut icon" href="{% static 'core/images/favicon.ico' %}" />
     <link rel="stylesheet" href="{% static 'core/css/libs.min.css' %}" />
     <link rel="stylesheet" href="{% static 'core/css/socialv.css' %}" />
+    <link
+      rel="stylesheet"
+      href="{% static 'core/vendor/remixicon/fonts/remixicon.css' %}"
+    />
     <style>
       /* Enable scrolling for content */
       .sign-in-page {
@@ -38,6 +42,14 @@
       .sign-in-from::-webkit-scrollbar-thumb:hover {
         background: #555;
       }
+      .alert-solid {
+        color: #fff;
+        border: none;
+      }
+      .alert-solid i {
+        font-size: 18px;
+        margin-right: 8px;
+      }
     </style>
   </head>
   <body>
@@ -58,9 +70,9 @@
                       style="max-width: 200px"
                     />
 
-                    <div class="alert alert-danger" role="alert">
-                      <i class="ri-close-circle-line me-2"></i>
-                      <strong>Verification Failed</strong>
+                    <div class="alert alert-solid alert-danger" role="alert">
+                      <i class="ri-close-circle-line"></i>
+                      <strong> Verification Failed</strong>
                     </div>
 
                     <h4 class="mb-3">Link Invalid or Expired</h4>

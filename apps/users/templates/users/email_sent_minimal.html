@@ -1,0 +1,114 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <title>TeamUp - Check Your Email</title>
+
+    <link rel="shortcut icon" href="{% static 'core/images/favicon.ico' %}" />
+    <link rel="stylesheet" href="{% static 'core/css/libs.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'core/css/socialv.css' %}" />
+    <link
+      rel="stylesheet"
+      href="{% static 'core/vendor/remixicon/fonts/remixicon.css' %}"
+    />
+    <style>
+      .alert-solid {
+        color: #fff;
+        border: none;
+      }
+      .alert-solid i {
+        font-size: 18px;
+        margin-right: 8px;
+      }
+    </style>
+  </head>
+  <body class="">
+    <div id="loading">
+      <div id="loading-center"></div>
+    </div>
+
+    <div class="wrapper">
+      <section class="sign-in-page">
+        <div id="container-inside">
+          <div id="circle-small"></div>
+          <div id="circle-medium"></div>
+          <div id="circle-large"></div>
+          <div id="circle-xlarge"></div>
+          <div id="circle-xxlarge"></div>
+        </div>
+        <div class="container p-0">
+          <div class="row no-gutters justify-content-center">
+            <div class="col-md-8 col-lg-6 bg-white pt-5 pb-5">
+              <div class="sign-in-from text-center">
+                <div class="mb-4">
+                  <i
+                    class="ri-mail-send-line"
+                    style="font-size: 80px; color: #007bff"
+                  ></i>
+                </div>
+
+                <h1 class="mb-3">Check Your Email</h1>
+                <p class="lead mb-4">
+                  We've sent a verification link to your email address.
+                </p>
+
+                <div class="card">
+                  <div class="card-body">
+                    <div
+                      class="alert alert-solid alert-success mb-0"
+                      role="alert"
+                    >
+                      <span><i class="ri-checkbox-circle-line"></i></span>
+                      <div>
+                        <strong>Account Created Successfully!</strong><br />
+                        Please check your inbox and click the verification link
+                        to activate your account.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="mt-4">
+                  <h5 class="mb-3">What's next?</h5>
+                  <ol class="text-start">
+                    <li class="mb-2">
+                      Check your email inbox (and spam folder)
+                    </li>
+                    <li class="mb-2">
+                      Click the verification link in the email
+                    </li>
+                    <li class="mb-2">You'll be redirected to sign in</li>
+                  </ol>
+                </div>
+
+                <div class="mt-4">
+                  <p class="text-muted">Didn't receive the email?</p>
+                  <a
+                    href="{% url 'users:resend_verification' %}"
+                    class="btn btn-outline-primary"
+                  >
+                    <i class="ri-mail-line me-1"></i> Resend Verification Email
+                  </a>
+                </div>
+
+                <div class="mt-4">
+                  <a href="{% url 'users:login' %}" class="btn btn-primary">
+                    <i class="ri-login-box-line me-1"></i> Go to Sign In
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <script src="{% static 'core/js/libs.min.js' %}"></script>
+    <script src="{% static 'core/js/app.js' %}"></script>
+  </body>
+</html>

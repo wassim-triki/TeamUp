@@ -11,6 +11,7 @@
     <link rel="shortcut icon" href="{% static 'core/images/favicon.ico' %}" />
     <link rel="stylesheet" href="{% static 'core/css/libs.min.css' %}" />
     <link rel="stylesheet" href="{% static 'core/css/socialv.css' %}" />
+    <link rel="stylesheet" href="{% static 'core/vendor/remixicon/fonts/remixicon.css' %}" />
     <style>
       /* Enable scrolling for content */
       .sign-in-page {
@@ -38,6 +39,17 @@
       .sign-in-from::-webkit-scrollbar-thumb:hover {
         background: #555;
       }
+      .alert-solid {
+        color: #fff;
+        border: none;
+      }
+      .alert-solid .btn-close {
+        filter: brightness(0) invert(1);
+      }
+      .alert-solid i {
+        font-size: 18px;
+        margin-right: 8px;
+      }
     </style>
   </head>
   <body>
@@ -64,19 +76,20 @@
                       verification link.
                     </p>
 
-                    {% if messages %} {% for message in messages %}
-                    <div
-                      class="alert alert-{{ message.tags }} alert-dismissible fade show"
-                      role="alert"
-                    >
-                      {{ message }}
-                      <button
-                        type="button"
-                        class="btn-close"
-                        data-bs-dismiss="alert"
-                      ></button>
-                    </div>
-                    {% endfor %} {% endif %}
+                    {% if error_message %}
+                        <div class="alert alert-solid alert-danger alert-dismissible fade show mb-3" role="alert">
+                            <span><i class="ri-alert-line"></i></span>
+                            <span> {{ error_message }}</span>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endif %}
+                                <span><i class="ri-information-line"></i></span>
+                                <span> {{ message|safe }}</span>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                    {% endif %}
 
                     <form
                       method="post"

@@ -1,0 +1,330 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>TeamUp - Sign Up - Step 2</title>
+    
+    <link rel="shortcut icon" href="{% static 'core/images/favicon.ico' %}" />
+    <link rel="stylesheet" href="{% static 'core/css/libs.min.css' %}">
+    <link rel="stylesheet" href="{% static 'core/css/socialv.css' %}">
+    <link rel="stylesheet" href="{% static 'core/vendor/@fortawesome/fontawesome-free/css/all.min.css' %}">
+    <link rel="stylesheet" href="{% static 'core/vendor/remixicon/fonts/remixicon.css' %}">
+    <style>
+        .sport-checkbox {
+            margin-bottom: 10px;
+        }
+        .sport-checkbox .form-check-input:checked ~ .form-check-label {
+            font-weight: 600;
+            color: #007bff;
+        }
+        .alert-solid {
+            color: #fff;
+            border: none;
+        }
+        .alert-solid .btn-close {
+            filter: brightness(0) invert(1);
+        }
+        .alert-solid i {
+            font-size: 18px;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body class="">
+    <div id="loading">
+        <div id="loading-center"></div>
+    </div>
+    
+    <div class="wrapper">
+        <section class="sign-in-page">
+            <div id="container-inside">
+                <div id="circle-small"></div>
+                <div id="circle-medium"></div>
+                <div id="circle-large"></div>
+                <div id="circle-xlarge"></div>
+                <div id="circle-xxlarge"></div>
+            </div>
+            <div class="container p-0">
+                <div class="row no-gutters">
+                    <div class="col-md-6 text-center pt-5">
+                        <div class="sign-in-detail text-white">
+                            <a class="sign-in-logo mb-5" href="{% url 'core:home' %}">
+                                <img src="{% static 'core/images/logo-full.png' %}" class="img-fluid" alt="TeamUp">
+                            </a>
+                            <div class="sign-slider overflow-hidden">
+                                <ul class="swiper-wrapper list-inline m-0 p-0">
+                                    <li class="swiper-slide">
+                                        <img src="{% static 'core/images/login/1.png' %}" class="img-fluid mb-4" alt="logo">
+                                        <h4 class="mb-1 text-white">Find Sports Partners</h4>
+                                        <p>Connect with athletes and sports enthusiasts in your area.</p>
+                                    </li>
+                                    <li class="swiper-slide">
+                                        <img src="{% static 'core/images/login/2.png' %}" class="img-fluid mb-4" alt="logo">
+                                        <h4 class="mb-1 text-white">Join Sports Events</h4>
+                                        <p>Discover and participate in exciting sports activities.</p>
+                                    </li>
+                                    <li class="swiper-slide">
+                                        <img src="{% static 'core/images/login/3.png' %}" class="img-fluid mb-4" alt="logo">
+                                        <h4 class="mb-1 text-white">Build Your Team</h4>
+                                        <p>Create and manage your sports teams with ease.</p>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 bg-white pt-5 pb-lg-0 pb-5">
+                        <div class="sign-in-from">
+                            <h1 class="mb-0">Sign Up</h1>
+                            <p class="mb-2">Step 2 of 3: Your details</p>
+                            
+                            <!-- Progress bar -->
+                            <div class="progress mb-4" style="height: 5px;">
+                                <div class="progress-bar bg-primary" role="progressbar" style="width: 66%;" aria-valuenow="66" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            
+                            <!-- Error/Success Messages -->
+                            {% if error_messages %}
+                                {% for error in error_messages %}
+                                    <div class="alert alert-solid alert-danger alert-dismissible fade show mb-3" role="alert">
+                                        <span><i class="ri-alert-line"></i></span>
+                                        <span> {{ error }}</span>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                            
+                            {% if warning_message %}
+                                <div class="alert alert-solid alert-warning alert-dismissible fade show mb-3" role="alert">
+                                    <span><i class="ri-error-warning-line"></i></span>
+                                    <span> {{ warning_message }}</span>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% endif %}
+                            
+                            <form method="POST" action="{% url 'users:signup_step2' %}" class="mt-4" id="signupForm2" novalidate>
+                                {% csrf_token %}
+                                
+                                <div class="form-group">
+                                    <label class="form-label" for="display_name">Display Name (Optional)</label>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="display_name" 
+                                           name="display_name" 
+                                           placeholder="How should we call you?"
+                                           value="{{ display_name|default:'' }}">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label" for="city">City (Optional)</label>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="city" 
+                                           name="city" 
+                                           placeholder="Your city"
+                                           value="{{ city|default:'' }}">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label" for="password">Password</label>
+                                    <input type="password" 
+                                           class="form-control" 
+                                           id="password" 
+                                           name="password" 
+                                           placeholder="Create a password"
+                                           required>
+                                    <div class="invalid-feedback">
+                                        Password must be at least 8 characters long.
+                                    </div>
+                                    <small class="form-text text-muted">
+                                        Must be at least 8 characters long.
+                                    </small>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label" for="password_confirm">Confirm Password</label>
+                                    <input type="password" 
+                                           class="form-control" 
+                                           id="password_confirm" 
+                                           name="password_confirm" 
+                                           placeholder="Confirm your password"
+                                           required>
+                                    <div class="invalid-feedback">
+                                        Passwords must match.
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label">Sports (select at least one)</label>
+                                    <div id="sportsGroup">
+                                        <div class="form-check sport-checkbox">
+                                            <input class="form-check-input" type="checkbox" name="sports" value="Football" id="sport1" {% if sports and 'Football' in sports %}checked{% endif %}>
+                                            <label class="form-check-label" for="sport1">Football</label>
+                                        </div>
+                                        <div class="form-check sport-checkbox">
+                                            <input class="form-check-input" type="checkbox" name="sports" value="Basketball" id="sport2" {% if sports and 'Basketball' in sports %}checked{% endif %}>
+                                            <label class="form-check-label" for="sport2">Basketball</label>
+                                        </div>
+                                        <div class="form-check sport-checkbox">
+                                            <input class="form-check-input" type="checkbox" name="sports" value="Tennis" id="sport3" {% if sports and 'Tennis' in sports %}checked{% endif %}>
+                                            <label class="form-check-label" for="sport3">Tennis</label>
+                                        </div>
+                                        <div class="form-check sport-checkbox">
+                                            <input class="form-check-input" type="checkbox" name="sports" value="Running" id="sport4" {% if sports and 'Running' in sports %}checked{% endif %}>
+                                            <label class="form-check-label" for="sport4">Running</label>
+                                        </div>
+                                        <div class="form-check sport-checkbox">
+                                            <input class="form-check-input" type="checkbox" name="sports" value="Swimming" id="sport5" {% if sports and 'Swimming' in sports %}checked{% endif %}>
+                                            <label class="form-check-label" for="sport5">Swimming</label>
+                                        </div>
+                                        <div class="form-check sport-checkbox">
+                                            <input class="form-check-input" type="checkbox" name="sports" value="Volleyball" id="sport6" {% if sports and 'Volleyball' in sports %}checked{% endif %}>
+                                            <label class="form-check-label" for="sport6">Volleyball</label>
+                                        </div>
+                                    </div>
+                                    <div class="invalid-feedback d-block" id="sportsError" style="display: none !important;">
+                                        Please select at least one sport.
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label" for="availability">Availability</label>
+                                    <select class="form-select" id="availability" name="availability" required>
+                                        <option value="">Select your availability...</option>
+                                        <option value="Weekdays" {% if availability == 'Weekdays' %}selected{% endif %}>Weekdays</option>
+                                        <option value="Weekends" {% if availability == 'Weekends' %}selected{% endif %}>Weekends</option>
+                                        <option value="Both" {% if availability == 'Both' %}selected{% endif %}>Both</option>
+                                    </select>
+                                    <div class="invalid-feedback">
+                                        Please select your availability.
+                                    </div>
+                                </div>
+                                
+                                <div class="d-inline-block w-100 mt-3">
+                                    <a href="{% url 'users:signup_step1' %}" class="btn btn-secondary">
+                                        <i class="ri-arrow-left-line me-1"></i> Back
+                                    </a>
+                                    <button type="submit" class="btn btn-primary float-end">
+                                        Next <i class="ri-arrow-right-line ms-1"></i>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    
+    <script src="{% static 'core/js/libs.min.js' %}"></script>
+    <script src="{% static 'core/js/slider.js' %}"></script>
+    <script src="{% static 'core/js/app.js' %}"></script>
+    
+    <script>
+        (function() {
+            'use strict';
+            
+            var form = document.getElementById('signupForm2');
+            
+            form.addEventListener('submit', function(event) {
+                var password = document.getElementById('password');
+                var passwordConfirm = document.getElementById('password_confirm');
+                var availability = document.getElementById('availability');
+                var sportsCheckboxes = document.querySelectorAll('input[name="sports"]:checked');
+                var sportsError = document.getElementById('sportsError');
+                var isValid = true;
+                
+                // Clear previous validation
+                password.classList.remove('is-invalid', 'is-valid');
+                passwordConfirm.classList.remove('is-invalid', 'is-valid');
+                availability.classList.remove('is-invalid', 'is-valid');
+                sportsError.style.display = 'none';
+                
+                // Validate password
+                if (!password.value || password.value.length < 8) {
+                    password.classList.add('is-invalid');
+                    password.nextElementSibling.textContent = 'Password must be at least 8 characters long.';
+                    isValid = false;
+                } else {
+                    password.classList.add('is-valid');
+                }
+                
+                // Validate password confirmation
+                if (!passwordConfirm.value) {
+                    passwordConfirm.classList.add('is-invalid');
+                    passwordConfirm.nextElementSibling.textContent = 'Please confirm your password.';
+                    isValid = false;
+                } else if (password.value !== passwordConfirm.value) {
+                    passwordConfirm.classList.add('is-invalid');
+                    passwordConfirm.nextElementSibling.textContent = 'Passwords do not match.';
+                    isValid = false;
+                } else {
+                    passwordConfirm.classList.add('is-valid');
+                }
+                
+                // Validate sports selection
+                if (sportsCheckboxes.length === 0) {
+                    sportsError.style.display = 'block';
+                    isValid = false;
+                }
+                
+                // Validate availability
+                if (!availability.value) {
+                    availability.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    availability.classList.add('is-valid');
+                }
+                
+                if (!isValid) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            });
+            
+            // Real-time password validation
+            document.getElementById('password').addEventListener('input', function() {
+                if (this.value.length >= 8) {
+                    this.classList.remove('is-invalid');
+                    this.classList.add('is-valid');
+                    
+                    // Also check confirm password if it has a value
+                    var confirm = document.getElementById('password_confirm');
+                    if (confirm.value) {
+                        if (this.value === confirm.value) {
+                            confirm.classList.remove('is-invalid');
+                            confirm.classList.add('is-valid');
+                        } else {
+                            confirm.classList.add('is-invalid');
+                            confirm.classList.remove('is-valid');
+                        }
+                    }
+                }
+            });
+            
+            document.getElementById('password_confirm').addEventListener('input', function() {
+                var password = document.getElementById('password');
+                if (this.value && this.value === password.value) {
+                    this.classList.remove('is-invalid');
+                    this.classList.add('is-valid');
+                } else if (this.value) {
+                    this.classList.add('is-invalid');
+                    this.classList.remove('is-valid');
+                }
+            });
+            
+            // Sports checkbox validation
+            var sportsCheckboxes = document.querySelectorAll('input[name="sports"]');
+            sportsCheckboxes.forEach(function(checkbox) {
+                checkbox.addEventListener('change', function() {
+                    var checked = document.querySelectorAll('input[name="sports"]:checked');
+                    if (checked.length > 0) {
+                        document.getElementById('sportsError').style.display = 'none';
+                    }
+                });
+            });
+        })();
+    </script>
+</body>
+</html>

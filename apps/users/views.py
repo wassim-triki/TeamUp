@@ -7,33 +7,64 @@ from django.utils.html import strip_tags
 from django.conf import settings
 from django.utils import timezone
 from django.urls import reverse
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
 from .models import User, UserProfile, EmailVerificationToken
 import json
 import uuid
+import re
 
 
 def login_view(request):
     """Simple login handler: renders form and authenticates by email/password."""
+    error_message = None
+    warning_message = None
+    
     if request.method == 'POST':
-        email = request.POST.get('email')
-        password = request.POST.get('password')
+        email = request.POST.get('email', '').strip().lower()
+        password = request.POST.get('password', '')
         
-        if email and password:
+        # Validation
+        if not email:
+            error_message = 'Please enter your email address.'
+        elif not password:
+            error_message = 'Please enter your password.'
+        else:
+            # Validate email format
             try:
-                user_obj = User.objects.get(email=email)
-                user = authenticate(request, username=user_obj.username, password=password)
-                if user is not None:
-                    if user.is_active:
-                        login(request, user)
-                        return redirect('core:dashboard')
+                validate_email(email)
+            except ValidationError:
+                error_message = 'Please enter a valid email address.'
+            
+            if not error_message:
+                # Authenticate
+                try:
+                    user_obj = User.objects.get(email=email)
+                    user = authenticate(request, username=user_obj.username, password=password)
+                    if user is not None:
+                        if user.is_active:
+                            login(request, user)
+                            messages.success(request, f'Welcome back, {user.username}!')
+                            return redirect('core:dashboard')
+                        else:
+                            warning_message = 'Please verify your email before logging in. Check your inbox for the verification link.'
                     else:
-                        messages.error(request, 'Please verify your email before logging in.')
-                else:
-                    messages.error(request, 'Invalid email or password.')
-            except User.DoesNotExist:
-                messages.error(request, 'Invalid email or password.')
-
-    return render(request, 'users/login.html')
+                        error_message = 'Invalid email or password'
+                except User.DoesNotExist:
+                    error_message = 'Invalid email or password'
+    
+    # Get success messages from session (if any) and clear all messages
+    storage = messages.get_messages(request)
+    # Convert to list to preserve messages before marking as used
+    all_messages = list(storage)
+    success_messages = [str(msg) for msg in all_messages if msg.level_tag == 'success']
+    storage.used = True  # Mark all messages as used to prevent carryover
+    
+    return render(request, 'users/login.html', {
+        'error_message': error_message,
+        'warning_message': warning_message,
+        'success_messages': success_messages
+    })
 
 
 # ===== Multi-Step Signup Wizard =====
@@ -43,23 +74,37 @@ def signup_step1_email(request):
     Step 1: User enters email address.
     Check if email already exists, if not store in session and proceed.
     """
+    error_message = None
+    
     if request.method == 'POST':
         email = request.POST.get('email', '').strip().lower()
         
+        # Validation
         if not email:
-            messages.error(request, 'Please enter a valid email address.')
-            return render(request, 'users/signup_step1_minimal.html')
-        
-        # Check if user already exists
-        if User.objects.filter(email=email).exists():
-            messages.error(request, 'Account already exists with this email. Please log in.')
-            return redirect('users:login')
-        
-        # Store email in session
-        request.session['signup_email'] = email
-        return redirect('users:signup_step2')
+            error_message = 'Please enter an email address.'
+        else:
+            # Validate email format
+            try:
+                validate_email(email)
+            except ValidationError:
+                error_message = 'Please enter a valid email address (e.g., user@example.com).'
+            
+            if not error_message:
+                # Check if user already exists
+                if User.objects.filter(email=email).exists():
+                    error_message = 'An account already exists with this email address.'
+                else:
+                    # Store email in session and redirect (no message, step 2 will show form)
+                    request.session['signup_email'] = email
+                    return redirect('users:signup_step2')
     
-    return render(request, 'users/signup_step1_minimal.html')
+    # Clear any stale messages from other pages
+    storage = messages.get_messages(request)
+    storage.used = True
+    
+    return render(request, 'users/signup_step1_minimal.html', {
+        'error_message': error_message
+    })
 
 
 def signup_step2_details(request):
@@ -69,64 +114,67 @@ def signup_step2_details(request):
     """
     # Check if email exists in session
     if 'signup_email' not in request.session:
-        messages.warning(request, 'Please start from the beginning.')
         return redirect('users:signup_step1')
     
+    error_messages = []
+    warning_message = None
+    
     if request.method == 'POST':
-        password = request.POST.get('password')
-        password_confirm = request.POST.get('password_confirm')
+        password = request.POST.get('password', '')
+        password_confirm = request.POST.get('password_confirm', '')
         sports = request.POST.getlist('sports')  # Multiple sports selection
         availability = request.POST.get('availability', '')
-        display_name = request.POST.get('display_name', '')
-        city = request.POST.get('city', '')
+        display_name = request.POST.get('display_name', '').strip()
+        city = request.POST.get('city', '').strip()
         
-        # Validation
-        if not password or len(password) < 8:
-            messages.error(request, 'Password must be at least 8 characters long.')
-            return render(request, 'users/signup_step2_minimal.html', {
-                'email': request.session.get('signup_email'),
-                'sports': sports,
-                'availability': availability,
-                'display_name': display_name,
-                'city': city,
-            })
+        # Validation with detailed messages
         
-        if password != password_confirm:
-            messages.error(request, 'Passwords do not match.')
-            return render(request, 'users/signup_step2_minimal.html', {
-                'email': request.session.get('signup_email'),
-                'sports': sports,
-                'availability': availability,
-                'display_name': display_name,
-                'city': city,
-            })
+        # Password validation
+        if not password:
+            error_messages.append('Password is required.')
+        elif len(password) < 8:
+            error_messages.append('Password must be at least 8 characters long.')
+        elif password != password_confirm:
+            error_messages.append('Passwords do not match.')
+        else:
+            # Check password strength
+            if not re.search(r'[A-Za-z]', password) or not re.search(r'\d', password):
+                warning_message = 'For better security, consider using a password with both letters and numbers.'
         
+        # Sports validation
         if not sports:
-            messages.error(request, 'Please select at least one sport.')
-            return render(request, 'users/signup_step2_minimal.html', {
+            error_messages.append('Please select at least one sport.')
+        
+        # Availability validation
+        if not availability:
+            error_messages.append('Please select your availability.')
+        
+        # If no errors, store and proceed
+        if not error_messages:
+            # Store everything in session
+            request.session['signup_password'] = password
+            request.session['signup_sports'] = sports
+            request.session['signup_availability'] = availability
+            request.session['signup_display_name'] = display_name
+            request.session['signup_city'] = city
+            
+            return redirect('users:signup_step3')
+        else:
+            # Return to form with context
+            context = {
                 'email': request.session.get('signup_email'),
+                'sports': sports,
                 'availability': availability,
                 'display_name': display_name,
                 'city': city,
-            })
-        
-        if not availability:
-            messages.error(request, 'Please provide your availability.')
-            return render(request, 'users/signup_step2_minimal.html', {
-                'email': request.session.get('signup_email'),
-                'sports': sports,
-                'display_name': display_name,
-                'city': city,
-            })
-        
-        # Store everything in session
-        request.session['signup_password'] = password
-        request.session['signup_sports'] = sports
-        request.session['signup_availability'] = availability
-        request.session['signup_display_name'] = display_name
-        request.session['signup_city'] = city
-        
-        return redirect('users:signup_step3')
+                'error_messages': error_messages,
+                'warning_message': warning_message,
+            }
+            return render(request, 'users/signup_step2_minimal.html', context)
+    
+    # Clear any stale messages from other pages
+    storage = messages.get_messages(request)
+    storage.used = True
     
     return render(request, 'users/signup_step2_minimal.html', {
         'email': request.session.get('signup_email')
@@ -141,71 +189,97 @@ def signup_step3_confirm(request):
     # Check if all session data exists
     required_keys = ['signup_email', 'signup_password', 'signup_sports', 'signup_availability']
     if not all(key in request.session for key in required_keys):
-        messages.warning(request, 'Please complete all signup steps.')
         return redirect('users:signup_step1')
     
+    error_message = None
+    
     if request.method == 'POST':
-        # Retrieve data from session
-        email = request.session['signup_email']
-        password = request.session['signup_password']
-        sports = request.session['signup_sports']
-        availability = request.session['signup_availability']
-        display_name = request.session.get('signup_display_name', '')
-        city = request.session.get('signup_city', '')
-        
-        # Create User (inactive until email verification)
-        username = email.split('@')[0]
-        base_username = username
-        counter = 1
-        while User.objects.filter(username=username).exists():
-            username = f"{base_username}{counter}"
-            counter += 1
-        
-        user = User.objects.create_user(
-            username=username,
-            email=email,
-            password=password,
-            is_active=False
-        )
-        
-        # Create UserProfile
-        profile = UserProfile.objects.create(
-            user=user,
-            sports=json.dumps(sports),
-            availability=availability,
-            display_name=display_name,
-            city=city
-        )
-        
-        # Generate Email Verification Token
-        token = EmailVerificationToken.objects.create(user=user)
-        
-        # Send verification email
-        verification_link = request.build_absolute_uri(
-            reverse('users:verify_email', kwargs={'token': token.token})
-        )
-        
-        html_message = render_to_string('users/email_verification.html', {
-            'user': user,
-            'verification_link': verification_link,
-        })
-        plain_message = strip_tags(html_message)
-        
-        send_mail(
-            subject='Verify your TeamUp account',
-            message=plain_message,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[user.email],
-            html_message=html_message,
-            fail_silently=False,
-        )
-        
-        # Clear session data
-        for key in required_keys + ['signup_display_name', 'signup_city']:
-            request.session.pop(key, None)
-        
-        messages.success(request, 'Account created! Please check your email to verify your account.')
-        return redirect('users:email_sent')
+        try:
+            # Retrieve data from session
+            email = request.session['signup_email']
+            password = request.session['signup_password']
+            sports = request.session['signup_sports']
+            availability = request.session['signup_availability']
+            display_name = request.session.get('signup_display_name', '')
+            city = request.session.get('signup_city', '')
+            
+            # Double-check email doesn't exist (in case user opened multiple tabs)
+            if User.objects.filter(email=email).exists():
+                error_message = 'An account with this email already exists.'
+                # Clear session
+                for key in required_keys + ['signup_display_name', 'signup_city']:
+                    request.session.pop(key, None)
+                
+                # Clear messages and store success message for login page
+                storage = messages.get_messages(request)
+                storage.used = True
+                messages.success(request, 'Please sign in with your existing account.')
+                return redirect('users:login')
+            
+            # Create User (inactive until email verification)
+            username = email.split('@')[0]
+            base_username = username
+            counter = 1
+            while User.objects.filter(username=username).exists():
+                username = f"{base_username}{counter}"
+                counter += 1
+            
+            user = User.objects.create_user(
+                username=username,
+                email=email,
+                password=password,
+                is_active=False
+            )
+            
+            # Create UserProfile
+            profile = UserProfile.objects.create(
+                user=user,
+                sports=json.dumps(sports),
+                availability=availability,
+                display_name=display_name,
+                city=city
+            )
+            
+            # Generate Email Verification Token
+            token = EmailVerificationToken.objects.create(user=user)
+            
+            # Send verification email
+            verification_link = request.build_absolute_uri(
+                reverse('users:verify_email', kwargs={'token': token.token})
+            )
+            
+            html_message = render_to_string('users/email_verification.html', {
+                'user': user,
+                'verification_link': verification_link,
+            })
+            plain_message = strip_tags(html_message)
+            
+            send_mail(
+                subject='Verify your TeamUp account',
+                message=plain_message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[user.email],
+                html_message=html_message,
+                fail_silently=False,
+            )
+            
+            # Clear session data
+            for key in required_keys + ['signup_display_name', 'signup_city']:
+                request.session.pop(key, None)
+            
+            # Clear any stale messages before redirect
+            storage = messages.get_messages(request)
+            storage.used = True
+            
+            # Redirect to success page (no message needed, page has its own success display)
+            return redirect('users:email_sent')
+            
+        except Exception as e:
+            error_message = 'An error occurred while creating your account. Please try again.'
+    
+    # Clear any stale messages from other pages
+    storage = messages.get_messages(request)
+    storage.used = True
     
     # Display confirmation page
     context = {
@@ -214,6 +288,7 @@ def signup_step3_confirm(request):
         'availability': request.session.get('signup_availability'),
         'display_name': request.session.get('signup_display_name', ''),
         'city': request.session.get('signup_city', ''),
+        'error_message': error_message,
     }
     return render(request, 'users/signup_step3_minimal.html', context)
 
@@ -242,58 +317,78 @@ def verify_email(request, token):
             verification_token.used = True
             verification_token.save()
             
-            messages.success(request, 'Email verified successfully! You can now log in.')
+            messages.success(request, 'Email verified successfully! You can now sign in to your account.')
             return redirect('users:login')
         else:
             # Token expired or already used
-            messages.error(request, 'This verification link is invalid or has expired.')
+            messages.error(request, 'This verification link has expired or has already been used. Please request a new verification email.')
             return render(request, 'users/verification_failed_minimal.html', {
                 'user': verification_token.user
             })
     
     except EmailVerificationToken.DoesNotExist:
-        messages.error(request, 'Invalid verification link.')
+        messages.error(request, 'Invalid verification link. Please check the link or request a new verification email.')
         return render(request, 'users/verification_failed_minimal.html')
 
 
 def resend_verification(request):
     """Allow user to resend verification email."""
+    error_message = None
+    
     if request.method == 'POST':
         email = request.POST.get('email', '').strip().lower()
         
-        try:
-            user = User.objects.get(email=email, is_active=False)
-            
-            # Generate new token
-            token = EmailVerificationToken.objects.create(user=user)
-            
-            # Send verification email
-            verification_link = request.build_absolute_uri(
-                reverse('users:verify_email', kwargs={'token': token.token})
-            )
-            
-            html_message = render_to_string('users/email_verification.html', {
-                'user': user,
-                'verification_link': verification_link,
-            })
-            plain_message = strip_tags(html_message)
-            
-            send_mail(
-                subject='Verify your TeamUp account',
-                message=plain_message,
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[user.email],
-                html_message=html_message,
-                fail_silently=False,
-            )
-            
-            messages.success(request, 'Verification email sent! Please check your inbox.')
-            return redirect('users:email_sent')
+        # Validate email format
+        if not email:
+            error_message = 'Please enter your email address.'
+        else:
+            try:
+                validate_email(email)
+            except ValidationError:
+                error_message = 'Please enter a valid email address.'
         
-        except User.DoesNotExist:
-            messages.error(request, 'No inactive account found with this email.')
+        if not error_message:
+            try:
+                user = User.objects.get(email=email, is_active=False)
+                
+                # Generate new token
+                token = EmailVerificationToken.objects.create(user=user)
+                
+                # Send verification email
+                verification_link = request.build_absolute_uri(
+                    reverse('users:verify_email', kwargs={'token': token.token})
+                )
+                
+                html_message = render_to_string('users/email_verification.html', {
+                    'user': user,
+                    'verification_link': verification_link,
+                })
+                plain_message = strip_tags(html_message)
+                
+                send_mail(
+                    subject='Verify your TeamUp account',
+                    message=plain_message,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[user.email],
+                    html_message=html_message,
+                    fail_silently=False,
+                )
+                
+                # Clear any stale messages before redirect
+                storage = messages.get_messages(request)
+                storage.used = True
+                
+                # Success - redirect to email_sent page (has its own success display)
+                return redirect('users:email_sent')
+            
+            except User.DoesNotExist:
+                error_message = 'No inactive account found with this email address. The account may already be verified or does not exist.'
     
-    return render(request, 'users/resend_verification_minimal.html')
+    # Clear any stale messages from other pages
+    storage = messages.get_messages(request)
+    storage.used = True
+    
+    return render(request, 'users/resend_verification_minimal.html', {'error_message': error_message})
 
 
 # Legacy signup view (keeping for reference, but wizard should be used)
