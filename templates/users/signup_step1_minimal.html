@@ -1,0 +1,164 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <title>Sign Up - TeamUp</title>
+
+    <link rel="shortcut icon" href="{% static 'core/images/favicon.ico' %}" />
+    <link rel="stylesheet" href="{% static 'core/css/libs.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'core/css/socialv.css' %}" />
+    <link
+      rel="stylesheet"
+      href="{% static 'core/vendor/remixicon/fonts/remixicon.css' %}"
+    />
+  </head>
+  <body class="">
+    <!-- loader Start -->
+    <div id="loading">
+      <div id="loading-center"></div>
+    </div>
+    <!-- loader END -->
+
+    <div class="wrapper">
+      <section class="sign-in-page">
+        <div id="container-inside">
+          <div id="circle-small"></div>
+          <div id="circle-medium"></div>
+          <div id="circle-large"></div>
+          <div id="circle-xlarge"></div>
+          <div id="circle-xxlarge"></div>
+        </div>
+        <div class="container p-0">
+          <div class="row no-gutters">
+            <div class="col-md-6 text-center pt-5">
+              <div class="sign-in-detail text-white">
+                <a class="sign-in-logo mb-5" href="/"
+                  ><img
+                    src="{% static 'core/images/logo-full.png' %}"
+                    class="img-fluid"
+                    alt="logo"
+                /></a>
+                <div class="sign-slider overflow-hidden">
+                  <ul class="swiper-wrapper list-inline m-0 p-0">
+                    <li class="swiper-slide">
+                      <img
+                        src="{% static 'core/images/login/1.png' %}"
+                        class="img-fluid mb-4"
+                        alt="logo"
+                      />
+                      <h4 class="mb-1 text-white">
+                        Find Your Perfect Teammates
+                      </h4>
+                      <p>
+                        Connect with athletes who share your passion and
+                        schedule.
+                      </p>
+                    </li>
+                    <li class="swiper-slide">
+                      <img
+                        src="{% static 'core/images/login/2.png' %}"
+                        class="img-fluid mb-4"
+                        alt="logo"
+                      />
+                      <h4 class="mb-1 text-white">Join Sports Activities</h4>
+                      <p>
+                        Discover and participate in various sports events near
+                        you.
+                      </p>
+                    </li>
+                    <li class="swiper-slide">
+                      <img
+                        src="{% static 'core/images/login/3.png' %}"
+                        class="img-fluid mb-4"
+                        alt="logo"
+                      />
+                      <h4 class="mb-1 text-white">
+                        Build Your Sports Community
+                      </h4>
+                      <p>
+                        Create lasting friendships through shared athletic
+                        experiences.
+                      </p>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6 bg-white pt-5 pb-lg-0 pb-5">
+              <div class="sign-in-from">
+                <h1 class="mb-0">Sign Up</h1>
+                <p>Step 1 of 3 - Enter your email address</p>
+
+                <!-- Progress indicator -->
+                <div class="progress mb-3" style="height: 5px">
+                  <div
+                    class="progress-bar bg-primary"
+                    role="progressbar"
+                    style="width: 33%"
+                  ></div>
+                </div>
+
+                {% if messages %} {% for message in messages %}
+                <div
+                  class="alert alert-{{ message.tags }} alert-dismissible fade show"
+                  role="alert"
+                >
+                  {{ message }}
+                  <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Close"
+                  ></button>
+                </div>
+                {% endfor %} {% endif %}
+
+                <form
+                  class="mt-4"
+                  method="post"
+                  action="{% url 'users:signup_step1' %}"
+                >
+                  {% csrf_token %}
+                  <div class="form-group">
+                    <label class="form-label" for="email">Email Address</label>
+                    <input
+                      type="email"
+                      class="form-control mb-0"
+                      id="email"
+                      name="email"
+                      placeholder="Enter your email"
+                      required
+                      autofocus
+                    />
+                  </div>
+                  <div class="d-inline-block w-100">
+                    <button type="submit" class="btn btn-primary float-end">
+                      Next
+                    </button>
+                  </div>
+                  <div class="sign-info">
+                    <span class="dark-color d-inline-block line-height-2"
+                      >Already Have Account ?
+                      <a href="{% url 'users:login' %}">Log In</a></span
+                    >
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Backend Bundle JavaScript -->
+    <script src="{% static 'core/js/libs.min.js' %}"></script>
+    <script src="{% static 'core/js/slider.js' %}"></script>
+    <script src="{% static 'core/js/app.js' %}"></script>
+    <script src="{% static 'core/js/lottie.js' %}"></script>
+  </body>
+</html>

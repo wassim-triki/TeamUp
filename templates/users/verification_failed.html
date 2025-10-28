@@ -1,0 +1,87 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <title>Verification Failed | TeamUp</title>
+
+    <link rel="shortcut icon" href="{% static 'core/images/favicon.ico' %}" />
+    <link rel="stylesheet" href="{% static 'core/css/libs.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'core/css/socialv.css' %}" />
+    <link
+      rel="stylesheet"
+      href="{% static 'core/vendor/remixicon/fonts/remixicon.css' %}"
+    />
+  </head>
+  <body class="">
+    <div class="wrapper">
+      <section class="sign-in-page">
+        <div id="container-inside">
+          <div id="circle-small"></div>
+          <div id="circle-medium"></div>
+          <div id="circle-large"></div>
+          <div id="circle-xlarge"></div>
+          <div id="circle-xxlarge"></div>
+        </div>
+        <div class="container p-0">
+          <div class="row no-gutters justify-content-center">
+            <div class="col-md-8 col-lg-6 bg-white pt-5 pb-5">
+              <div class="sign-in-from text-center px-5">
+                <div class="mb-4">
+                  <div
+                    class="rounded-circle bg-danger d-inline-flex align-items-center justify-content-center"
+                    style="width: 100px; height: 100px"
+                  >
+                    <i
+                      class="ri-error-warning-line text-white"
+                      style="font-size: 48px"
+                    ></i>
+                  </div>
+                </div>
+
+                <h1 class="mb-3">Verification Failed</h1>
+                <p class="lead text-muted">
+                  This verification link is invalid or has expired.
+                </p>
+
+                <div class="card border-0 bg-light mt-4 mb-4">
+                  <div class="card-body">
+                    <p class="mb-0">
+                      Verification links expire after 24 hours for security
+                      reasons. You can request a new verification email below.
+                    </p>
+                  </div>
+                </div>
+
+                <div class="mt-4">
+                  <a
+                    href="{% url 'users:resend_verification' %}"
+                    class="btn btn-primary btn-lg"
+                  >
+                    <i class="ri-mail-line me-2"></i>Resend Verification Email
+                  </a>
+                </div>
+
+                <div class="mt-4">
+                  <a
+                    href="{% url 'users:login' %}"
+                    class="text-decoration-none"
+                  >
+                    <i class="ri-arrow-left-line me-2"></i>Back to Login
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <script src="{% static 'core/js/libs.min.js' %}"></script>
+    <script src="{% static 'core/js/socialv.js' %}"></script>
+  </body>
+</html>

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Verify Your Email - TeamUp</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+      }
+      .email-container {
+        max-width: 600px;
+        margin: 20px auto;
+        background-color: #ffffff;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .email-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: #ffffff;
+        padding: 40px 20px;
+        text-align: center;
+      }
+      .email-header h1 {
+        margin: 0;
+        font-size: 28px;
+      }
+      .email-body {
+        padding: 40px 30px;
+      }
+      .email-body h2 {
+        color: #667eea;
+        margin-top: 0;
+      }
+      .email-body p {
+        margin: 15px 0;
+      }
+      .verify-button {
+        display: inline-block;
+        padding: 15px 40px;
+        margin: 25px 0;
+        background-color: #667eea;
+        color: #ffffff;
+        text-decoration: none;
+        border-radius: 5px;
+        font-weight: bold;
+        text-align: center;
+      }
+      .verify-button:hover {
+        background-color: #5568d3;
+      }
+      .button-container {
+        text-align: center;
+      }
+      .info-box {
+        background-color: #f8f9fa;
+        border-left: 4px solid #667eea;
+        padding: 15px;
+        margin: 20px 0;
+      }
+      .email-footer {
+        background-color: #f8f9fa;
+        padding: 20px;
+        text-align: center;
+        font-size: 12px;
+        color: #666;
+      }
+      .link-text {
+        word-break: break-all;
+        color: #667eea;
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="email-container">
+      <div class="email-header">
+        <h1>🏆 Welcome to TeamUp!</h1>
+      </div>
+
+      <div class="email-body">
+        <h2>Hello{{ user.display_name|default:"" }}!</h2>
+
+        <p>
+          Thank you for signing up for TeamUp - your platform to connect with
+          sports enthusiasts and find your perfect teammates!
+        </p>
+
+        <p>
+          To complete your registration and activate your account, please verify
+          your email address by clicking the button below:
+        </p>
+
+        <div class="button-container">
+          <a href="{{ verification_link }}" class="verify-button"
+            >Verify Email Address</a
+          >
+        </div>
+
+        <div class="info-box">
+          <strong>⏰ Important:</strong> This verification link will expire in
+          24 hours for security reasons.
+        </div>
+
+        <p>
+          If the button doesn't work, copy and paste this link into your
+          browser:
+        </p>
+        <p class="link-text">{{ verification_link }}</p>
+
+        <p>Once verified, you'll be able to:</p>
+        <ul>
+          <li>Connect with teammates who share your sports interests</li>
+          <li>Join or create sports events and activities</li>
+          <li>Build your sports community</li>
+          <li>Find players with matching schedules</li>
+        </ul>
+
+        <p>
+          If you didn't create an account with TeamUp, please ignore this email.
+        </p>
+
+        <p>
+          Best regards,<br />
+          <strong>The TeamUp Team</strong>
+        </p>
+      </div>
+
+      <div class="email-footer">
+        <p>© 2025 TeamUp. All rights reserved.</p>
+        <p>This is an automated message, please do not reply to this email.</p>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,341 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <title>Sign Up - Step 2 | TeamUp</title>
+
+    <link rel="shortcut icon" href="{% static 'core/images/favicon.ico' %}" />
+    <link rel="stylesheet" href="{% static 'core/css/libs.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'core/css/socialv.css' %}" />
+    <link
+      rel="stylesheet"
+      href="{% static 'core/vendor/@fortawesome/fontawesome-free/css/all.min.css' %}"
+    />
+    <link
+      rel="stylesheet"
+      href="{% static 'core/vendor/remixicon/fonts/remixicon.css' %}"
+    />
+  </head>
+  <body class="">
+    <div id="loading">
+      <div id="loading-center"></div>
+    </div>
+
+    <div class="wrapper">
+      <section class="sign-in-page">
+        <div id="container-inside">
+          <div id="circle-small"></div>
+          <div id="circle-medium"></div>
+          <div id="circle-large"></div>
+          <div id="circle-xlarge"></div>
+          <div id="circle-xxlarge"></div>
+        </div>
+        <div class="container p-0">
+          <div class="row no-gutters">
+            <div class="col-md-6 text-center pt-5">
+              <div class="sign-in-detail text-white">
+                <a class="sign-in-logo mb-5" href="{% url 'core:index' %}">
+                  <img
+                    src="{% static 'core/images/logo-full.png' %}"
+                    class="img-fluid"
+                    alt="TeamUp Logo"
+                  />
+                </a>
+                <div class="owl-carousel">
+                  <div class="item">
+                    <img
+                      src="{% static 'core/images/login/2.png' %}"
+                      class="img-fluid mb-4"
+                      alt="Sports"
+                    />
+                    <h4 class="mb-1 text-white">Tell Us About Yourself</h4>
+                    <p>
+                      Share your sports interests and availability to find the
+                      perfect matches.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6 bg-white pt-5 pb-lg-0 pb-5">
+              <div class="sign-in-from">
+                <h1 class="mb-0">Account Details</h1>
+                <p class="text-muted">Step 2 of 3 - Set up your account</p>
+
+                <!-- Progress indicator -->
+                <div class="progress mb-4" style="height: 5px">
+                  <div
+                    class="progress-bar bg-primary"
+                    role="progressbar"
+                    style="width: 66%"
+                  ></div>
+                </div>
+
+                {% if messages %} {% for message in messages %}
+                <div
+                  class="alert alert-{{ message.tags }} alert-dismissible fade show"
+                  role="alert"
+                >
+                  {{ message }}
+                  <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                  ></button>
+                </div>
+                {% endfor %} {% endif %}
+
+                <form class="mt-4" method="post">
+                  {% csrf_token %}
+
+                  <!-- Email Display (read-only) -->
+                  <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input
+                      type="text"
+                      class="form-control mb-0"
+                      value="{{ email }}"
+                      readonly
+                      disabled
+                    />
+                  </div>
+
+                  <!-- Password -->
+                  <div class="form-group">
+                    <label class="form-label" for="password">Password</label>
+                    <input
+                      type="password"
+                      class="form-control mb-0"
+                      id="password"
+                      name="password"
+                      placeholder="Enter password (min 8 characters)"
+                      required
+                      minlength="8"
+                    />
+                  </div>
+
+                  <!-- Confirm Password -->
+                  <div class="form-group">
+                    <label class="form-label" for="password_confirm"
+                      >Confirm Password</label
+                    >
+                    <input
+                      type="password"
+                      class="form-control mb-0"
+                      id="password_confirm"
+                      name="password_confirm"
+                      placeholder="Re-enter password"
+                      required
+                    />
+                  </div>
+
+                  <!-- Display Name (Optional) -->
+                  <div class="form-group">
+                    <label class="form-label" for="display_name"
+                      >Display Name (Optional)</label
+                    >
+                    <input
+                      type="text"
+                      class="form-control mb-0"
+                      id="display_name"
+                      name="display_name"
+                      placeholder="How should we call you?"
+                      value="{{ display_name }}"
+                    />
+                  </div>
+
+                  <!-- City (Optional) -->
+                  <div class="form-group">
+                    <label class="form-label" for="city">City (Optional)</label>
+                    <input
+                      type="text"
+                      class="form-control mb-0"
+                      id="city"
+                      name="city"
+                      placeholder="Your city"
+                      value="{{ city }}"
+                    />
+                  </div>
+
+                  <!-- Sports Selection -->
+                  <div class="form-group">
+                    <label class="form-label">Sports Interests *</label>
+                    <small class="form-text text-muted d-block mb-2"
+                      >Select at least one sport</small
+                    >
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="form-check mb-2">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            name="sports"
+                            value="football"
+                            id="sport_football"
+                          />
+                          <label class="form-check-label" for="sport_football"
+                            >⚽ Football</label
+                          >
+                        </div>
+                        <div class="form-check mb-2">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            name="sports"
+                            value="basketball"
+                            id="sport_basketball"
+                          />
+                          <label class="form-check-label" for="sport_basketball"
+                            >🏀 Basketball</label
+                          >
+                        </div>
+                        <div class="form-check mb-2">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            name="sports"
+                            value="tennis"
+                            id="sport_tennis"
+                          />
+                          <label class="form-check-label" for="sport_tennis"
+                            >🎾 Tennis</label
+                          >
+                        </div>
+                        <div class="form-check mb-2">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            name="sports"
+                            value="volleyball"
+                            id="sport_volleyball"
+                          />
+                          <label class="form-check-label" for="sport_volleyball"
+                            >🏐 Volleyball</label
+                          >
+                        </div>
+                        <div class="form-check mb-2">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            name="sports"
+                            value="swimming"
+                            id="sport_swimming"
+                          />
+                          <label class="form-check-label" for="sport_swimming"
+                            >🏊 Swimming</label
+                          >
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="form-check mb-2">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            name="sports"
+                            value="running"
+                            id="sport_running"
+                          />
+                          <label class="form-check-label" for="sport_running"
+                            >🏃 Running</label
+                          >
+                        </div>
+                        <div class="form-check mb-2">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            name="sports"
+                            value="cycling"
+                            id="sport_cycling"
+                          />
+                          <label class="form-check-label" for="sport_cycling"
+                            >🚴 Cycling</label
+                          >
+                        </div>
+                        <div class="form-check mb-2">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            name="sports"
+                            value="gym"
+                            id="sport_gym"
+                          />
+                          <label class="form-check-label" for="sport_gym"
+                            >💪 Gym/Fitness</label
+                          >
+                        </div>
+                        <div class="form-check mb-2">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            name="sports"
+                            value="yoga"
+                            id="sport_yoga"
+                          />
+                          <label class="form-check-label" for="sport_yoga"
+                            >🧘 Yoga</label
+                          >
+                        </div>
+                        <div class="form-check mb-2">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            name="sports"
+                            value="other"
+                            id="sport_other"
+                          />
+                          <label class="form-check-label" for="sport_other"
+                            >🎯 Other</label
+                          >
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Availability -->
+                  <div class="form-group">
+                    <label class="form-label" for="availability"
+                      >Availability *</label
+                    >
+                    <textarea
+                      class="form-control"
+                      id="availability"
+                      name="availability"
+                      rows="3"
+                      placeholder="E.g., Weekdays after 6 PM, Weekends mornings"
+                      required
+                    >
+{{ availability }}</textarea
+                    >
+                    <small class="form-text text-muted">
+                      When are you usually available to play sports?
+                    </small>
+                  </div>
+
+                  <div class="d-flex justify-content-between mt-4">
+                    <a
+                      href="{% url 'users:signup_step1' %}"
+                      class="btn btn-outline-secondary"
+                    >
+                      <i class="ri-arrow-left-line me-2"></i> Back
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                      Continue <i class="ri-arrow-right-line ms-2"></i>
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <script src="{% static 'core/js/libs.min.js' %}"></script>
+    <script src="{% static 'core/js/socialv.js' %}"></script>
+  </body>
+</html>

@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Debug - Signup Step 1</title>
+  </head>
+  <body>
+    <h1>Signup Step 1 - DEBUG</h1>
+    <p>If you see this, the route is working!</p>
+    <p>URL: /accounts/signup/step1/</p>
+    <form method="post">
+      {% csrf_token %}
+      <input type="email" name="email" placeholder="Email" required />
+      <button type="submit">Submit</button>
+    </form>
+  </body>
+</html>

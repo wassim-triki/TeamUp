@@ -1,0 +1,97 @@
+from django.contrib.auth.models import AbstractUser
+from django.db import models
+from django.utils import timezone
+import uuid
+from datetime import timedelta
+
+
+class User(AbstractUser):
+    """
+    Custom User model extending AbstractUser.
+    Uses email as the primary identifier for authentication.
+    """
+    email = models.EmailField(unique=True, verbose_name="Email Address")
+    is_active = models.BooleanField(default=False, help_text="Designates whether this user should be treated as active. Set to False until email is verified.")
+    email_verified_at = models.DateTimeField(null=True, blank=True, verbose_name="Email Verified At")
+    
+    # Override username to make it auto-generated
+    username = models.CharField(max_length=150, unique=True)
+    
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username']
+    
+    class Meta:
+        verbose_name = 'User'
+        verbose_name_plural = 'Users'
+    
+    def __str__(self):
+        return self.email
+
+
+class UserProfile(models.Model):
+    """
+    User profile with additional information like sports and availability.
+    OneToOne relationship with User model.
+    """
+    SPORT_CHOICES = [
+        ('football', 'Football'),
+        ('basketball', 'Basketball'),
+        ('tennis', 'Tennis'),
+        ('volleyball', 'Volleyball'),
+        ('swimming', 'Swimming'),
+        ('running', 'Running'),
+        ('cycling', 'Cycling'),
+        ('gym', 'Gym/Fitness'),
+        ('yoga', 'Yoga'),
+        ('other', 'Other'),
+    ]
+    
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    display_name = models.CharField(max_length=100, blank=True, null=True)
+    city = models.CharField(max_length=100, blank=True, null=True)
+    
+    # Sports can be stored as JSON array or comma-separated values
+    # For simplicity, using TextField to store JSON
+    sports = models.TextField(help_text="JSON array of selected sports", blank=True, default='[]')
+    
+    # Availability stored as text summary or JSON
+    availability = models.TextField(help_text="User's availability schedule", blank=True, default='')
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = 'User Profile'
+        verbose_name_plural = 'User Profiles'
+    
+    def __str__(self):
+        return f"Profile of {self.user.email}"
+
+
+class EmailVerificationToken(models.Model):
+    """
+    Token for email verification during signup.
+    """
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='verification_tokens')
+    token = models.CharField(max_length=100, unique=True, default=uuid.uuid4)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    used = models.BooleanField(default=False)
+    
+    class Meta:
+        verbose_name = 'Email Verification Token'
+        verbose_name_plural = 'Email Verification Tokens'
+        ordering = ['-created_at']
+    
+    def save(self, *args, **kwargs):
+        # Set expiration to 24 hours from creation if not set
+        if not self.expires_at:
+            self.expires_at = timezone.now() + timedelta(hours=24)
+        super().save(*args, **kwargs)
+    
+    def is_valid(self):
+        """Check if token is valid (not used and not expired)"""
+        return not self.used and timezone.now() < self.expires_at
+    
+    def __str__(self):
+        return f"Token for {self.user.email} - {'Used' if self.used else 'Active'}"
