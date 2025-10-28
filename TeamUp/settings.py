@@ -13,6 +13,21 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 import os
 from pathlib import Path
 
+# Force UTF-8 encoding for the entire Python environment
+import sys
+import locale
+
+# Set environment encoding to UTF-8
+os.environ['PYTHONUTF8'] = '1'
+os.environ['PGCLIENTENCODING'] = 'UTF8'
+
+# Force locale to UTF-8
+if sys.platform == 'win32':
+    try:
+        locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
+    except:
+        pass
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -39,6 +54,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'users',
+    'search',
 ]
 
 MIDDLEWARE = [

@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+{% include 'partials/sidebar.html' %}
+{% include 'partials/header.html' %}
+
+<style>
+    .history-page {
+        background-color: #f8f9fa;
+        min-height: 100vh;
+        padding: 2rem 0;
+    }
+    .page-title {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 10px;
+        margin-bottom: 2rem;
+    }
+    .history-card {
+        background: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: transform 0.2s;
+    }
+    .history-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    .filter-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        background-color: #e7f3ff;
+        color: #0066cc;
+        border-radius: 15px;
+        font-size: 0.85rem;
+        margin-right: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    .results-count {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 15px;
+        font-size: 0.85rem;
+    }
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .empty-state i {
+        font-size: 4rem;
+        color: #ddd;
+        margin-bottom: 1rem;
+    }
+</style>
+
+<div class="history-page">
+    <div class="container-fluid">
+        <div class="page-title">
+            <h2 class="mb-1"><i class="fas fa-history"></i> Search History</h2>
+            <p class="mb-0">Your recent partner searches</p>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-10 offset-lg-1">
+                <div class="mb-3 d-flex justify-content-between align-items-center">
+                    <div>
+                        <a href="{% url 'search:search_partners' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-search"></i> New Search
+                        </a>
+                    </div>
+                </div>
+
+                {% if history %}
+                    {% for search in history %}
+                    <div class="history-card">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <div class="d-flex align-items-center mb-2">
+                                    <h5 class="mb-0 me-3">
+                                        <i class="fas fa-search text-primary"></i> 
+                                        {{ search.search_query|default:"General search" }}
+                                    </h5>
+                                    <span class="results-count">
+                                        {{ search.results_count }} result{{ search.results_count|pluralize }}
+                                    </span>
+                                </div>
+                                
+                                <p class="text-muted mb-2">
+                                    <i class="fas fa-clock"></i> 
+                                    {{ search.created_at|timesince }} ago
+                                </p>
+
+                                {% if search.filters_used %}
+                                <div class="mb-0">
+                                    <strong class="text-muted">Filters:</strong>
+                                    {% if search.filters_used.sport %}
+                                    <span class="filter-badge">
+                                        <i class="fas fa-dumbbell"></i> {{ search.filters_used.sport }}
+                                    </span>
+                                    {% endif %}
+                                    {% if search.filters_used.level %}
+                                    <span class="filter-badge">
+                                        <i class="fas fa-signal"></i> {{ search.filters_used.level }}
+                                    </span>
+                                    {% endif %}
+                                    {% if search.filters_used.location %}
+                                    <span class="filter-badge">
+                                        <i class="fas fa-location-dot"></i> {{ search.filters_used.location }}
+                                    </span>
+                                    {% endif %}
+                                    {% if search.filters_used.max_distance %}
+                                    <span class="filter-badge">
+                                        <i class="fas fa-ruler"></i> {{ search.filters_used.max_distance }} km
+                                    </span>
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 text-center text-md-end mt-3 mt-md-0">
+                                <a href="{% url 'search:search_partners' %}?sport={{ search.filters_used.sport }}&level={{ search.filters_used.level }}&location={{ search.filters_used.location }}&max_distance={{ search.filters_used.max_distance }}" 
+                                   class="btn btn-primary">
+                                    <i class="fas fa-redo"></i> Search Again
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    {% if history|length >= 20 %}
+                    <div class="text-center mt-3">
+                        <p class="text-muted">
+                            <i class="fas fa-info-circle"></i> 
+                            Showing your 20 most recent searches
+                        </p>
+                    </div>
+                    {% endif %}
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-history"></i>
+                        <h3>No Search History</h3>
+                        <p class="text-muted">
+                            You haven't searched for partners yet.
+                            <br>Start exploring to build your search history!
+                        </p>
+                        <a href="{% url 'search:search_partners' %}" class="btn btn-primary mt-3">
+                            <i class="fas fa-search"></i> Start Searching
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% include 'partials/footer.html' %}
+{% endblock %}

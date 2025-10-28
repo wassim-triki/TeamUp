@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+{% include 'partials/sidebar.html' %}
+{% include 'partials/header.html' %}
+
+<style>
+    .search-page {
+        background-color: #f8f9fa;
+        min-height: 100vh;
+        padding: 2rem 0;
+    }
+    .page-title {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 10px;
+        margin-bottom: 2rem;
+    }
+    .filter-card {
+        background: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 2rem;
+        position: sticky;
+        top: 20px;
+    }
+    .partner-card {
+        background: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: transform 0.2s;
+    }
+    .partner-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    .level-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+    }
+    .level-beginner { background-color: #d4edda; color: #155724; }
+    .level-intermediate { background-color: #fff3cd; color: #856404; }
+    .level-advanced { background-color: #cfe2ff; color: #084298; }
+    .level-expert { background-color: #f8d7da; color: #842029; }
+    .sport-tag {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        background-color: #e7f3ff;
+        color: #0066cc;
+        border-radius: 15px;
+        font-size: 0.85rem;
+        margin-right: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    .distance-badge {
+        background-color: #f0f0f0;
+        padding: 0.25rem 0.75rem;
+        border-radius: 15px;
+        font-size: 0.85rem;
+    }
+    .saved-filter-item {
+        padding: 0.5rem;
+        border-radius: 5px;
+        margin-bottom: 0.5rem;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    .saved-filter-item:hover {
+        background-color: #f0f0f0;
+    }
+</style>
+
+<div class="search-page">
+    <div class="container-fluid">
+        <div class="page-title">
+            <h2 class="mb-1"><i class="fas fa-search"></i> Rechercher des Partenaires</h2>
+            <p class="mb-0">Trouvez les meilleurs partenaires pour vos activités sportives</p>
+        </div>
+
+        <div class="row">
+            <!-- Filters Sidebar -->
+            <div class="col-lg-3 mb-4">
+                <div class="filter-card">
+                    <h5 class="mb-3"><i class="fas fa-filter"></i> Filtres</h5>
+                    <form method="get" action="{% url 'search:search_partners' %}">
+                        <div class="mb-3">
+                            <label class="form-label">Sport</label>
+                            <select name="sport" class="form-select">
+                                <option value="">Tous les sports</option>
+                                <option value="football" {% if sport == 'football' %}selected{% endif %}>Football</option>
+                                <option value="basketball" {% if sport == 'basketball' %}selected{% endif %}>Basketball</option>
+                                <option value="tennis" {% if sport == 'tennis' %}selected{% endif %}>Tennis</option>
+                                <option value="running" {% if sport == 'running' %}selected{% endif %}>Course à pied</option>
+                                <option value="cycling" {% if sport == 'cycling' %}selected{% endif %}>Cyclisme</option>
+                                <option value="swimming" {% if sport == 'swimming' %}selected{% endif %}>Natation</option>
+                                <option value="volleyball" {% if sport == 'volleyball' %}selected{% endif %}>Volleyball</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Localisation</label>
+                            <input type="text" name="location" class="form-control" value="{{ location }}" placeholder="Ville ou adresse">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Distance max (km)</label>
+                            <input type="number" name="max_distance" class="form-control" value="{{ max_distance }}" min="1" max="100">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Niveau</label>
+                            <select name="level" class="form-select">
+                                <option value="">Tous les niveaux</option>
+                                <option value="beginner" {% if level == 'beginner' %}selected{% endif %}>Débutant</option>
+                                <option value="intermediate" {% if level == 'intermediate' %}selected{% endif %}>Intermédiaire</option>
+                                <option value="advanced" {% if level == 'advanced' %}selected{% endif %}>Avancé</option>
+                                <option value="expert" {% if level == 'expert' %}selected{% endif %}>Expert</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 mb-2">
+                            <i class="fas fa-search"></i> Rechercher
+                        </button>
+                        <a href="{% url 'search:search_partners' %}" class="btn btn-outline-secondary w-100">
+                            <i class="fas fa-redo"></i> Réinitialiser
+                        </a>
+                    </form>
+
+                    <hr class="my-3">
+
+                    <div class="mb-2">
+                        <a href="{% url 'search:recommendations' %}" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-star"></i> Recommandations IA
+                        </a>
+                    </div>
+
+                    <div class="mb-2">
+                        <a href="{% url 'search:search_history' %}" class="btn btn-outline-secondary w-100">
+                            <i class="fas fa-history"></i> Historique
+                        </a>
+                    </div>
+                </div>
+
+                {% if saved_filters %}
+                <div class="filter-card">
+                    <h6 class="mb-3"><i class="fas fa-bookmark"></i> Filtres sauvegardés</h6>
+                    {% for filter in saved_filters %}
+                    <a href="{% url 'search:search_partners' %}?sport={{ filter.sport_type }}&level={{ filter.level }}&max_distance={{ filter.max_distance_km }}" 
+                       class="saved-filter-item d-block text-decoration-none text-dark">
+                        <i class="fas fa-tag"></i> {{ filter.name }}
+                    </a>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Results -->
+            <div class="col-lg-9">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0">
+                        <i class="fas fa-users"></i> 
+                        {{ total_results }} partenaire{{ total_results|pluralize }} trouvé{{ total_results|pluralize }}
+                    </h5>
+                </div>
+
+                {% if results %}
+                    {% for profile in results %}
+                    <div class="partner-card">
+                        <div class="row align-items-center">
+                            <div class="col-md-2 text-center mb-3 mb-md-0">
+                                <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center" 
+                                     style="width: 80px; height: 80px; font-size: 2rem;">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                            </div>
+                            <div class="col-md-7">
+                                <h5 class="mb-2">{{ profile.user.username }}</h5>
+                                <p class="text-muted mb-2">{{ profile.bio|truncatewords:20|default:"Aucune description" }}</p>
+                                
+                                <div class="mb-2">
+                                    {% for sport in profile.sports %}
+                                    <span class="sport-tag">{{ sport }}</span>
+                                    {% empty %}
+                                    <span class="text-muted">Aucun sport renseigné</span>
+                                    {% endfor %}
+                                </div>
+
+                                <div>
+                                    <span class="level-badge level-{{ profile.level }}">
+                                        {{ profile.get_level_display }}
+                                    </span>
+                                    {% if profile.distance %}
+                                    <span class="distance-badge">
+                                        <i class="fas fa-location-dot"></i> {{ profile.distance }} km
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-3 text-center text-md-end mt-3 mt-md-0">
+                                <a href="{% url 'search:partner_detail' profile.user.id %}" class="btn btn-primary mb-2 w-100">
+                                    <i class="fas fa-eye"></i> Voir profil
+                                </a>
+                                <button class="btn btn-outline-success w-100">
+                                    <i class="fas fa-plus"></i> Inviter
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                        <h4>Aucun partenaire trouvé</h4>
+                        <p class="text-muted">Essayez de modifier vos critères de recherche</p>
+                        <a href="{% url 'search:recommendations' %}" class="btn btn-primary">
+                            <i class="fas fa-star"></i> Voir les recommandations
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% include 'partials/footer.html' %}
+{% endblock %}
