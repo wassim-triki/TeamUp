@@ -1,8 +1,39 @@
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models
 from django.utils import timezone
 import uuid
 from datetime import timedelta
+
+
+class CustomUserManager(UserManager):
+    """
+    Custom user manager to handle superuser creation with is_active=True
+    """
+    def create_superuser(self, email, password=None, **extra_fields):
+        """
+        Create and save a superuser with is_active=True
+        """
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('is_active', True)  # Superusers are active by default
+        
+        if extra_fields.get('is_staff') is not True:
+            raise ValueError('Superuser must have is_staff=True.')
+        if extra_fields.get('is_superuser') is not True:
+            raise ValueError('Superuser must have is_superuser=True.')
+        
+        if not email:
+            raise ValueError('Email is required')
+        
+        # Generate username from email if not provided
+        if 'username' not in extra_fields:
+            extra_fields['username'] = email.split('@')[0]
+        
+        email = self.normalize_email(email)
+        user = self.model(email=email, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
 
 
 class User(AbstractUser):
@@ -19,6 +50,8 @@ class User(AbstractUser):
     
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
+    
+    objects = CustomUserManager()  # Use custom manager
     
     class Meta:
         verbose_name = 'User'

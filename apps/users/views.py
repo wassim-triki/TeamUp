@@ -6,6 +6,7 @@ from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.conf import settings
 from django.utils import timezone
+from django.urls import reverse
 from .models import User, UserProfile, EmailVerificationToken
 import json
 import uuid
@@ -181,7 +182,7 @@ def signup_step3_confirm(request):
         
         # Send verification email
         verification_link = request.build_absolute_uri(
-            f'/users/verify/{token.token}/'
+            reverse('users:verify_email', kwargs={'token': token.token})
         )
         
         html_message = render_to_string('users/email_verification.html', {
@@ -268,7 +269,7 @@ def resend_verification(request):
             
             # Send verification email
             verification_link = request.build_absolute_uri(
-                f'/users/verify/{token.token}/'
+                reverse('users:verify_email', kwargs={'token': token.token})
             )
             
             html_message = render_to_string('users/email_verification.html', {

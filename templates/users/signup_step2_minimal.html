@@ -16,6 +16,34 @@
       rel="stylesheet"
       href="{% static 'core/vendor/remixicon/fonts/remixicon.css' %}"
     />
+    <style>
+      /* Enable scrolling for form content */
+      .sign-in-page {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+      }
+      .sign-in-from {
+        max-height: calc(100vh - 100px);
+        overflow-y: auto;
+        padding-right: 15px;
+      }
+      /* Custom scrollbar */
+      .sign-in-from::-webkit-scrollbar {
+        width: 6px;
+      }
+      .sign-in-from::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+      }
+      .sign-in-from::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 10px;
+      }
+      .sign-in-from::-webkit-scrollbar-thumb:hover {
+        background: #555;
+      }
+    </style>
   </head>
   <body class="">
     <div id="loading">
