@@ -7,8 +7,37 @@ from datetime import timedelta
 
 class CustomUserManager(UserManager):
     """
-    Custom user manager to handle superuser creation with is_active=True
+    Custom user manager to handle user creation with email-based authentication
     """
+    def create_user(self, email=None, password=None, **extra_fields):
+        """
+        Create and save a regular user with the given email and password.
+        """
+        if not email:
+            raise ValueError('Email is required')
+        
+        email = self.normalize_email(email)
+        
+        # Generate username from email if not provided
+        if 'username' not in extra_fields:
+            username = email.split('@')[0]
+            base_username = username
+            counter = 1
+            # Ensure username is unique
+            while self.model.objects.filter(username=username).exists():
+                username = f"{base_username}{counter}"
+                counter += 1
+            extra_fields['username'] = username
+        
+        extra_fields.setdefault('is_staff', False)
+        extra_fields.setdefault('is_superuser', False)
+        extra_fields.setdefault('is_active', False)  # Regular users need email verification
+        
+        user = self.model(email=email, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+    
     def create_superuser(self, email, password=None, **extra_fields):
         """
         Create and save a superuser with is_active=True
@@ -22,18 +51,7 @@ class CustomUserManager(UserManager):
         if extra_fields.get('is_superuser') is not True:
             raise ValueError('Superuser must have is_superuser=True.')
         
-        if not email:
-            raise ValueError('Email is required')
-        
-        # Generate username from email if not provided
-        if 'username' not in extra_fields:
-            extra_fields['username'] = email.split('@')[0]
-        
-        email = self.normalize_email(email)
-        user = self.model(email=email, **extra_fields)
-        user.set_password(password)
-        user.save(using=self._db)
-        return user
+        return self.create_user(email, password, **extra_fields)
 
 
 class User(AbstractUser):

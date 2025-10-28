@@ -37,20 +37,17 @@ def login_view(request):
                 error_message = 'Please enter a valid email address.'
             
             if not error_message:
-                # Authenticate
-                try:
-                    user_obj = User.objects.get(email=email)
-                    user = authenticate(request, username=user_obj.username, password=password)
-                    if user is not None:
-                        if user.is_active:
-                            login(request, user)
-                            messages.success(request, f'Welcome back, {user.username}!')
-                            return redirect('core:dashboard')
-                        else:
-                            warning_message = 'Please verify your email before logging in. Check your inbox for the verification link.'
+                # Authenticate using email directly (our custom backend handles this)
+                user = authenticate(request, username=email, password=password)
+                
+                if user is not None:
+                    if user.is_active:
+                        login(request, user)
+                        messages.success(request, f'Welcome back, {user.username}!')
+                        return redirect('core:dashboard')
                     else:
-                        error_message = 'Invalid email or password'
-                except User.DoesNotExist:
+                        warning_message = 'Please verify your email before logging in. Check your inbox for the verification link.'
+                else:
                     error_message = 'Invalid email or password'
     
     # Get success messages from session (if any) and clear all messages
@@ -217,15 +214,8 @@ def signup_step3_confirm(request):
                 return redirect('users:login')
             
             # Create User (inactive until email verification)
-            username = email.split('@')[0]
-            base_username = username
-            counter = 1
-            while User.objects.filter(username=username).exists():
-                username = f"{base_username}{counter}"
-                counter += 1
-            
+            # The username generation is now handled by CustomUserManager
             user = User.objects.create_user(
-                username=username,
                 email=email,
                 password=password,
                 is_active=False
