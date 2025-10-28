@@ -1,123 +1,230 @@
 # search/views.py
-from django.shortcuts import get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
-from django.views.decorators.http import require_http_methods
-from .models import SearchFilter, PartnerRecommendation, SearchHistory, UserProfile
+from django.db.models import Q
 from django.contrib.auth.models import User
-from django.utils import timezone
+from django.http import JsonResponse
+from .models import UserProfile, SearchFilter, PartnerRecommendation, SearchHistory
+from .forms import SearchFilterForm
 import json
+from math import radians, sin, cos, sqrt, atan2
 
-# -------------------------------
-# /search/  → Main search page
-# -------------------------------
-@login_required
-def main_search_page(request):
-    """Display the main search page or perform a search."""
-    if request.method == "GET":
-        return JsonResponse({"message": "Welcome to the Main Search Page"})
 
-    elif request.method == "POST":
-        data = json.loads(request.body)
-        query = data.get("query", "")
-        filters = data.get("filters", {})
-        results = list(UserProfile.objects.filter(sports__icontains=query).values())
+def calculate_distance(lat1, lon1, lat2, lon2):
+    """Calculate distance between two coordinates in km using Haversine formula"""
+    R = 6371  # Earth's radius in km
+    
+    lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
+    dlat = lat2 - lat1
+    dlon = lon2 - lon1
+    
+    a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+    c = 2 * atan2(sqrt(a), sqrt(1-a))
+    return R * c
 
-        # Save search to history
+
+# @login_required  # Comment this out for now
+def search_partners(request):
+    """Main search view with filters"""
+    
+    # Get search parameters
+    sport = request.GET.get('sport', '')
+    location = request.GET.get('location', '')
+    max_distance = request.GET.get('max_distance', 10)
+    level = request.GET.get('level', '')
+    availability = request.GET.get('availability', '')
+    
+    # Start with all profiles
+    results = UserProfile.objects.all()
+    
+    # Exclude current user if authenticated
+    if request.user.is_authenticated:
+        results = results.exclude(user=request.user)
+    
+    # Apply filters
+    if sport:
+        results = results.filter(sports__contains=sport)
+    
+    if level:
+        results = results.filter(level=level)
+    
+    # Location-based filtering - only if user is authenticated and has a profile
+    if request.user.is_authenticated:
+        try:
+            user_profile = UserProfile.objects.get(user=request.user)
+            if user_profile.latitude and user_profile.longitude and max_distance:
+                try:
+                    max_dist = float(max_distance)
+                    nearby_profiles = []
+                    
+                    for profile in results:
+                        if profile.latitude and profile.longitude:
+                            distance = calculate_distance(
+                                user_profile.latitude, 
+                                user_profile.longitude,
+                                profile.latitude,
+                                profile.longitude
+                            )
+                            if distance <= max_dist:
+                                profile.distance = round(distance, 1)
+                                nearby_profiles.append(profile)
+                    
+                    results = sorted(nearby_profiles, key=lambda x: x.distance)
+                except ValueError:
+                    results = list(results)
+            else:
+                results = list(results)
+        except UserProfile.DoesNotExist:
+            results = list(results)
+    else:
+        results = list(results)
+    
+    # Save search history only if authenticated
+    if request.user.is_authenticated:
         SearchHistory.objects.create(
             user=request.user,
-            search_query=query,
-            filters_used=filters,
+            search_query=f"{sport} {location}".strip(),
+            filters_used={
+                'sport': sport,
+                'location': location,
+                'max_distance': max_distance,
+                'level': level,
+                'availability': availability
+            },
             results_count=len(results)
         )
-        return JsonResponse({
-            "query": query,
-            "filters": filters,
-            "results_count": len(results),
-            "results": results
-        })
-
-
-# -----------------------------------------
-# /search/recommendations/ → AI Recommendations
-# -----------------------------------------
-@login_required
-def ai_recommendations(request):
-    """Fetch AI-based partner recommendations."""
-    recs = PartnerRecommendation.objects.filter(user=request.user, is_dismissed=False)
-    data = [{
-        "recommended_user": r.recommended_user.username,
-        "match_score": r.match_score,
-        "reasons": r.reasons,
-        "created_at": r.created_at
-    } for r in recs]
-
-    return JsonResponse({"recommendations": data})
-
-
-# --------------------------------------------------
-# /search/partner/<id>/ → Partner details
-# --------------------------------------------------
-@login_required
-def partner_details(request, id):
-    """View specific partner profile details."""
-    partner = get_object_or_404(UserProfile, user__id=id)
-    data = {
-        "username": partner.user.username,
-        "sports": partner.sports,
-        "level": partner.level,
-        "location": partner.location,
-        "goals": partner.goals,
-        "bio": partner.bio
+    
+    # Get saved filters only if authenticated
+    saved_filters = []
+    if request.user.is_authenticated:
+        saved_filters = SearchFilter.objects.filter(user=request.user)
+    
+    context = {
+        'results': results[:20],  # Limit to 20 results
+        'sport': sport,
+        'location': location,
+        'max_distance': max_distance,
+        'level': level,
+        'total_results': len(results),
+        'saved_filters': saved_filters
     }
-    return JsonResponse(data)
+    
+    return render(request, 'search/search_partners.html', context)
 
 
-# --------------------------------------------------
-# /search/history/ → Search history
-# --------------------------------------------------
-@login_required
-def search_history(request):
-    """List user's previous searches."""
-    history = SearchHistory.objects.filter(user=request.user)
-    data = [{
-        "query": h.search_query,
-        "filters": h.filters_used,
-        "results_count": h.results_count,
-        "created_at": h.created_at
-    } for h in history]
-    return JsonResponse({"history": data})
+# @login_required  # Comment this out for now
+def recommendations(request):
+    """View showing AI-based partner recommendations"""
+    
+    # Get recommendations only if authenticated
+    recommendations_list = []
+    if request.user.is_authenticated:
+        recommendations_list = PartnerRecommendation.objects.filter(
+            user=request.user,
+            is_dismissed=False
+        )[:10]
+        
+        # Mark as viewed
+        recommendations_list.update(is_viewed=True)
+    
+    context = {
+        'recommendations': recommendations_list,
+    }
+    
+    return render(request, 'search/recommendations.html', context)
 
 
-# --------------------------------------------------
-# /search/filters/save/ → Save a filter
-# --------------------------------------------------
-@require_http_methods(["POST"])
-@login_required
-def save_filter(request):
-    """Save a custom search filter."""
-    data = json.loads(request.body)
-    name = data.get("name")
-    sport_type = data.get("sport_type", "")
-    location = data.get("location", "")
-    max_distance_km = data.get("max_distance_km", 10)
-    level = data.get("level", "")
-    availability_days = data.get("availability_days", [])
-    availability_times = data.get("availability_times", [])
-    is_favorite = data.get("is_favorite", False)
+# @login_required  # Comment this out for now
+def save_search_filter(request):
+    """Save a search filter for quick access"""
+    
+    # Require authentication for this feature
+    if not request.user.is_authenticated:
+        return redirect('search:search_partners')
+    
+    if request.method == 'POST':
+        form = SearchFilterForm(request.POST)
+        if form.is_valid():
+            search_filter = form.save(commit=False)
+            search_filter.user = request.user
+            search_filter.save()
+            return redirect('search:search_partners')
+    else:
+        form = SearchFilterForm()
+    
+    return render(request, 'search/save_filter.html', {'form': form})
 
-    filt = SearchFilter.objects.create(
-        user=request.user,
-        name=name,
-        sport_type=sport_type,
-        location=location,
-        max_distance_km=max_distance_km,
-        level=level,
-        availability_days=availability_days,
-        availability_times=availability_times,
-        is_favorite=is_favorite
+
+# @login_required  # Comment this out for now
+def dismiss_recommendation(request, recommendation_id):
+    """Dismiss a recommendation"""
+    
+    # Require authentication for this feature
+    if not request.user.is_authenticated:
+        return JsonResponse({'status': 'error', 'message': 'Authentication required'})
+    
+    recommendation = get_object_or_404(
+        PartnerRecommendation, 
+        id=recommendation_id, 
+        user=request.user
     )
-    return JsonResponse({
-        "message": "Filter saved successfully",
-        "filter_id": filt.id
-    })
+    recommendation.is_dismissed = True
+    recommendation.save()
+    
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'status': 'success'})
+    
+    return redirect('search:recommendations')
+
+
+# @login_required  # Comment this out for now
+def search_history_view(request):
+    """View user's search history"""
+    
+    # Get history only if authenticated
+    history = []
+    if request.user.is_authenticated:
+        history = SearchHistory.objects.filter(user=request.user)[:20]
+    
+    context = {
+        'history': history
+    }
+    
+    return render(request, 'search/search_history.html', context)
+
+
+# @login_required  # Comment this out for now
+def partner_detail(request, user_id):
+    """View detailed profile of a potential partner"""
+    partner_profile = get_object_or_404(UserProfile, user_id=user_id)
+    
+    # Calculate distance only if user is authenticated and has a profile
+    distance = None
+    common_sports = []
+    
+    if request.user.is_authenticated:
+        try:
+            user_profile = UserProfile.objects.get(user=request.user)
+            
+            # Calculate distance if coordinates available
+            if (user_profile.latitude and user_profile.longitude and 
+                partner_profile.latitude and partner_profile.longitude):
+                distance = round(calculate_distance(
+                    user_profile.latitude,
+                    user_profile.longitude,
+                    partner_profile.latitude,
+                    partner_profile.longitude
+                ), 1)
+            
+            # Find common sports
+            common_sports = list(set(user_profile.sports) & set(partner_profile.sports))
+        except UserProfile.DoesNotExist:
+            pass
+    
+    context = {
+        'partner': partner_profile,
+        'distance': distance,
+        'common_sports': common_sports,
+    }
+    
+    return render(request, 'search/partner_detail.html', context)
