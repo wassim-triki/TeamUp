@@ -134,8 +134,6 @@ STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
-    # Serve original template assets (CSS/JS/images) from the template-files folder during integration
-    BASE_DIR / 'template-files' / 'assets',
 ]
 
 # Media files

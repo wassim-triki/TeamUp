@@ -15,7 +15,7 @@ TeamUp{% endblock %} {% block content %}
         <div class="sign-in-detail text-white">
           <a class="sign-in-logo mb-5" href="#">
             <img
-              src="{% static 'images/logo-full.png' %}"
+              src="{% static 'core/images/logo-full.png' %}"
               class="img-fluid"
               alt="logo"
             />
@@ -24,7 +24,7 @@ TeamUp{% endblock %} {% block content %}
             <ul class="swiper-wrapper list-inline m-0 p-0">
               <li class="swiper-slide">
                 <img
-                  src="{% static 'images/login/1.png' %}"
+                  src="{% static 'core/images/login/1.png' %}"
                   class="img-fluid mb-4"
                   alt="logo"
                 />
@@ -36,7 +36,7 @@ TeamUp{% endblock %} {% block content %}
               </li>
               <li class="swiper-slide">
                 <img
-                  src="{% static 'images/login/2.png' %}"
+                  src="{% static 'core/images/login/2.png' %}"
                   class="img-fluid mb-4"
                   alt="logo"
                 />
@@ -48,7 +48,7 @@ TeamUp{% endblock %} {% block content %}
               </li>
               <li class="swiper-slide">
                 <img
-                  src="{% static 'images/login/3.png' %}"
+                  src="{% static 'core/images/login/3.png' %}"
                   class="img-fluid mb-4"
                   alt="logo"
                 />
@@ -114,6 +114,17 @@ TeamUp{% endblock %} {% block content %}
                 >Don't have an account?
                 <a href="{% url 'users:signup' %}">Sign up</a></span
               >
+              <ul class="iq-social-media">
+                <li>
+                  <a href="#"><i class="ri-facebook-box-line"></i></a>
+                </li>
+                <li>
+                  <a href="#"><i class="ri-twitter-line"></i></a>
+                </li>
+                <li>
+                  <a href="#"><i class="ri-instagram-line"></i></a>
+                </li>
+              </ul>
             </div>
           </form>
         </div>
