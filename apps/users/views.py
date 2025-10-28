@@ -395,4 +395,3 @@ def resend_verification(request):
 def signup_view(request):
     """Redirect to new multi-step signup wizard."""
     return redirect('users:signup_step1')
-

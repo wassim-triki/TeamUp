@@ -1,5 +1,5 @@
 """
-Django settings for semantique project.
+Django settings for TeamUp project.
 """
 
 from pathlib import Path
@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'apps.core',         # main public site / landing pages (+ dashboard UI)
     'apps.users',        # user accounts, auth, profiles
     'apps.api',          # REST API endpoints (if/when added)
+    'apps.sessions',     # Sessions app - simplified
 ]
 
 MIDDLEWARE = [
@@ -147,6 +148,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Custom User Model
 AUTH_USER_MODEL = 'users.User'
+
+# Authentication URLs
+# Authentication URLs
+LOGIN_URL = 'users:login'  # This will now resolve to /accounts/login/
+LOGIN_REDIRECT_URL = 'sessions:list'
+LOGOUT_REDIRECT_URL = 'core:index'   # Changed from '/' to use named URL
 
 # Email Configuration
 EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')

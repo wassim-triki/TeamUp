@@ -27,11 +27,11 @@ TeamUp{% endblock %} {% block head %}
     <div class="row no-gutters">
       <div class="col-md-6 text-center pt-5">
         <div class="sign-in-detail text-white">
-          <a class="sign-in-logo mb-5" href="#">
+          <a class="sign-in-logo mb-5" href="{% url 'core:index' %}">
             <img
               src="{% static 'core/images/logo-full.png' %}"
               class="img-fluid"
-              alt="logo"
+              alt="TeamUp Logo"
             />
           </a>
           <div class="sign-slider overflow-hidden">
@@ -40,7 +40,7 @@ TeamUp{% endblock %} {% block head %}
                 <img
                   src="{% static 'core/images/login/1.png' %}"
                   class="img-fluid mb-4"
-                  alt="logo"
+                  alt="Find training partners"
                 />
                 <h4 class="mb-1 text-white">Find training partners</h4>
                 <p>
@@ -52,7 +52,7 @@ TeamUp{% endblock %} {% block head %}
                 <img
                   src="{% static 'core/images/login/2.png' %}"
                   class="img-fluid mb-4"
-                  alt="logo"
+                  alt="AI-powered recommendations"
                 />
                 <h4 class="mb-1 text-white">AI-powered recommendations</h4>
                 <p>
@@ -64,7 +64,7 @@ TeamUp{% endblock %} {% block head %}
                 <img
                   src="{% static 'core/images/login/3.png' %}"
                   class="img-fluid mb-4"
-                  alt="logo"
+                  alt="Smart scheduling"
                 />
                 <h4 class="mb-1 text-white">Smart scheduling</h4>
                 <p>
@@ -132,6 +132,7 @@ TeamUp{% endblock %} {% block head %}
 
           <form class="mt-4" method="post" action="" id="loginForm" novalidate>
             {% csrf_token %}
+
             <div class="form-group">
               <label class="form-label" for="id_email">Email address</label>
               <input
@@ -147,6 +148,7 @@ TeamUp{% endblock %} {% block head %}
                 Please enter a valid email address.
               </div>
             </div>
+
             <div class="form-group">
               <label class="form-label" for="id_password">Password</label>
               <a href="#" class="float-end">Forgot password?</a>
@@ -160,6 +162,7 @@ TeamUp{% endblock %} {% block head %}
               />
               <div class="invalid-feedback">Please enter your password.</div>
             </div>
+
             <div class="d-inline-block w-100">
               <div class="form-check d-inline-block mt-2 pt-1">
                 <input
@@ -176,11 +179,12 @@ TeamUp{% endblock %} {% block head %}
                 Sign in
               </button>
             </div>
+
             <div class="sign-info mt-3">
-              <span class="dark-color d-inline-block line-height-2"
-                >Don't have an account?
-                <a href="{% url 'users:signup' %}">Sign up</a></span
-              >
+              <span class="dark-color d-inline-block line-height-2">
+                Don't have an account?
+                <a href="{% url 'users:signup' %}">Sign up</a>
+              </span>
               <ul class="iq-social-media">
                 <li>
                   <a href="#"><i class="ri-facebook-box-line"></i></a>
