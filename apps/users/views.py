@@ -685,14 +685,19 @@ def profile_view(request, username):
     except UserProfile.DoesNotExist:
         user_profile = None
     
-    # Parse sports if available
-    sports_list = []
-    if user_profile and user_profile.sports:
-        try:
-            import json
-            sports_list = json.loads(user_profile.sports)
-        except:
-            sports_list = []
+    # Get interested sports from ManyToMany relationship
+    interested_sports = []
+    if user_profile:
+        interested_sports = user_profile.interested_sports.filter(is_active=True)
+    
+    # Get availability patterns with descriptions
+    availability_patterns = []
+    if user_profile and user_profile.availability:
+        pattern_dict = {code: (name, desc) for code, name, desc in UserProfile.AVAILABILITY_PATTERNS}
+        for code in user_profile.availability:
+            if code in pattern_dict:
+                name, desc = pattern_dict[code]
+                availability_patterns.append({'code': code, 'name': name, 'description': desc})
     
     # Get session statistics
     sessions_created = Session.objects.filter(creator=profile_user).count()
@@ -702,7 +707,8 @@ def profile_view(request, username):
         'profile_user': profile_user,
         'user_profile': user_profile,
         'is_own_profile': is_own_profile,
-        'sports_list': sports_list,
+        'interested_sports': interested_sports,
+        'availability_patterns': availability_patterns,
         'sessions_created': sessions_created,
         'sessions_joined': sessions_joined,
     }
