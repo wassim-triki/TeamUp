@@ -1,5 +1,5 @@
 <!-- templates/sessions/invite.html -->
-{% extends 'sessions/base.html' %}
+{% extends '../base.html' %}
 {% load static %}
 
 {% block title %}Invite Users - TeamUp{% endblock %}
@@ -8,183 +8,192 @@
 <div class="header-for-bg">
   <div class="background-header position-relative">
     <img src="{% static 'assets/images/page-img/profile-bg7.jpg' %}" class="img-fluid w-100" alt="Invite Users Header">
-    <div class="title-on-header">
-      <div class="data-block">
-        <h2>Invite to {{ session.get_sport_type_display }}</h2>
-      </div>
+    <div class="title-on-header text-center">
+      <h2 class="fw-bold text-white mb-1">Invite Teammates</h2>
+      <p class="lead text-white-50 mb-0">
+        Build your squad for the <strong>{{ session.get_sport_type_display }}</strong> session on
+        <strong>{{ session.start_datetime|date:"M d, Y @ g:i A" }}</strong>
+      </p>
     </div>
   </div>
 </div>
 {% endblock %}
 
 {% block content %}
-<div class="row mt-4">
-  <div class="col-lg-12">
-    <div class="card">
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <div>
-          <h4 class="card-title mb-0">Select Users to Invite</h4>
-          <small class="text-muted">Choose teammates for your {{ session.get_sport_type_display }} session</small>
+<div class="container my-5">
+  <!-- Session Info -->
+  <div class="card border-0 shadow-sm mb-5 overflow-hidden rounded-4">
+    <div class="position-relative">
+      <img src="{% static 'assets/images/page-img/profile-bg7.jpg' %}" class="img-fluid w-100" alt="{{ session.get_sport_type_display }}" style="height: 220px; object-fit: cover;">
+      <div class="position-absolute top-50 start-50 translate-middle text-center text-white">
+        <div class="rounded-circle bg-white bg-opacity-25 d-inline-flex align-items-center justify-content-center mb-3" style="width:70px;height:70px;">
+          <i class="{% if session.sport_type == 'soccer' %}ri-football-fill{% elif session.sport_type == 'basketball' %}ri-basketball-fill{% elif session.sport_type == 'tennis' %}ri-ping-pong-fill{% elif session.sport_type == 'running' %}ri-run-fill{% else %}ri-trophy-fill{% endif %}" style="font-size:2rem;"></i>
         </div>
-        <a href="{% url 'sessions:detail' session.pk %}" class="btn btn-sm btn-soft-secondary">
-          <i class="ri-arrow-left-line"></i> Back to Session
-        </a>
+        <h3 class="fw-bold mb-1">{{ session.get_sport_type_display }}</h3>
+        <p class="text-white-50 mb-0">{{ session.location }}</p>
       </div>
-      <div class="card-body">
-        <form method="post" id="invite-form">
-          {% csrf_token %}
-          
-          <!-- Search Box -->
-          <div class="input-group mb-4">
-            <span class="input-group-text"><i class="ri-search-line"></i></span>
-            <input type="text" class="form-control" placeholder="Search users by name or email..." id="user-search" autocomplete="off">
+    </div>
+    <div class="card-body text-center py-4">
+      <div class="row g-4">
+        <div class="col-md-4">
+          <div>
+            <i class="ri-calendar-line text-primary fs-3 mb-2"></i>
+            <h6 class="fw-semibold mb-0">{{ session.start_datetime|date:"M d, Y" }}</h6>
+            <small class="text-muted">Date</small>
           </div>
-
-          <!-- Form Errors -->
-          {% if form.users.errors %}
-            <div class="alert alert-danger alert-dismissible fade show mb-3" role="alert">
-              <i class="ri-error-warning-line me-2"></i>
-              {{ form.users.errors.0 }}
-              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-          {% endif %}
-          
-          {% if form.non_field_errors %}
-            <div class="alert alert-danger alert-dismissible fade show mb-3" role="alert">
-              <i class="ri-error-warning-line me-2"></i>
-              {{ form.non_field_errors.0 }}
-              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-          {% endif %}
-
-          <!-- User List -->
-          <div class="row" id="user-list">
-            {% if available_users %}
-              {% for user in available_users %}
-                <div class="col-md-6 col-lg-4 mb-3 user-item" data-name="{{ user.username|lower }}" data-email="{{ user.email|lower }}">
-                  <div class="form-check p-3 border rounded hover-card">
-                    <input class="form-check-input" type="checkbox" value="{{ user.pk }}" id="id_users_{{ user.pk }}" name="users">
-                    <label class="form-check-label d-flex align-items-center w-100" for="id_users_{{ user.pk }}">
-                      <img src="{% static 'assets/images/user/1.jpg' %}" class="rounded-circle me-3" width="48" height="48" alt="{{ user.username }}">
-                      <div class="flex-grow-1">
-                        <strong class="d-block">{{ user.username }}</strong>
-                        <small class="text-muted">{{ user.email }}</small>
-                      </div>
-                    </label>
-                  </div>
-                </div>
-              {% endfor %}
-            {% else %}
-              <div class="col-12">
-                <div class="alert alert-info text-center">
-                  <i class="ri-information-line me-2"></i>
-                  No users available to invite. All users have already been invited!
-                </div>
-              </div>
-            {% endif %}
+        </div>
+        <div class="col-md-4">
+          <div>
+            <i class="ri-clock-line text-primary fs-3 mb-2"></i>
+            <h6 class="fw-semibold mb-0">{{ session.start_datetime|time:"g:i A" }}</h6>
+            <small class="text-muted">Time</small>
           </div>
-
-          <!-- No Results Message (Hidden by default) -->
-          <div id="no-results" class="alert alert-warning text-center" style="display: none;">
-            <i class="ri-search-line me-2"></i>
-            No users found matching your search.
+        </div>
+        <div class="col-md-4">
+          <div>
+            <i class="ri-group-line text-primary fs-3 mb-2"></i>
+            <h6 class="fw-semibold mb-0">{{ session.invitation_set.count }}</h6>
+            <small class="text-muted">Invited</small>
           </div>
+        </div>
+      </div>
+      {% if session.description %}
+      <div class="mt-4 px-md-5">
+        <p class="text-muted mb-0"><i class="ri-file-text-line me-2 text-primary"></i>{{ session.description|linebreaks|truncatewords:25 }}</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
 
-          <!-- Action Buttons -->
+  <!-- Invite Form -->
+  <div class="card border-0 shadow-sm rounded-4">
+    <div class="card-header bg-gradient-primary text-white d-flex justify-content-between align-items-center rounded-top-4">
+      <div>
+        <h5 class="mb-1"><i class="ri-user-add-line me-2"></i>Invite Teammates</h5>
+        <small class="text-white-50">Choose from available members</small>
+      </div>
+      <a href="{% url 'sessions:detail' session.pk %}" class="btn btn-light btn-sm rounded-pill">
+        <i class="ri-arrow-left-line me-1"></i>Back
+      </a>
+    </div>
+    <div class="card-body p-4">
+      <form method="post" id="invite-form">
+        {% csrf_token %}
+        
+        <!-- Search -->
+        <div class="input-group mb-4 shadow-sm rounded-pill overflow-hidden">
+          <span class="input-group-text bg-white border-0 ps-3"><i class="ri-search-line text-primary"></i></span>
+          <input type="text" class="form-control border-0 ps-2" placeholder="Search users by name or email..." id="user-search">
+        </div>
+
+        <!-- Errors -->
+        {% if form.users.errors %}
+          <div class="alert alert-danger rounded-3 mb-3">{{ form.users.errors|join:", " }}</div>
+        {% endif %}
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger rounded-3 mb-3">{{ form.non_field_errors|join:", " }}</div>
+        {% endif %}
+
+        <!-- Users -->
+        <div class="row g-3" id="user-list">
           {% if available_users %}
-            <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
-              <div>
-                <span class="text-muted">
-                  <span id="selected-count">0</span> user(s) selected
-                </span>
-              </div>
-              <div class="d-flex gap-2">
-                <a href="{% url 'sessions:detail' session.pk %}" class="btn btn-secondary">
-                  <i class="ri-close-line me-1"></i>Cancel
-                </a>
-                <button type="submit" class="btn btn-primary" id="submit-btn" disabled>
-                  <i class="ri-send-plane-line me-1"></i>Send Invites
-                </button>
+            {% for user in available_users %}
+            <div class="col-md-6 col-lg-4 user-item" data-name="{{ user.username|lower }}" data-email="{{ user.email|lower }}">
+              <div class="user-card p-4 rounded-4 border bg-white h-100 shadow-sm position-relative cursor-pointer" data-user-id="{{ user.pk }}">
+                <div class="form-check position-absolute top-0 end-0 m-2">
+                  <input class="form-check-input" type="checkbox" value="{{ user.pk }}" id="id_users_{{ user.pk }}" name="users">
+                </div>
+                <img src="{% static 'assets/images/user/' %}{{ forloop.counter }}.jpg" class="rounded-circle mb-3" width="72" height="72" alt="{{ user.username }}" style="object-fit: cover;">
+                <h6 class="fw-semibold mb-1">{{ user.username }}</h6>
+                <small class="text-muted d-block mb-2">{{ user.email|truncatechars:28 }}</small>
               </div>
             </div>
+            {% endfor %}
+          {% else %}
+            <div class="text-center py-5">
+              <i class="ri-user-line text-muted fs-1 mb-3"></i>
+              <h5 class="text-muted">No Available Users</h5>
+              <p class="text-muted">All teammates are already invited or unavailable.</p>
+              <a href="{% url 'sessions:detail' session.pk %}" class="btn btn-primary rounded-pill"><i class="ri-arrow-left-line me-2"></i>Back</a>
+            </div>
           {% endif %}
-        </form>
-      </div>
+        </div>
+
+        <!-- No Results -->
+        <div id="no-results" class="text-center d-none mt-4">
+          <i class="ri-search-line fs-2 text-warning mb-2 d-block"></i>
+          <p class="text-muted mb-0">No users found — try a different search term.</p>
+        </div>
+
+        {% if available_users %}
+        <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+          <span class="text-muted"><i class="ri-checkbox-circle-line me-2"></i><span id="selected-count">0</span> user(s) selected</span>
+          <div class="d-flex gap-2">
+            <a href="{% url 'sessions:detail' session.pk %}" class="btn btn-outline-secondary rounded-pill px-4">Cancel</a>
+            <button type="submit" class="btn btn-primary rounded-pill px-4" id="submit-btn" disabled><i class="ri-send-plane-line me-2"></i>Send Invites</button>
+          </div>
+        </div>
+        {% endif %}
+      </form>
     </div>
   </div>
 </div>
 
 <style>
-  .hover-card {
-    cursor: pointer;
-    transition: all 0.2s ease;
+  .user-card {
+    transition: all 0.3s ease;
   }
-  
-  .hover-card:hover {
-    background-color: #f8f9fa;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  .user-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.1);
   }
-  
-  .form-check-input:checked ~ .form-check-label .hover-card {
-    background-color: #e7f3ff;
-    border-color: #0d6efd;
+  .search-input:focus {
+    box-shadow: 0 0 0 0.2rem rgba(13,110,253,.25);
+  }
+  [data-theme="dark"] .user-card {
+    background: #1e1e1e;
+    border-color: #333;
   }
 </style>
 
 <script>
-  // Search functionality
-  const searchInput = document.getElementById('user-search');
-  const userItems = document.querySelectorAll('.user-item');
-  const noResults = document.getElementById('no-results');
-  const userList = document.getElementById('user-list');
+  document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.getElementById('user-search');
+    const userItems = document.querySelectorAll('.user-item');
+    const noResults = document.getElementById('no-results');
+    const selectedCount = document.getElementById('selected-count');
+    const submitBtn = document.getElementById('submit-btn');
 
-  searchInput.addEventListener('input', function(e) {
-    const term = e.target.value.toLowerCase().trim();
-    let visibleCount = 0;
-
-    userItems.forEach(item => {
-      const name = item.dataset.name || '';
-      const email = item.dataset.email || '';
-      const matches = name.includes(term) || email.includes(term);
-      
-      item.style.display = matches ? 'block' : 'none';
-      if (matches) visibleCount++;
+    searchInput.addEventListener('input', e => {
+      const term = e.target.value.toLowerCase();
+      let visible = 0;
+      userItems.forEach(item => {
+        const match = item.dataset.name.includes(term) || item.dataset.email.includes(term);
+        item.style.display = match ? '' : 'none';
+        if (match) visible++;
+      });
+      noResults.classList.toggle('d-none', visible > 0);
     });
 
-    // Show/hide no results message
-    if (userItems.length > 0) {
-      noResults.style.display = visibleCount === 0 ? 'block' : 'none';
-      userList.style.display = visibleCount === 0 ? 'none' : 'flex';
+    function updateCount() {
+      const count = document.querySelectorAll('input[name="users"]:checked').length;
+      selectedCount.textContent = count;
+      submitBtn.disabled = count === 0;
+      submitBtn.innerHTML = `<i class="ri-send-plane-line me-2"></i>Send ${count || ''} Invite${count === 1 ? '' : 's'}`;
     }
-  });
 
-  // Count selected users and enable/disable submit button
-  const checkboxes = document.querySelectorAll('input[name="users"]');
-  const selectedCount = document.getElementById('selected-count');
-  const submitBtn = document.getElementById('submit-btn');
-
-  function updateSelectedCount() {
-    const count = document.querySelectorAll('input[name="users"]:checked').length;
-    selectedCount.textContent = count;
-    submitBtn.disabled = count === 0;
-    submitBtn.innerHTML = count > 0 
-      ? `<i class="ri-send-plane-line me-1"></i>Send ${count} Invite${count !== 1 ? 's' : ''}`
-      : `<i class="ri-send-plane-line me-1"></i>Send Invites`;
-  }
-
-  checkboxes.forEach(checkbox => {
-    checkbox.addEventListener('change', updateSelectedCount);
-  });
-
-  // Click on label to toggle checkbox
-  document.querySelectorAll('.hover-card').forEach(card => {
-    card.addEventListener('click', function(e) {
-      if (e.target.type !== 'checkbox') {
-        const checkbox = this.querySelector('input[type="checkbox"]');
-        checkbox.checked = !checkbox.checked;
-        updateSelectedCount();
-      }
+    document.querySelectorAll('.user-card').forEach(card => {
+      card.addEventListener('click', e => {
+        if (!e.target.closest('.form-check-input')) {
+          const checkbox = card.querySelector('input');
+          checkbox.checked = !checkbox.checked;
+          checkbox.dispatchEvent(new Event('change'));
+        }
+      });
     });
+
+    document.querySelectorAll('input[name="users"]').forEach(c => c.addEventListener('change', updateCount));
+    updateCount();
   });
 </script>
 {% endblock %}

@@ -1,0 +1,364 @@
+{% extends '../base.html' %}
+{% load static %}
+
+{% block title %}AI Insight - TeamUp{% endblock %}
+
+{% block header %}
+<div class="header-for-bg">
+  <div class="background-header position-relative">
+    <img src="{% static 'assets/images/page-img/profile-bg7.jpg' %}" class="img-fluid w-100" alt="Sports training background">
+    <div class="title-on-header">
+      <div class="data-block text-center text-white py-4">
+        <h2 class="fw-bold display-5">AI Insight for {{ session.get_sport_type_display }}</h2>
+        <p class="lead text-light mb-0">{{ session.location }} — {{ session.start_datetime|date:"M d, Y H:i" }} ({{ session.duration_minutes }} min)</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-10 col-xl-9">
+      <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+        <div class="card-header bg-primary text-white text-center py-3">
+          <i class="las la-brain fs-1 mb-2 d-block"></i>
+          <h4 class="fw-bold mb-0">AI-Generated Session Plan</h4>
+          <small class="text-white-50">Personalized suggestions powered by Gemini AI</small>
+        </div>
+        <div class="card-body p-4 p-md-5">
+          {% if insights_html %}
+            <div class="insights-program position-relative" id="insights-container">
+              {{ insights_html|safe }}
+            </div>
+
+            <!-- Action Buttons with better spacing -->
+            <div class="d-flex flex-column flex-sm-row justify-content-center gap-3 mt-4 mb-4">
+              <button class="btn btn-outline-primary rounded-pill px-4 py-2" onclick="copyInsights()" aria-label="Copy plan to clipboard">
+                <i class="las la-copy me-2"></i> Copy Plan
+              </button>
+              <button class="btn btn-success rounded-pill px-4 py-2" onclick="printPlan()" aria-label="Print or save as PDF">
+                <i class="las la-print me-2"></i> Print/Save PDF
+              </button>
+              <button class="btn btn-info rounded-pill px-4 py-2" onclick="toggleSections()" aria-label="Toggle sections for easier reading">
+                <i class="las la-compress-arrows-alt me-2"></i> Collapse Sections
+              </button>
+            </div>
+          {% else %}
+            <div class="text-center py-5 bg-light rounded-3">
+              <i class="las la-hourglass-start text-muted mb-3" style="font-size: 4rem;"></i>
+              <h5 class="text-muted mb-3">No AI Insight Generated Yet</h5>
+              <p class="text-muted">Add more details to your session description for better suggestions.</p>
+              {% for message in messages %}
+                <div class="alert alert-warning alert-dismissible fade show mt-3" role="alert">
+                  {{ message }}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+
+          <!-- Navigation Buttons -->
+          <div class="text-center border-top pt-4">
+            <a href="{% url 'sessions:detail' session.pk %}" class="btn btn-secondary rounded-pill px-5 py-2 me-2">
+              <i class="las la-arrow-left me-2"></i> Back to Session
+            </a>
+            <a href="{% url 'sessions:ai_insight' session.pk %}" class="btn btn-primary rounded-pill px-5 py-2">
+              <i class="las la-sync-alt me-2"></i> Regenerate Insight
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Enhanced Styles: Fixed numbering overlap, better hierarchy, modern design -->
+<style>
+  /* Reset and Base */
+  .insights-program {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    counter-reset: section-counter; /* For custom numbering */
+  }
+  
+  /* Headings: Clear hierarchy with no overlap */
+  .insights-program h1 {
+    counter-increment: section-counter;
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
+    padding: 1.5rem 2rem;
+    margin: 2rem 0 1.5rem;
+    border-radius: 1rem;
+    font-size: 1.75rem;
+    font-weight: 700;
+    box-shadow: 0 8px 25px rgba(0, 123, 255, 0.2);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .insights-program h1::before {
+    content: counter(section-counter) ". ";
+    background: rgba(255,255,255,0.2);
+    padding: 0.5rem 1rem;
+    border-radius: 50%;
+    font-weight: bold;
+    min-width: 2.5rem;
+    text-align: center;
+  }
+  .insights-program h1::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: rgba(255,255,255,0.3);
+  }
+  
+  .insights-program h2 {
+    background: linear-gradient(90deg, #f8f9fa 0%, #e9ecef 100%);
+    color: #343a40;
+    padding: 1.25rem 1.5rem;
+    margin: 1.5rem 0 1rem;
+    border-left: 6px solid #007bff;
+    border-radius: 0 1rem 1rem 0;
+    font-size: 1.4rem;
+    font-weight: 600;
+    position: relative;
+  }
+  .insights-program h2::before {
+    content: "Step";
+    font-size: 0.8rem;
+    color: #007bff;
+    position: absolute;
+    left: -0.5rem;
+    top: -0.5rem;
+    background: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 50%;
+    border: 2px solid #007bff;
+  }
+  .insights-program h2 strong {
+    color: #28a745;
+    background: rgba(40, 167, 69, 0.1);
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.5rem;
+    display: inline-block;
+  }
+  
+  .insights-program h3 {
+    color: #495057;
+    padding: 1rem 1.25rem;
+    margin: 1rem 0 0.75rem 0.5rem;
+    font-size: 1.2rem;
+    background: rgba(0, 123, 255, 0.05);
+    border-radius: 0.75rem;
+    border-left: 4px solid #6c757d;
+    position: relative;
+  }
+  .insights-program h3::before {
+    content: "→";
+    position: absolute;
+    left: -1.5rem;
+    top: 1rem;
+    font-size: 1.2rem;
+    color: #6c757d;
+  }
+  
+  /* Lists: Fixed numbering - no overlap, better spacing */
+  .insights-program ul, .insights-program ol {
+    list-style: none;
+    padding-left: 0;
+    margin-bottom: 1.5rem;
+  }
+  .insights-program ol {
+    counter-reset: item;
+  }
+  .insights-program ol li {
+    counter-increment: item;
+  }
+  .insights-program ol li::before {
+    content: counter(item) ".";
+    background: #007bff;
+    color: white;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-right: 1rem;
+    flex-shrink: 0;
+    position: absolute;
+    left: 0;
+    top: 1rem;
+  }
+  .insights-program ol li {
+    display: block;
+    position: relative;
+    padding-left: 3rem;
+    margin-bottom: 1rem;
+  }
+  .insights-program ul li {
+    position: relative;
+    padding-left: 2rem;
+    margin-bottom: 1rem;
+  }
+  .insights-program ul li::before {
+    content: "•";
+    color: #007bff;
+    font-size: 1.5rem;
+    position: absolute;
+    left: 0;
+    top: 0.5rem;
+    font-weight: bold;
+  }
+  .insights-program li {
+    background: white;
+    padding: 1.25rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+    border-left: 4px solid #e9ecef;
+  }
+  .insights-program li:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    border-left-color: #007bff;
+  }
+  .insights-program li strong {
+    color: #dc3545;
+    background: rgba(220, 53, 69, 0.1);
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-weight: 700;
+  }
+  
+  /* Paragraphs: Better readability */
+  .insights-program p {
+    margin-bottom: 1.25rem;
+    padding: 1rem;
+    background: rgba(248, 249, 250, 0.6);
+    border-radius: 0.5rem;
+    border-left: 3px solid #dee2e6;
+  }
+  
+  /* HR: Stylish divider */
+  .insights-program hr {
+    border: none;
+    height: 3px;
+    background: linear-gradient(to right, #007bff, #28a745, #ffc107);
+    margin: 3rem 0;
+    border-radius: 2px;
+  }
+  
+  /* Sentiment: Dynamic colors */
+  .insights-program h1:has(+ * [class*="positive"]) {
+    background: linear-gradient(135deg, #28a745, #20c997) !important;
+  }
+  .insights-program h1:has(+ * [class*="neutral"]) {
+    background: linear-gradient(135deg, #6c757d, #495057) !important;
+  }
+  .insights-program h1:has(+ * [class*="negative"]) {
+    background: linear-gradient(135deg, #dc3545, #c82333) !important;
+  }
+  
+  /* Collapsible Sections (JS controlled) */
+  .insights-program h2.collapsed + * {
+    display: none;
+  }
+  .insights-program h2.collapsed::after {
+    content: " +";
+    font-size: 1.2rem;
+    margin-left: 0.5rem;
+  }
+  .insights-program h2:not(.collapsed)::after {
+    content: " −";
+    font-size: 1.2rem;
+    margin-left: 0.5rem;
+  }
+  
+  /* Mobile: Ensure no overlaps */
+  @media (max-width: 768px) {
+    .insights-program h1, .insights-program h2, .insights-program h3 {
+      font-size: 1.25rem;
+      padding: 1rem;
+    }
+    .insights-program ol li {
+      padding-left: 3.5rem;
+    }
+    .insights-program ol li::before {
+      left: 0.5rem;
+      top: 1.25rem;
+    }
+    .insights-program li:hover {
+      transform: none;
+    }
+    .d-flex {
+      flex-direction: column;
+    }
+  }
+  
+  /* Print: Optimized for PDF */
+  @media print {
+    .card-header, .btn, .alert {
+      display: none !important;
+    }
+    .insights-program h1, .insights-program h2 {
+      background: none !important;
+      color: black !important;
+      border: 2px solid black !important;
+      page-break-inside: avoid;
+    }
+    .insights-program li {
+      background: #f9f9f9 !important;
+      box-shadow: none !important;
+      border: 1px solid #ddd !important;
+    }
+    .insights-program {
+      font-size: 12pt;
+    }
+  }
+</style>
+
+<script>
+let collapsed = false;
+function copyInsights() {
+  const program = document.querySelector('.insights-program').innerText;
+  navigator.clipboard.writeText(program).then(() => {
+    const btn = event.target.closest('button');
+    const original = btn.innerHTML;
+    btn.innerHTML = '<i class="las la-check me-2"></i> Copied!';
+    btn.classList.replace('btn-outline-primary', 'btn-success');
+    setTimeout(() => {
+      btn.innerHTML = original;
+      btn.classList.replace('btn-success', 'btn-outline-primary');
+    }, 2000);
+  }).catch(err => alert('Copy failed: ' + err));
+}
+
+function printPlan() {
+  window.print();
+}
+
+function toggleSections() {
+  collapsed = !collapsed;
+  const h2s = document.querySelectorAll('.insights-program h2');
+  h2s.forEach(h2 => {
+    h2.classList.toggle('collapsed', collapsed);
+  });
+  const btn = event.target.closest('button');
+  btn.innerHTML = collapsed ? '<i class="las la-expand-arrows-alt me-2"></i> Expand Sections' : '<i class="las la-compress-arrows-alt me-2"></i> Collapse Sections';
+}
+
+// Auto-collapse on load for better mobile view
+document.addEventListener('DOMContentLoaded', () => {
+  if (window.innerWidth < 768) toggleSections();
+});
+</script>
+{% endblock %}
