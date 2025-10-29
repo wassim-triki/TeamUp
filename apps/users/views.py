@@ -233,7 +233,7 @@ def signup_step3_sports(request):
 
 def signup_step4_availability(request):
     """
-    Step 4: User enters availability and confirms.
+    Step 4: User selects availability patterns and confirms.
     Create user, profile, and send verification email.
     """
     # Check if all previous steps are completed
@@ -244,20 +244,22 @@ def signup_step4_availability(request):
     error_message = None
     
     if request.method == 'POST':
-        availability = request.POST.get('availability', '')
+        # Get selected availability patterns from checkboxes
+        availability_patterns = request.POST.getlist('availability')
         
         # Availability validation
-        if not availability:
-            error_message = 'Please enter your availability.'
+        if not availability_patterns:
+            error_message = 'Please select at least one availability pattern.'
             context = {
                 'email': request.session.get('signup_email'),
-                'availability': availability,
+                'availability_patterns': UserProfile.get_availability_choices(),
+                'selected_availability': [],
                 'error_message': error_message,
             }
             return render(request, 'users/signup_step4_minimal.html', context)
         
         # Store availability
-        request.session['signup_availability'] = availability
+        request.session['signup_availability'] = availability_patterns
         
         # Now create the user account
         try:
@@ -297,7 +299,7 @@ def signup_step4_availability(request):
             profile = UserProfile.objects.create(
                 user=user,
                 sports=json.dumps(sports),
-                availability=availability,
+                availability=availability_patterns,  # Store as list
                 first_name=first_name,
                 last_name=last_name,
                 gender=gender,
@@ -344,7 +346,8 @@ def signup_step4_availability(request):
             error_message = 'An error occurred while creating your account. Please try again.'
             context = {
                 'email': request.session.get('signup_email'),
-                'availability': availability,
+                'availability_patterns': UserProfile.get_availability_choices(),
+                'selected_availability': availability_patterns,
                 'error_message': error_message,
             }
             return render(request, 'users/signup_step4_minimal.html', context)
@@ -356,7 +359,8 @@ def signup_step4_availability(request):
     # Display availability form
     context = {
         'email': request.session.get('signup_email'),
-        'availability': request.session.get('signup_availability', ''),
+        'availability_patterns': UserProfile.get_availability_choices(),
+        'selected_availability': request.session.get('signup_availability', []),
     }
     return render(request, 'users/signup_step4_minimal.html', context)
 

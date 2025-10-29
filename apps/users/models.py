@@ -156,8 +156,24 @@ class UserProfile(models.Model):
     # Keep old sports field for backwards compatibility during migration
     sports = models.TextField(help_text="JSON array of selected sports (deprecated - use interested_sports)", blank=True, default='[]')
     
-    # Availability stored as text summary or JSON
-    availability = models.TextField(help_text="User's availability schedule", blank=True, default='')
+    # Availability stored as JSON array of pattern keys
+    availability = models.JSONField(
+        help_text="User's availability patterns",
+        blank=True,
+        default=list,
+        null=True
+    )
+    
+    # Availability pattern choices
+    AVAILABILITY_PATTERNS = [
+        ('weekday_mornings', 'Weekday Mornings', '6 AM - 12 PM on weekdays'),
+        ('weekday_afternoons', 'Weekday Afternoons', '12 PM - 6 PM on weekdays'),
+        ('weekday_evenings', 'Weekday Evenings', '6 PM - 10 PM on weekdays'),
+        ('weekend_mornings', 'Weekend Mornings', '6 AM - 12 PM on weekends'),
+        ('weekend_afternoons', 'Weekend Afternoons', '12 PM - 6 PM on weekends'),
+        ('weekend_evenings', 'Weekend Evenings', '6 PM - 10 PM on weekends'),
+        ('flexible', 'Flexible Schedule', 'Available most times'),
+    ]
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -177,6 +193,19 @@ class UserProfile(models.Model):
         elif self.first_name:
             return self.first_name
         return self.user.username
+    
+    def get_availability_display(self):
+        """Return human-readable availability patterns"""
+        if not self.availability:
+            return "Not specified"
+        
+        pattern_dict = {code: name for code, name, _ in self.AVAILABILITY_PATTERNS}
+        return ", ".join([pattern_dict.get(code, code) for code in self.availability])
+    
+    @classmethod
+    def get_availability_choices(cls):
+        """Return availability patterns for forms"""
+        return [(code, name, desc) for code, name, desc in cls.AVAILABILITY_PATTERNS]
 
 
 class EmailVerificationToken(models.Model):

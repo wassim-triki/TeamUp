@@ -54,6 +54,127 @@
         font-size: 18px;
         margin-right: 8px;
       }
+      /* Availability grid layout */
+      .availability-patterns {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        margin-top: 15px;
+      }
+      
+      /* Availability card styling - Modern design */
+      .availability-card {
+        position: relative;
+        border: 2px solid #e3e6ea;
+        border-radius: 12px;
+        padding: 16px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        background: #fff;
+        margin-bottom: 0;
+      }
+      
+      .availability-card:hover {
+        border-color: #50b5ff;
+        box-shadow: 0 4px 12px rgba(80, 181, 255, 0.2);
+        transform: translateY(-2px);
+      }
+      
+      /* Hide default checkbox */
+      .availability-card .form-check-input {
+        position: absolute;
+        opacity: 0;
+        cursor: pointer;
+      }
+      
+      /* Custom checkbox design */
+      .availability-card .form-check-label {
+        cursor: pointer;
+        margin-bottom: 0;
+        padding-left: 0;
+        display: block;
+        width: 100%;
+        position: relative;
+      }
+      
+      .availability-card .form-check-label::before {
+        content: '';
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        width: 22px;
+        height: 22px;
+        border: 2px solid #d1d5db;
+        border-radius: 6px;
+        background: #fff;
+        transition: all 0.3s ease;
+      }
+      
+      .availability-card .form-check-label::after {
+        content: '✓';
+        position: absolute;
+        top: 1px;
+        right: 6px;
+        font-size: 16px;
+        font-weight: bold;
+        color: #fff;
+        opacity: 0;
+        transform: scale(0.3);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      
+      /* Checked state */
+      .availability-card input[type="checkbox"]:checked ~ .form-check-label::before {
+        background: linear-gradient(135deg, #50b5ff 0%, #3b9bff 100%);
+        border-color: #50b5ff;
+        box-shadow: 0 2px 8px rgba(80, 181, 255, 0.4);
+      }
+      
+      .availability-card input[type="checkbox"]:checked ~ .form-check-label::after {
+        opacity: 1;
+        transform: scale(1);
+      }
+      
+      .availability-card input[type="checkbox"]:checked ~ .form-check-label {
+        color: #1e40af;
+      }
+      
+      .availability-card input[type="checkbox"]:checked ~ .form-check-label strong {
+        color: #50b5ff;
+      }
+      
+      /* Active/Focus state */
+      .availability-card input[type="checkbox"]:focus ~ .form-check-label::before {
+        box-shadow: 0 0 0 3px rgba(80, 181, 255, 0.2);
+      }
+      
+      /* Card content styling */
+      .availability-card strong {
+        display: block;
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 4px;
+        color: #1f2937;
+        transition: color 0.3s ease;
+      }
+      
+      .availability-card small {
+        display: block;
+        font-size: 12px;
+        color: #6b7280;
+        line-height: 1.4;
+      }
+      
+      .availability-card .ri-time-line {
+        display: none;
+      }
+      
+      /* Responsive - Single column on mobile */
+      @media (max-width: 768px) {
+        .availability-patterns {
+          grid-template-columns: 1fr;
+        }
+      }
     </style>
   </head>
   <body class="">
@@ -136,23 +257,38 @@
                   {% csrf_token %}
 
                   <div class="form-group">
-                    <label class="form-label" for="availability"
-                      >When are you available to play? *</label
+                    <label class="form-label mb-2"
+                      ><strong>When are you available to play?</strong> *</label
                     >
-                    <textarea
-                      class="form-control"
-                      id="availability"
-                      name="availability"
-                      rows="4"
-                      placeholder="E.g., Weekdays after 6 PM, Weekends mornings, Saturday afternoons..."
-                      required
-                    >{{ availability|default:'' }}</textarea>
-                    <div class="invalid-feedback">
-                      Please enter your availability.
+                    <small class="form-text text-muted d-block mb-3"
+                      >Select all that apply. This helps us match you with others.</small
+                    >
+                    
+                    <div class="availability-patterns">
+                      {% for code, name, description in availability_patterns %}
+                      <div class="form-check availability-card">
+                        <input
+                          class="form-check-input"
+                          type="checkbox"
+                          name="availability"
+                          value="{{ code }}"
+                          id="availability_{{ code }}"
+                          {% if code in selected_availability %}checked{% endif %}
+                        />
+                        <label
+                          class="form-check-label"
+                          for="availability_{{ code }}"
+                        >
+                          <strong>{{ name }}</strong>
+                          <small>{{ description }}</small>
+                        </label>
+                      </div>
+                      {% endfor %}
                     </div>
-                    <small class="form-text text-muted"
-                      >This helps others know when you're free to play sports together.</small
-                    >
+                    
+                    <div class="invalid-feedback d-block" id="availability-error" style="display: none !important;">
+                      Please select at least one availability pattern.
+                    </div>
                   </div>
 
                   <div
@@ -197,28 +333,32 @@
       document
         .getElementById('signupStep4Form')
         .addEventListener('submit', function (e) {
-          const availability = document.getElementById('availability');
+          const checkboxes = document.querySelectorAll('input[name="availability"]:checked');
+          const errorDiv = document.getElementById('availability-error');
           let isValid = true;
 
-          // Availability validation
-          if (!availability.value.trim()) {
+          // Availability validation - at least one checkbox must be checked
+          if (checkboxes.length === 0) {
             e.preventDefault();
-            availability.classList.add('is-invalid');
+            errorDiv.style.display = 'block';
             isValid = false;
           } else {
-            availability.classList.remove('is-invalid');
-            availability.classList.add('is-valid');
+            errorDiv.style.display = 'none';
           }
 
           return isValid;
         });
 
-      // Remove invalid state on input - Availability
-      document
-        .getElementById('availability')
-        .addEventListener('input', function () {
-          this.classList.remove('is-invalid');
+      // Remove error message when a checkbox is clicked
+      document.querySelectorAll('input[name="availability"]').forEach(function(checkbox) {
+        checkbox.addEventListener('change', function () {
+          const checkboxes = document.querySelectorAll('input[name="availability"]:checked');
+          const errorDiv = document.getElementById('availability-error');
+          if (checkboxes.length > 0) {
+            errorDiv.style.display = 'none';
+          }
         });
+      });
     </script>
   </body>
 </html>
