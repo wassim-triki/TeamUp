@@ -287,12 +287,16 @@
                               </form>
                             {% else %}
                               {% if user.is_authenticated %}
-                                <form method="post" action="{% url 'sessions:detail' session.pk %}" class="d-inline" style="margin: 0;">
-                                  {% csrf_token %}
-                                  <button type="submit" class="btn btn-sm btn-soft-primary rounded-pill px-3 py-2" title="Request to Join">
-                                    <i class="ri-user-add-line me-1"></i>Join
-                                  </button>
-                                </form>
+                                {% if session.user_invited %}
+                                  <span class="badge bg-secondary rounded-pill px-3 py-2">Requested</span>
+                                {% else %}
+                                  <form method="post" action="{% url 'sessions:detail' session.pk %}" class="d-inline" style="margin: 0;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-soft-primary rounded-pill px-3 py-2" title="Request to Join">
+                                      <i class="ri-user-add-line me-1"></i>Join
+                                    </button>
+                                  </form>
+                                {% endif %}
                               {% endif %}
                             {% endif %}
                           </div>
@@ -380,12 +384,16 @@
                               </form>
                             {% else %}
                               {% if user.is_authenticated %}
-                                <form method="post" action="{% url 'sessions:detail' session.pk %}" class="d-inline" style="margin: 0;">
-                                  {% csrf_token %}
-                                  <button type="submit" class="btn btn-sm btn-soft-primary rounded-pill px-3 py-2" title="Request to Join">
-                                    <i class="ri-user-add-line me-1"></i>Join
-                                  </button>
-                                </form>
+                                {% if session.user_invited %}
+                                  <span class="badge bg-secondary rounded-pill px-3 py-2">Requested</span>
+                                {% else %}
+                                  <form method="post" action="{% url 'sessions:detail' session.pk %}" class="d-inline" style="margin: 0;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-soft-primary rounded-pill px-3 py-2" title="Request to Join">
+                                      <i class="ri-user-add-line me-1"></i>Join
+                                    </button>
+                                  </form>
+                                {% endif %}
                               {% endif %}
                             {% endif %}
                           </div>

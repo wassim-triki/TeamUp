@@ -14,4 +14,8 @@ urlpatterns = [
     path('<int:pk>/delete/', views.SessionDeleteView.as_view(), name='delete'),
     # Optional separate join path
     path('<int:pk>/request-join/', views.request_join, name='request_join'),
+    # Creator manages pending invitations (accept/refuse)
+    path('invitation/<int:invitation_id>/manage/', views.manage_invitation, name='manage_invitation'),
+    # Page for session creators to manage join requests for a given session
+    path('<int:pk>/manage-requests/', views.manage_requests, name='manage_requests'),
 ]

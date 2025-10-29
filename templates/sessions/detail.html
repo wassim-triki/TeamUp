@@ -143,9 +143,12 @@
                   </div>
                 {% elif session.creator != user %}
                   <div class="col-12">
-                    <button class="btn btn-outline-primary w-100 rounded-pill" disabled>
-                      <i class="ri-user-add-line me-2"></i>Request to Join (Coming Soon)
-                    </button>
+                    <form method="post" action="{% url 'sessions:detail' session.pk %}">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-outline-primary w-100 rounded-pill">
+                        <i class="ri-user-add-line me-2"></i>Request to Join
+                      </button>
+                    </form>
                   </div>
                 {% endif %}
               {% else %}
@@ -206,6 +209,20 @@
                     <small class="d-block text-muted mt-1">{{ invitation.response_notes|truncatechars:30 }}</small>
                   {% endif %}
                 </div>
+                {% if user == session.creator and invitation.status == 'pending' %}
+                <div class="ms-2 d-flex gap-2">
+                  <form method="post" action="{% url 'sessions:manage_invitation' invitation.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="accept">
+                    <button type="submit" class="btn btn-sm btn-success rounded-pill">Accept</button>
+                  </form>
+                  <form method="post" action="{% url 'sessions:manage_invitation' invitation.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="refuse">
+                    <button type="submit" class="btn btn-sm btn-danger rounded-pill">Decline</button>
+                  </form>
+                </div>
+                {% endif %}
               </div>
               {% endfor %}
             </div>

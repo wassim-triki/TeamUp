@@ -17,13 +17,22 @@ def session_list(request):
     if request.user.is_authenticated:
         # Show ALL sessions for discovery
         queryset = Session.objects.all().select_related('creator').prefetch_related('invitation_set__invitee').order_by('-start_datetime')
-        
+
         # Optional: Filter to personal if ?view=my
         if request.GET.get('view') == 'my':
             queryset = Session.objects.filter(
-                Q(creator=request.user) | 
+                Q(creator=request.user) |
                 Q(invitees=request.user)
             ).select_related('creator').prefetch_related('invitation_set__invitee').distinct().order_by('-start_datetime')
+
+        # Annotate sessions with flags for template convenience
+        invited_session_ids = set(Invitation.objects.filter(invitee=request.user).values_list('session_id', flat=True))
+        # Ensure queryset is evaluated so we can attach attributes
+        sessions = list(queryset)
+        for s in sessions:
+            s.user_invited = s.id in invited_session_ids
+            s.is_creator = (s.creator_id == request.user.id)
+        queryset = sessions
     else:
         # Limited public for anonymous
         queryset = Session.objects.filter(status__in=['proposed', 'confirmed']).order_by('-start_datetime')[:10]
@@ -220,6 +229,64 @@ def ai_suggest_slots(request, pk):
     return render(request, 'sessions/ai_suggest.html', {
         'session': session,
         'suggestions': suggestions
+    })
+
+
+# Creator management for invitations (accept/refuse)
+@login_required
+def manage_invitation(request, invitation_id):
+    """Allow the session creator to accept or refuse a pending invitation (join request)."""
+    invitation = get_object_or_404(Invitation, id=invitation_id)
+    session = invitation.session
+
+    # Only the session creator can manage invitations
+    if request.user != session.creator:
+        messages.warning(request, 'Only the session creator can manage invitations.')
+        return redirect('sessions:detail', pk=session.pk)
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        if action == 'accept':
+            invitation.status = 'accepted'
+            invitation.response_notes = request.POST.get('notes', '')
+            invitation.save()
+            messages.success(request, f"{invitation.invitee.username} has been accepted to the session.")
+        elif action == 'refuse' or action == 'decline':
+            invitation.status = 'refused'
+            invitation.response_notes = request.POST.get('notes', '')
+            invitation.save()
+            messages.success(request, f"{invitation.invitee.username} has been declined.")
+        else:
+            messages.info(request, 'No action taken.')
+
+    return redirect('sessions:detail', pk=session.pk)
+
+
+@login_required
+def manage_requests(request, pk):
+    """Page for the session creator to view and manage pending join requests."""
+    session = get_object_or_404(Session, pk=pk)
+    if request.user != session.creator:
+        messages.warning(request, 'Only the session creator can manage requests.')
+        return redirect('sessions:detail', pk=pk)
+
+    pending = session.invitation_set.filter(status='pending').select_related('invitee')
+
+    if request.method == 'POST':
+        # Bulk actions: accept_all / decline_all
+        action = request.POST.get('action')
+        if action == 'accept_all':
+            updated = pending.update(status='accepted')
+            messages.success(request, f'Accepted {updated} request(s).')
+            return redirect('sessions:manage_requests', pk=pk)
+        elif action == 'decline_all':
+            updated = pending.update(status='refused')
+            messages.success(request, f'Declined {updated} request(s).')
+            return redirect('sessions:manage_requests', pk=pk)
+
+    return render(request, 'sessions/manage_requests.html', {
+        'session': session,
+        'pending': pending,
     })
 
 
