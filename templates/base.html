@@ -41,16 +41,13 @@
         border-radius: 50%;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
-        display: flex;
+        display: inline-flex;
         align-items: center;
         justify-content: center;
         font-weight: 600;
-        font-size: 16px;
+        font-size: 14px;
         text-transform: uppercase;
-      }
-
-      .navbar-nav .dropdown-menu {
-        min-width: 300px;
+        margin-right: 0.5rem;
       }
     </style>
   </head>
@@ -66,222 +63,274 @@
       <div class="iq-top-navbar">
         <div class="iq-navbar-custom">
           <nav class="navbar navbar-expand-lg navbar-light p-0">
-            <div class="container-fluid px-4">
-              <!-- Logo -->
-              <a class="navbar-brand d-flex align-items-center" href="/">
+            <div class="iq-navbar-logo d-flex justify-content-between">
+              <a href="/">
                 <img
                   src="{% static 'assets/images/logo.png' %}"
-                  class="img-fluid me-2"
+                  class="img-fluid"
                   alt="TeamUp"
-                  style="height: 40px"
                   onerror="this.style.display='none'"
                 />
-                <span class="fw-bold fs-4">TeamUp</span>
+                <span>TeamUp</span>
               </a>
-
-              <!-- Mobile Toggle -->
-              <button
-                class="navbar-toggler"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#navbarSupportedContent"
-              >
-                <i class="ri-menu-3-line"></i>
-              </button>
-
-              <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                <!-- Left Navigation -->
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                  <li class="nav-item">
-                    <a class="nav-link" href="/"
-                      ><i class="ri-home-line"></i> Home</a
-                    >
-                  </li>
-                  {% if user.is_authenticated %}
-                  <li class="nav-item">
-                    <a class="nav-link" href="{% url 'sessions:list' %}"
-                      ><i class="ri-calendar-line"></i> Sessions</a
-                    >
-                  </li>
-                  <li class="nav-item">
-                    <a class="nav-link" href="{% url 'sessions:create' %}"
-                      ><i class="ri-add-circle-line"></i> Create Session</a
-                    >
-                  </li>
-                  {% endif %}
-                </ul>
-
-                <!-- Right Navigation -->
-                <ul class="navbar-nav ms-auto navbar-list align-items-center">
-                  {% if user.is_authenticated %}
-                  <!-- Notifications Dropdown (Placeholder) -->
-                  <li class="nav-item dropdown me-3">
-                    <a
-                      href="#"
-                      class="nav-link dropdown-toggle"
-                      id="notification-drop"
-                      data-bs-toggle="dropdown"
-                      aria-expanded="false"
-                    >
-                      <i class="ri-notification-4-line fs-5"></i>
-                      <span
-                        class="badge bg-danger rounded-pill position-absolute"
-                        style="font-size: 0.6rem; top: 5px; margin-left: -10px"
-                        >0</span
-                      >
-                    </a>
-                    <div
-                      class="dropdown-menu dropdown-menu-end shadow"
-                      aria-labelledby="notification-drop"
-                    >
-                      <div class="card border-0">
-                        <div class="card-header bg-primary text-white">
-                          <h6 class="mb-0">Notifications</h6>
-                        </div>
-                        <div class="card-body">
-                          <p class="mb-0 text-muted">No new notifications</p>
-                        </div>
-                      </div>
-                    </div>
-                  </li>
-
-                  <!-- User Profile Dropdown -->
-                  <li class="nav-item dropdown">
-                    <a
-                      href="#"
-                      class="nav-link d-flex align-items-center dropdown-toggle"
-                      id="user-drop"
-                      data-bs-toggle="dropdown"
-                      aria-expanded="false"
-                    >
-                      {% if user|user_avatar_url %}
-                      <img
-                        src="{{ user|user_avatar_url }}"
-                        class="img-fluid rounded-circle me-2"
-                        alt="{{ user|user_display_name }}"
-                        style="width: 40px; height: 40px; object-fit: cover"
-                      />
-                      {% else %}
-                      <div class="avatar-initials me-2">
-                        {{ user|user_initials }}
-                      </div>
-                      {% endif %}
-                      <div class="caption d-none d-lg-block">
-                        <h6 class="mb-0">{{ user|user_display_name }}</h6>
-                      </div>
-                    </a>
-                    <div
-                      class="dropdown-menu dropdown-menu-end shadow caption-menu"
-                      aria-labelledby="user-drop"
-                    >
-                      <div class="card border-0">
-                        <div class="card-header bg-primary text-white">
-                          <h6 class="mb-0">
-                            Hello {{ user|user_display_name }}
-                          </h6>
-                          <small>Available</small>
-                        </div>
-                        <div class="card-body p-0">
-                          <!-- Profile Link -->
-                          <a
-                            href="#"
-                            class="dropdown-item d-flex align-items-center py-3 border-bottom"
-                          >
-                            <div
-                              class="rounded card-icon bg-soft-primary p-2 me-3"
-                            >
-                              <i class="ri-file-user-line text-primary"></i>
-                            </div>
-                            <div>
-                              <h6 class="mb-0">My Profile</h6>
-                              <small class="text-muted"
-                                >View personal profile details</small
-                              >
-                            </div>
-                          </a>
-
-                          <!-- Edit Profile -->
-                          <a
-                            href="#"
-                            class="dropdown-item d-flex align-items-center py-3 border-bottom"
-                          >
-                            <div
-                              class="rounded card-icon bg-soft-warning p-2 me-3"
-                            >
-                              <i class="ri-profile-line text-warning"></i>
-                            </div>
-                            <div>
-                              <h6 class="mb-0">Edit Profile</h6>
-                              <small class="text-muted"
-                                >Modify your personal details</small
-                              >
-                            </div>
-                          </a>
-
-                          <!-- Account Settings -->
-                          <a
-                            href="#"
-                            class="dropdown-item d-flex align-items-center py-3 border-bottom"
-                          >
-                            <div
-                              class="rounded card-icon bg-soft-info p-2 me-3"
-                            >
-                              <i class="ri-account-box-line text-info"></i>
-                            </div>
-                            <div>
-                              <h6 class="mb-0">Account Settings</h6>
-                              <small class="text-muted"
-                                >Manage account parameters</small
-                              >
-                            </div>
-                          </a>
-
-                          <!-- Privacy Settings -->
-                          <a
-                            href="#"
-                            class="dropdown-item d-flex align-items-center py-3 border-bottom"
-                          >
-                            <div
-                              class="rounded card-icon bg-soft-danger p-2 me-3"
-                            >
-                              <i class="ri-lock-line text-danger"></i>
-                            </div>
-                            <div>
-                              <h6 class="mb-0">Privacy Settings</h6>
-                              <small class="text-muted"
-                                >Control your privacy parameters</small
-                              >
-                            </div>
-                          </a>
-
-                          <!-- Logout -->
-                          <div class="text-center p-3">
-                            <a
-                              class="btn btn-primary w-100"
-                              href="{% url 'users:logout' %}"
-                            >
-                              Sign Out <i class="ri-login-box-line ms-2"></i>
-                            </a>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </li>
-                  {% else %}
-                  <!-- Guest Navigation -->
-                  <li class="nav-item">
-                    <a class="nav-link" href="{% url 'users:login' %}">Login</a>
-                  </li>
-                  <li class="nav-item">
-                    <a
-                      class="btn btn-primary btn-sm ms-2"
-                      href="{% url 'users:signup' %}"
-                      >Sign Up</a
-                    >
-                  </li>
-                  {% endif %}
-                </ul>
+              <div class="iq-menu-bt align-self-center">
+                <div class="wrapper-menu">
+                  <div class="main-circle"><i class="ri-menu-line"></i></div>
+                </div>
               </div>
+            </div>
+
+            <div class="iq-search-bar device-search">
+              <form action="#" class="searchbox">
+                <a class="search-link" href="#"
+                  ><i class="ri-search-line"></i
+                ></a>
+                <input
+                  type="text"
+                  class="text search-input"
+                  placeholder="Search here..."
+                />
+              </form>
+            </div>
+
+            <button
+              class="navbar-toggler"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#navbarSupportedContent"
+              aria-controls="navbarSupportedContent"
+              aria-label="Toggle navigation"
+            >
+              <i class="ri-menu-3-line"></i>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+              <ul class="navbar-nav ms-auto navbar-list">
+                <li>
+                  <a href="/" class="d-flex align-items-center">
+                    <i class="ri-home-line"></i>
+                  </a>
+                </li>
+
+                {% if user.is_authenticated %}
+                <!-- Sessions Link -->
+                <li class="nav-item dropdown">
+                  <a
+                    href="#"
+                    class="dropdown-toggle"
+                    id="sessions-drop"
+                    data-bs-toggle="dropdown"
+                    aria-haspopup="true"
+                    aria-expanded="false"
+                  >
+                    <i class="ri-calendar-line"></i>
+                  </a>
+                  <div
+                    class="sub-drop dropdown-menu"
+                    aria-labelledby="sessions-drop"
+                  >
+                    <div class="card shadow-none m-0">
+                      <div
+                        class="card-header d-flex justify-content-between bg-primary"
+                      >
+                        <div class="header-title">
+                          <h5 class="mb-0 text-white">Sessions</h5>
+                        </div>
+                      </div>
+                      <div class="card-body p-0">
+                        <a href="{% url 'sessions:list' %}" class="iq-sub-card">
+                          <div class="d-flex align-items-center">
+                            <div class="ms-3">
+                              <h6 class="mb-0">View All Sessions</h6>
+                              <p class="mb-0 font-size-12">
+                                Browse available sessions
+                              </p>
+                            </div>
+                          </div>
+                        </a>
+                        <a
+                          href="{% url 'sessions:create' %}"
+                          class="iq-sub-card"
+                        >
+                          <div class="d-flex align-items-center">
+                            <div class="ms-3">
+                              <h6 class="mb-0">Create Session</h6>
+                              <p class="mb-0 font-size-12">
+                                Start a new session
+                              </p>
+                            </div>
+                          </div>
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+
+                <!-- Notifications Dropdown -->
+                <li class="nav-item dropdown">
+                  <a
+                    href="#"
+                    class="search-toggle dropdown-toggle"
+                    id="notification-drop"
+                    data-bs-toggle="dropdown"
+                  >
+                    <i class="ri-notification-4-line"></i>
+                  </a>
+                  <div
+                    class="sub-drop dropdown-menu"
+                    aria-labelledby="notification-drop"
+                  >
+                    <div class="card shadow-none m-0">
+                      <div
+                        class="card-header d-flex justify-content-between bg-primary"
+                      >
+                        <div class="header-title bg-primary">
+                          <h5 class="mb-0 text-white">All Notifications</h5>
+                        </div>
+                        <small class="badge bg-light text-dark">0</small>
+                      </div>
+                      <div class="card-body p-0">
+                        <a href="#" class="iq-sub-card">
+                          <div class="d-flex align-items-center">
+                            <div class="ms-3 w-100">
+                              <h6 class="mb-0">No new notifications</h6>
+                              <div
+                                class="d-flex justify-content-between align-items-center"
+                              >
+                                <p class="mb-0 text-muted">Check back later</p>
+                              </div>
+                            </div>
+                          </div>
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+
+                <!-- User Profile Dropdown -->
+                <li class="nav-item dropdown">
+                  <a
+                    href="#"
+                    class="d-flex align-items-center dropdown-toggle"
+                    id="drop-down-arrow"
+                    data-bs-toggle="dropdown"
+                    aria-haspopup="true"
+                    aria-expanded="false"
+                  >
+                    {% if user|user_avatar_url %}
+                    <img
+                      src="{{ user|user_avatar_url }}"
+                      class="img-fluid rounded-circle me-3"
+                      alt="user"
+                      style="width: 40px; height: 40px; object-fit: cover"
+                    />
+                    {% else %}
+                    <div class="avatar-initials">{{ user|user_initials }}</div>
+                    {% endif %}
+                    <div class="caption">
+                      <h6 class="mb-0 line-height">
+                        {{ user|user_display_name }}
+                      </h6>
+                    </div>
+                  </a>
+                  <div
+                    class="sub-drop dropdown-menu caption-menu"
+                    aria-labelledby="drop-down-arrow"
+                  >
+                    <div class="card shadow-none m-0">
+                      <div class="card-header bg-primary">
+                        <div class="header-title">
+                          <h5 class="mb-0 text-white">
+                            Hello {{ user|user_display_name }}
+                          </h5>
+                          <span class="text-white font-size-12">Available</span>
+                        </div>
+                      </div>
+                      <div class="card-body p-0">
+                        <a href="#" class="iq-sub-card iq-bg-primary-hover">
+                          <div class="d-flex align-items-center">
+                            <div class="rounded card-icon bg-soft-primary">
+                              <i class="ri-file-user-line"></i>
+                            </div>
+                            <div class="ms-3">
+                              <h6 class="mb-0">My Profile</h6>
+                              <p class="mb-0 font-size-12">
+                                View personal profile details.
+                              </p>
+                            </div>
+                          </div>
+                        </a>
+                        <a href="#" class="iq-sub-card iq-bg-warning-hover">
+                          <div class="d-flex align-items-center">
+                            <div class="rounded card-icon bg-soft-warning">
+                              <i class="ri-profile-line"></i>
+                            </div>
+                            <div class="ms-3">
+                              <h6 class="mb-0">Edit Profile</h6>
+                              <p class="mb-0 font-size-12">
+                                Modify your personal details.
+                              </p>
+                            </div>
+                          </div>
+                        </a>
+                        <a href="#" class="iq-sub-card iq-bg-info-hover">
+                          <div class="d-flex align-items-center">
+                            <div class="rounded card-icon bg-soft-info">
+                              <i class="ri-account-box-line"></i>
+                            </div>
+                            <div class="ms-3">
+                              <h6 class="mb-0">Account settings</h6>
+                              <p class="mb-0 font-size-12">
+                                Manage your account parameters.
+                              </p>
+                            </div>
+                          </div>
+                        </a>
+                        <a href="#" class="iq-sub-card iq-bg-danger-hover">
+                          <div class="d-flex align-items-center">
+                            <div class="rounded card-icon bg-soft-danger">
+                              <i class="ri-lock-line"></i>
+                            </div>
+                            <div class="ms-3">
+                              <h6 class="mb-0">Privacy Settings</h6>
+                              <p class="mb-0 font-size-12">
+                                Control your privacy parameters.
+                              </p>
+                            </div>
+                          </div>
+                        </a>
+                        <div class="d-inline-block w-100 text-center p-3">
+                          <a
+                            class="btn btn-primary iq-sign-btn"
+                            href="{% url 'users:logout' %}"
+                            role="button"
+                          >
+                            Sign out<i class="ri-login-box-line ms-2"></i>
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+
+                {% else %}
+                <!-- Guest Navigation -->
+                <li class="nav-item">
+                  <a
+                    href="{% url 'users:login' %}"
+                    class="btn btn-primary btn-sm"
+                    >Login</a
+                  >
+                </li>
+                <li class="nav-item ms-2">
+                  <a
+                    href="{% url 'users:signup' %}"
+                    class="btn btn-outline-primary btn-sm"
+                    >Sign Up</a
+                  >
+                </li>
+                {% endif %}
+              </ul>
             </div>
           </nav>
         </div>
@@ -323,7 +372,7 @@
 
     <!-- Template JS Libraries -->
     <script src="{% static 'assets/js/libs.min.js' %}"></script>
-    <script src="{% static 'assets/js/socialv.js' %}"></script>
+    <script src="{% static 'assets/js/app.js' %}"></script>
 
     <!-- Extra JavaScript for child templates -->
     {% block extra_js %}{% endblock %}
