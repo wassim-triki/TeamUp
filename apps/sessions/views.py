@@ -9,6 +9,7 @@ from django.db.models import Q
 from django.core.mail import send_mail  # For optional email notification
 from .models import Session, Invitation, SuggestedSlot
 from .forms import SessionForm, InviteForm, ResponseForm
+from .services import generate_ai_insight  # Import the service for AI insights
 
 User = get_user_model()
 
@@ -112,7 +113,6 @@ def request_join(request, pk):
     return redirect('sessions:detail', pk=pk)
 
 
-# ... (rest of your views remain the same: create_session, invite_users, respond_invitation, ai_suggest_slots, SessionUpdateView, SessionDeleteView)
 def create_session(request):
     """Create a new session. Anonymous users are assigned to the first user."""
     if request.method == 'POST':
@@ -217,18 +217,12 @@ def respond_invitation(request, invitation_id):
 
 
 @login_required
-def ai_suggest_slots(request, pk):
-    """Show AI suggested slots for a session (creator only)."""
+def ai_insight(request, pk):
     session = get_object_or_404(Session, pk=pk)
-    
-    if session.creator != request.user:
-        messages.warning(request, 'Only the creator can view AI suggestions.')
-        return redirect('sessions:detail', pk=pk)
-
-    suggestions = session.suggestions.all()
-    return render(request, 'sessions/ai_suggest.html', {
+    insights = generate_ai_insight(session)
+    return render(request, 'sessions/ai_insight.html', {
         'session': session,
-        'suggestions': suggestions
+        'insights': insights
     })
 
 

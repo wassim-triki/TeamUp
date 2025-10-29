@@ -182,7 +182,7 @@
         <div class="col-lg-12 session-item" 
              data-sport="{{ session.sport_type }}" 
              data-status="{{ session.status|default:'proposed' }}"
-             data-role="{% if session.creator == user %}creator{% else %}invited{% endif %}"
+             data-role="{% if session.creator == user %}creator{% elif session.user_invited %}invited{% else %}other{% endif %}"
              data-search="{{ session.get_sport_type_display|lower }} {{ session.location|lower }}">
           <div class="card card-block card-stretch card-height blog-list {% cycle '' 'list-even' %} mb-4">
             <div class="card-body p-0">
@@ -257,7 +257,7 @@
                             <i class="ri-arrow-right-s-line ms-1"></i>
                           </a>
                           {% if session.creator == user %}
-                            <a href="{% url 'sessions:ai_suggest' session.pk %}" class="btn btn-sm btn-soft-info" title="AI Time Suggestions">
+                            <a href="{% url 'sessions:ai_insight' session.pk %}" class="btn btn-sm btn-soft-info" title="AI Time Suggestions">
                               <i class="ri-magic-line me-1"></i>AI Suggest
                             </a>
                           {% endif %}
@@ -354,8 +354,8 @@
                             <i class="ri-arrow-right-s-line ms-1"></i>
                           </a>
                           {% if session.creator == user %}
-                            <a href="{% url 'sessions:ai_suggest' session.pk %}" class="btn btn-sm btn-soft-info" title="AI Time Suggestions">
-                              <i class="ri-magic-line me-1"></i>AI Suggest
+                            <a href="{% url 'sessions:ai_insight' session.pk %}" class="btn btn-sm btn-soft-info" title="AI Time Suggestions">
+                              <i class="ri-magic-line me-1"></i>AI Insight
                             </a>
                           {% endif %}
                         </div>

@@ -1,0 +1,108 @@
+{% extends 'sessions/base.html' %}
+{% load static %}
+
+{% block title %}AI Insight - TeamUp{% endblock %}
+
+{% block header %}
+<div class="header-for-bg">
+  <div class="background-header position-relative">
+    <img src="{% static 'assets/images/page-img/profile-bg7.jpg' %}" class="img-fluid w-100" alt="header-bg">
+    <div class="title-on-header">
+      <div class="data-block text-center text-white">
+        <h2 class="fw-bold">AI Insight for {{ session.get_sport_type_display }}</h2>
+        <p class="text-light mb-0">{{ session.location }} — {{ session.start_datetime|date:"M d, Y H:i" }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+
+      <div class="card shadow-lg border-0 rounded-4">
+        <div class="card-body p-5">
+          <div class="text-center mb-4">
+            <i class="las la-brain text-primary mb-3" style="font-size: 3rem;"></i>
+            <h4 class="fw-bold">AI-Generated Training Program</h4>
+          </div>
+
+          {% if insights %}
+            <div class="insights-container">
+              {% autoescape off %}
+                {{ insights|linebreaksbr }}
+              {% endautoescape %}
+            </div>
+
+            <!-- Optional: If you want to parse sections for highlights (requires JS or server-side) -->
+            <!-- For now, assume bullet points; add custom CSS for styling below -->
+          {% else %}
+          <div class="text-center py-5">
+            <i class="las la-hourglass-start text-muted mb-3" style="font-size: 3rem;"></i>
+            <p class="text-muted">No AI suggestion available yet. Try generating again later.</p>
+          </div>
+          {% endif %}
+
+          <div class="text-center mt-5">
+            <a href="{% url 'sessions:detail' session.pk %}" class="btn btn-secondary rounded-pill px-4 me-2">
+              <i class="las la-arrow-left me-1"></i> Back to Session
+            </a>
+            <a href="{% url 'sessions:ai_insight' session.pk %}" class="btn btn-primary rounded-pill px-4">
+              <i class="las la-sync-alt me-1"></i> Regenerate Insight
+            </a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<style>
+  .insights-container {
+    background: linear-gradient(135deg, #f8f9ff 0%, #e8f4ff 100%);
+    border-radius: 12px;
+    padding: 1.5rem;
+    border-left: 4px solid #007bff;
+    margin-bottom: 1rem;
+  }
+  .insights-container ul, .insights-container ol {
+    list-style-type: none;
+    padding-left: 0;
+  }
+  .insights-container li {
+    margin-bottom: 0.75rem;
+    padding: 0.75rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    position: relative;
+    transition: all 0.2s ease;
+  }
+  .insights-container li:hover {
+    transform: translateX(5px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  }
+  .insights-container li:before {
+    content: "⚡";
+    font-size: 1.2rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+  }
+  /* Highlight sections by keywords (e.g., bold "Action items") */
+  .insights-container strong {
+    color: #28a745;
+    font-weight: bold;
+  }
+  .insights-container em {
+    color: #ffc107;
+    font-style: italic;
+  }
+  /* Custom for sentiment */
+  .insights-container:contains("positive") li:last-child {
+    border-left: 4px solid #28a745;
+  }
+</style>
+{% endblock %}

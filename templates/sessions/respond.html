@@ -1,16 +1,17 @@
 <!-- templates/sessions/respond.html -->
 {% extends 'sessions/base.html' %}
-{% load static %}  {# ✅ Ajout obligatoire pour utiliser {% static %} #}
+{% load static %}
 
 {% block title %}Respond to Invite - TeamUp{% endblock %}
 
 {% block header %}
 <div class="header-for-bg">
   <div class="background-header position-relative">
-    <img src="{% static 'assets/images/page-img/profile-bg7.jpg' %}" class="img-fluid w-100" alt="header-bg">
+    <img src="{% static 'assets/images/page-img/profile-bg7.jpg' %}" class="img-fluid w-100" alt="Respond Header">
     <div class="title-on-header">
       <div class="data-block">
         <h2>Respond to Invite</h2>
+        <p class="lead mt-2 opacity-90">Your call on joining the {{ session.get_sport_type_display }} action</p>
       </div>
     </div>
   </div>
@@ -18,87 +19,256 @@
 {% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-  <div class="col-lg-8">
-    <div class="card">
-      <div class="card-header">
-        <h4 class="card-title mb-0">{{ session.get_sport_type_display }} Session</h4>
-        <p class="mb-0 text-muted">{{ session.start_datetime|date:"M d, Y H:i" }} at {{ session.location }}</p>
-      </div>
-      <div class="card-body">
-        <form method="post">
-          {% csrf_token %}
-          <div class="mb-4">
-            <label class="form-label fw-bold">Your Response</label>
-            <div class="row g-3">
-              <div class="col-md-4">
-                <div class="form-check">
-                  <input class="form-check-input" type="radio" name="action" id="accept" value="accept">
-                  <label class="form-check-label d-block p-3 border rounded text-center" for="accept">
-                    <i class="ri-check-double-line ri-lg mb-1 d-block text-success"></i>
-                    <strong>Accept</strong>
-                  </label>
-                </div>
-              </div>
-              <div class="col-md-4">
-                <div class="form-check">
-                  <input class="form-check-input" type="radio" name="action" id="refuse" value="refuse">
-                  <label class="form-check-label d-block p-3 border rounded text-center" for="refuse">
-                    <i class="ri-close-line ri-lg mb-1 d-block text-danger"></i>
-                    <strong>Refuse</strong>
-                  </label>
-                </div>
-              </div>
-              <div class="col-md-4">
-                <div class="form-check">
-                  <input class="form-check-input" type="radio" name="action" id="reschedule" value="reschedule">
-                  <label class="form-check-label d-block p-3 border rounded text-center" for="reschedule">
-                    <i class="ri-refresh-line ri-lg mb-1 d-block text-warning"></i>
-                    <strong>Reschedule</strong>
-                  </label>
+<div class="container-fluid">
+  <div class="row justify-content-center mt-4">
+    <div class="col-lg-8">
+      <!-- Session Info Card -->
+      <div class="card card-block card-stretch shadow-lg mb-4">
+        <div class="position-relative overflow-hidden rounded-top">
+          <img src="{% static 'assets/images/page-img/profile-bg7.jpg' %}" class="img-fluid w-100" alt="{{ session.get_sport_type_display }}" style="height: 200px; object-fit: cover;">
+          <div class="hero-overlay position-absolute top-0 start-0 end-0 bottom-0" style="background: linear-gradient(135deg, rgba(0,0,0,0.4), rgba(0,0,0,0.7));"></div>
+          <div class="position-absolute top-50 start-50 translate-middle text-center text-white">
+            <div class="sport-icon mb-2" style="width: 60px; height: 60px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+              <i class="{% if session.sport_type == 'soccer' %}ri-football-fill{% elif session.sport_type == 'basketball' %}ri-basketball-fill{% elif session.sport_type == 'tennis' %}ri-ping-pong-fill{% elif session.sport_type == 'running' %}ri-run-fill{% else %}ri-trophy-fill{% endif %}" style="font-size: 1.8rem;"></i>
+            </div>
+            <h3 class="fw-bold mb-1">{{ session.get_sport_type_display }}</h3>
+            <p class="mb-0 opacity-90">{{ session.start_datetime|date:"M d, Y @ g:i A" }}</p>
+          </div>
+        </div>
+        <div class="card-body p-4">
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <div class="d-flex p-3 border rounded-3 bg-light">
+                <div class="me-3"><i class="ri-map-pin-line text-primary fs-4 mt-1"></i></div>
+                <div>
+                  <h6 class="mb-1 fw-semibold">Location</h6>
+                  <p class="mb-0 text-muted">{{ session.location }}</p>
                 </div>
               </div>
             </div>
-            {% if form.action.errors %}
-              <div class="alert alert-danger">{{ form.action.errors }}</div>
-            {% endif %}
+            <div class="col-md-6">
+              <div class="d-flex p-3 border rounded-3 bg-light">
+                <div class="me-3"><i class="ri-group-line text-primary fs-4 mt-1"></i></div>
+                <div>
+                  <h6 class="mb-1 fw-semibold">Players</h6>
+                  <p class="mb-0 text-muted">{{ session.invitation_set.count }} / {{ session.max_players|default:"Unlimited" }}</p>
+                </div>
+              </div>
+            </div>
           </div>
+          {% if session.description %}
+            <div class="mb-4 p-3 bg-light rounded-3">
+              <h6 class="fw-bold mb-2"><i class="ri-file-text-line me-2 text-primary"></i>Session Details</h6>
+              <p class="mb-0 text-muted">{{ session.description|linebreaks|truncatewords:30 }}</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
 
-          <div class="mb-3">
-            <label class="form-label">Notes (optional)</label>
-            <textarea name="notes" class="form-control" rows="3" placeholder="Add any notes..."></textarea>
-            {% if form.notes.errors %}
-              <div class="text-danger">{{ form.notes.errors }}</div>
-            {% endif %}
-          </div>
+      <!-- Response Form Card -->
+      <div class="card card-block card-stretch shadow-lg">
+        <div class="card-header bg-primary text-white rounded-top">
+          <h5 class="mb-0"><i class="ri-mail-send-line me-2"></i>Send Your Response</h5>
+        </div>
+        <div class="card-body p-4">
+          <form method="post">
+            {% csrf_token %}
+            <!-- Response Options -->
+            <div class="mb-4">
+              <label class="form-label fw-bold mb-3 d-block"><i class="ri-checkbox-circle-line me-2 text-primary"></i>Your Response</label>
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <div class="form-check response-option">
+                    <input class="form-check-input" type="radio" name="action" id="accept" value="accept">
+                    <label class="form-check-label d-block p-4 border rounded-3 text-center cursor-pointer" for="accept">
+                      <i class="ri-check-double-line fs-1 mb-2 d-block text-success"></i>
+                      <strong class="d-block mb-1">Accept</strong>
+                      <small class="text-muted">I'm in!</small>
+                    </label>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="form-check response-option">
+                    <input class="form-check-input" type="radio" name="action" id="refuse" value="refuse">
+                    <label class="form-check-label d-block p-4 border rounded-3 text-center cursor-pointer" for="refuse">
+                      <i class="ri-close-circle-line fs-1 mb-2 d-block text-danger"></i>
+                      <strong class="d-block mb-1">Refuse</strong>
+                      <small class="text-muted">Can't make it</small>
+                    </label>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="form-check response-option">
+                    <input class="form-check-input" type="radio" name="action" id="reschedule" value="reschedule">
+                    <label class="form-check-label d-block p-4 border rounded-3 text-center cursor-pointer" for="reschedule">
+                      <i class="ri-refresh-line fs-1 mb-2 d-block text-warning"></i>
+                      <strong class="d-block mb-1">Reschedule</strong>
+                      <small class="text-muted">Suggest new time</small>
+                    </label>
+                  </div>
+                </div>
+              </div>
+              {% if form.action.errors %}
+                <div class="alert alert-danger mt-3">{{ form.action.errors|join:", " }}</div>
+              {% endif %}
+            </div>
 
-          <div id="reschedule-section" class="mb-3" style="display: none;">
-            <label class="form-label">New DateTime</label>
-            <input type="datetime-local" name="new_datetime" class="form-control">
-            {% if form.new_datetime.errors %}
-              <div class="text-danger">{{ form.new_datetime.errors }}</div>
-            {% endif %}
-          </div>
+            <!-- Notes -->
+            <div class="mb-4">
+              <label class="form-label fw-semibold"><i class="ri-edit-line me-2 text-primary"></i>Notes (optional)</label>
+              <textarea name="notes" class="form-control rounded-3" rows="3" placeholder="Let the creator know more details... e.g., 'I'll be 10 mins late' or 'Prefer evening slots'"></textarea>
+              {% if form.notes.errors %}
+                <div class="text-danger mt-1">{{ form.notes.errors|join:", " }}</div>
+              {% endif %}
+            </div>
 
-          <div class="d-flex justify-content-end gap-2">
-            <a href="{% url 'sessions:list' %}" class="btn btn-secondary">Back</a>
-            <button type="submit" class="btn btn-primary">Submit Response</button>
-          </div>
-        </form>
+            <!-- Reschedule Section -->
+            <div id="reschedule-section" class="mb-4" style="display: none;">
+              <label class="form-label fw-semibold"><i class="ri-calendar-event-line me-2 text-warning"></i>Proposed New Date & Time</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="ri-time-line"></i></span>
+                <input type="datetime-local" name="new_datetime" class="form-control rounded-end" min="{{ now|date:'Y-m-d\TH:i' }}">
+              </div>
+              <small class="text-muted">Suggest a time that works better for you</small>
+              {% if form.new_datetime.errors %}
+                <div class="text-danger mt-1">{{ form.new_datetime.errors|join:", " }}</div>
+              {% endif %}
+            </div>
+
+            <!-- Actions -->
+            <div class="d-flex justify-content-between align-items-center">
+              <a href="{% url 'sessions:list' %}" class="btn btn-outline-secondary rounded-pill px-4">
+                <i class="ri-arrow-left-line me-2"></i>Back to Sessions
+              </a>
+              <button type="submit" class="btn btn-primary rounded-pill px-5" disabled>
+                <i class="ri-send-plane-line me-2"></i>Submit Response
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
+<style>
+  /* Response Options */
+  .response-option label {
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+
+  .response-option input:checked + label {
+    border-color: var(--primary) !important;
+    background-color: rgba(var(--primary-rgb), 0.1) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .response-option label:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Form Enhancements */
+  .form-control:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 0.2rem rgba(var(--primary-rgb), 0.25);
+  }
+
+  .input-group .form-control:focus {
+    border-color: var(--primary);
+    box-shadow: none;
+  }
+
+  /* Button States */
+  button[type="submit"] {
+    transition: all 0.3s ease;
+  }
+
+  button[type="submit"]:not(:disabled):hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  /* Hero Overlay */
+  .hero-overlay {
+    z-index: 1;
+  }
+
+  /* Info Cards */
+  .d-flex.p-3.border.rounded-3.bg-light {
+    transition: transform 0.2s ease;
+  }
+
+  .d-flex.p-3.border.rounded-3.bg-light:hover {
+    transform: translateY(-2px);
+  }
+
+  /* Dark Mode */
+  [data-theme="dark"] .bg-light {
+    background-color: var(--surface-elevated) !important;
+  }
+
+  [data-theme="dark"] .text-muted {
+    color: var(--text-secondary) !important;
+  }
+
+  [data-theme="dark"] .response-option input:checked + label {
+    background-color: rgba(var(--primary-rgb), 0.2) !important;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .sport-icon {
+      width: 50px !important;
+      height: 50px !important;
+    }
+
+    .sport-icon i {
+      font-size: 1.5rem !important;
+    }
+
+    .response-option label {
+      padding: 2rem 1rem !important;
+    }
+  }
+</style>
+
 <script>
-  document.querySelectorAll('input[name="action"]').forEach(radio => {
-    radio.addEventListener('change', function() {
-      document.getElementById('reschedule-section').style.display = this.value === 'reschedule' ? 'block' : 'none';
-      document.querySelectorAll('.form-check-label').forEach(label => label.classList.remove('border-primary', 'bg-light'));
-      this.parentElement.querySelector('label').classList.add('border-primary', 'bg-light');
+  document.addEventListener('DOMContentLoaded', function() {
+    const radios = document.querySelectorAll('input[name="action"]');
+    const submitBtn = document.querySelector('button[type="submit"]');
+    const rescheduleSection = document.getElementById('reschedule-section');
+
+    function updateForm() {
+      const selected = document.querySelector('input[name="action"]:checked');
+      if (selected) {
+        // Highlight selected
+        document.querySelectorAll('.response-option label').forEach(label => {
+          label.classList.remove('border-primary', 'bg-light');
+        });
+        selected.closest('.form-check').querySelector('label').classList.add('border-primary', 'bg-light');
+        
+        // Show/hide reschedule
+        rescheduleSection.style.display = selected.value === 'reschedule' ? 'block' : 'none';
+        
+        // Enable submit
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = `<i class="ri-send-plane-line me-2"></i>${selected.value.charAt(0).toUpperCase() + selected.value.slice(1)} & Send`;
+      } else {
+        rescheduleSection.style.display = 'none';
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="ri-send-plane-line me-2"></i>Submit Response';
+      }
+    }
+
+    radios.forEach(radio => {
+      radio.addEventListener('change', updateForm);
     });
+
+    // Initial check
+    updateForm();
   });
-  const checked = document.querySelector('input[name="action"]:checked');
-  if (checked) checked.dispatchEvent(new Event('change'));
 </script>
 {% endblock %}
