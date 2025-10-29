@@ -24,16 +24,15 @@ class UserAdmin(BaseUserAdmin):
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
     """UserProfile admin configuration."""
-    list_display = ('user', 'full_name', 'city', 'created_at')
-    search_fields = ('user__email', 'first_name', 'last_name', 'city')
-    list_filter = ('created_at', 'gender')
+    list_display = ('user', 'full_name', 'gender', 'country', 'city', 'created_at')
+    search_fields = ('user__email', 'first_name', 'last_name', 'city', 'country')
+    list_filter = ('created_at', 'gender', 'country')
     readonly_fields = ('created_at', 'updated_at')
     
     fieldsets = (
         ('User', {'fields': ('user',)}),
-        ('Personal Info', {'fields': ('first_name', 'last_name', 'avatar', 'date_of_birth', 'age', 'gender', 'bio')}),
-        ('Location', {'fields': ('city', 'state', 'address')}),
-        ('Contact', {'fields': ('phone',)}),
+        ('Required Info', {'fields': ('first_name', 'last_name', 'gender', 'country')}),
+        ('Optional Info', {'fields': ('avatar', 'date_of_birth', 'age', 'city', 'phone', 'bio')}),
         ('Sports & Availability', {'fields': ('sports', 'availability')}),
         ('Timestamps', {'fields': ('created_at', 'updated_at')}),
     )

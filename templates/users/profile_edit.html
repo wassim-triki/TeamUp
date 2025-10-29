@@ -12,10 +12,13 @@
     
     .profile-img-edit .profile-pic {
         width: 200px;
-        height: 200px;
+        /* height: 200px; */
         border-radius: 50%;
         object-fit: cover;
+        object-position: center;
+        aspect-ratio: 1/1;
         border: 4px solid #f0f0f0;
+        display: block;
     }
     
     .profile-img-edit .p-image {
@@ -91,6 +94,10 @@
         margin-bottom: 0.5rem;
     }
     
+    .form-label .text-danger {
+        color: #dc3545 !important;
+    }
+    
     .form-control, .form-select {
         border-radius: 8px;
         border: 1px solid #e0e0e0;
@@ -101,26 +108,38 @@
         border-color: #667eea;
         box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
     }
+    
+    .form-control.is-invalid, .form-select.is-invalid {
+        border-color: #dc3545;
+    }
+    
+    .form-control.is-invalid:focus, .form-select.is-invalid:focus {
+        box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+    }
+    
+    .invalid-feedback {
+        display: block;
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+    
+    .form-check-input[type="radio"] {
+        width: 1.25rem;
+        height: 1.25rem;
+        margin-top: 0.125rem;
+    }
+    
+    .form-check-input:checked {
+        background-color: #667eea;
+        border-color: #667eea;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div id="content-page" class="content-page">
     <div class="container">
-        <!-- Messages -->
-        {% if messages %}
-            <div class="row">
-                <div class="col-lg-12">
-                    {% for message in messages %}
-                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    {% endfor %}
-                </div>
-            </div>
-        {% endif %}
-        
         <div class="row">
             <div class="col-lg-12">
                 <div class="card">
@@ -160,12 +179,22 @@
                                     </div>
                                 </div>
                                 <div class="card-body">
-                                    <form method="post" enctype="multipart/form-data" id="profile-form">
+                                    <!-- Messages -->
+                                    {% if messages %}
+                                        {% for message in messages %}
+                                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                                {{ message }}
+                                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                            </div>
+                                        {% endfor %}
+                                    {% endif %}
+                                    
+                                    <form method="post" enctype="multipart/form-data" id="profile-form" novalidate>
                                         {% csrf_token %}
                                         
                                         <!-- Avatar Upload -->
-                                        <div class="form-group row align-items-center">
-                                            <div class="col-md-12">
+                                        <div class="form-group row align-items-center mb-4">
+                                            <div class="col-md-12 text-center">
                                                 <div class="profile-img-edit">
                                                     {% if profile.avatar %}
                                                         <img class="profile-pic" src="{{ profile.avatar.url }}" alt="Profile Picture" id="avatar-preview">
@@ -178,126 +207,178 @@
                                                     </div>
                                                 </div>
                                                 {% if form.avatar.errors %}
-                                                    <div class="text-danger mt-2">
-                                                        {{ form.avatar.errors }}
+                                                    <div class="invalid-feedback d-block">
+                                                        {{ form.avatar.errors.0 }}
                                                     </div>
                                                 {% endif %}
                                             </div>
                                         </div>
                                         
-                                        <div class="row align-items-center">
-                                            <!-- First Name -->
+                                        <div class="row">
+                                            <!-- First Name (Required) -->
                                             <div class="form-group col-sm-6">
-                                                <label for="{{ form.first_name.id_for_label }}" class="form-label">First Name <small class="text-muted">(Optional)</small>:</label>
-                                                {{ form.first_name }}
+                                                <label for="{{ form.first_name.id_for_label }}" class="form-label">
+                                                    First Name <span class="text-danger">*</span>
+                                                </label>
+                                                <input type="text" 
+                                                       name="first_name" 
+                                                       class="form-control {% if form.first_name.errors %}is-invalid{% endif %}" 
+                                                       id="{{ form.first_name.id_for_label }}"
+                                                       value="{{ form.first_name.value|default:'' }}"
+                                                       placeholder="First Name"
+                                                       required>
                                                 {% if form.first_name.errors %}
-                                                    <div class="text-danger">{{ form.first_name.errors }}</div>
+                                                    <div class="invalid-feedback">{{ form.first_name.errors.0 }}</div>
                                                 {% endif %}
                                             </div>
                                             
-                                            <!-- Last Name -->
+                                            <!-- Last Name (Required) -->
                                             <div class="form-group col-sm-6">
-                                                <label for="{{ form.last_name.id_for_label }}" class="form-label">Last Name <small class="text-muted">(Optional)</small>:</label>
-                                                {{ form.last_name }}
+                                                <label for="{{ form.last_name.id_for_label }}" class="form-label">
+                                                    Last Name <span class="text-danger">*</span>
+                                                </label>
+                                                <input type="text" 
+                                                       name="last_name" 
+                                                       class="form-control {% if form.last_name.errors %}is-invalid{% endif %}" 
+                                                       id="{{ form.last_name.id_for_label }}"
+                                                       value="{{ form.last_name.value|default:'' }}"
+                                                       placeholder="Last Name"
+                                                       required>
                                                 {% if form.last_name.errors %}
-                                                    <div class="text-danger">{{ form.last_name.errors }}</div>
+                                                    <div class="invalid-feedback">{{ form.last_name.errors.0 }}</div>
                                                 {% endif %}
                                             </div>
                                             
-                                            <!-- Username -->
+                                            <!-- Gender (Required) -->
                                             <div class="form-group col-sm-6">
-                                                <label for="{{ form.username.id_for_label }}" class="form-label">Username <small class="text-muted">(Optional)</small>:</label>
-                                                {{ form.username }}
-                                                {% if form.username.errors %}
-                                                    <div class="text-danger">{{ form.username.errors }}</div>
-                                                {% endif %}
-                                            </div>
-                                            
-                                            <!-- City -->
-                                            <div class="form-group col-sm-6">
-                                                <label for="{{ form.city.id_for_label }}" class="form-label">City <small class="text-muted">(Optional)</small>:</label>
-                                                {{ form.city }}
-                                                {% if form.city.errors %}
-                                                    <div class="text-danger">{{ form.city.errors }}</div>
-                                                {% endif %}
-                                            </div>
-                                            
-                                            <!-- Gender -->
-                                            <div class="form-group col-sm-6">
-                                                <label class="form-label">Gender <small class="text-muted">(Optional)</small>:</label>
-                                                <div class="d-flex gap-3">
+                                                <label class="form-label">
+                                                    Gender <span class="text-danger">*</span>
+                                                </label>
+                                                <div class="d-flex gap-4">
                                                     <div class="form-check">
-                                                        <input class="form-check-input" type="radio" name="gender" id="gender-male" value="male" 
-                                                            {% if form.gender.value == 'male' %}checked{% endif %}>
+                                                        <input class="form-check-input {% if form.gender.errors %}is-invalid{% endif %}" 
+                                                               type="radio" 
+                                                               name="gender" 
+                                                               id="gender-male" 
+                                                               value="male" 
+                                                               {% if form.gender.value == 'male' %}checked{% endif %}
+                                                               required>
                                                         <label class="form-check-label" for="gender-male">Male</label>
                                                     </div>
                                                     <div class="form-check">
-                                                        <input class="form-check-input" type="radio" name="gender" id="gender-female" value="female"
-                                                            {% if form.gender.value == 'female' %}checked{% endif %}>
+                                                        <input class="form-check-input {% if form.gender.errors %}is-invalid{% endif %}" 
+                                                               type="radio" 
+                                                               name="gender" 
+                                                               id="gender-female" 
+                                                               value="female"
+                                                               {% if form.gender.value == 'female' %}checked{% endif %}
+                                                               required>
                                                         <label class="form-check-label" for="gender-female">Female</label>
-                                                    </div>
-                                                    <div class="form-check">
-                                                        <input class="form-check-input" type="radio" name="gender" id="gender-other" value="other"
-                                                            {% if form.gender.value == 'other' %}checked{% endif %}>
-                                                        <label class="form-check-label" for="gender-other">Other</label>
                                                     </div>
                                                 </div>
                                                 {% if form.gender.errors %}
-                                                    <div class="text-danger">{{ form.gender.errors }}</div>
+                                                    <div class="invalid-feedback d-block">{{ form.gender.errors.0 }}</div>
                                                 {% endif %}
                                             </div>
                                             
-                                            <!-- Date of Birth -->
+                                            <!-- Country (Required) -->
                                             <div class="form-group col-sm-6">
-                                                <label for="{{ form.date_of_birth.id_for_label }}" class="form-label">Date Of Birth <small class="text-muted">(Optional)</small>:</label>
-                                                {{ form.date_of_birth }}
+                                                <label for="{{ form.country.id_for_label }}" class="form-label">
+                                                    Country <span class="text-danger">*</span>
+                                                </label>
+                                                <select name="country" 
+                                                        class="form-select {% if form.country.errors %}is-invalid{% endif %}" 
+                                                        id="{{ form.country.id_for_label }}"
+                                                        required>
+                                                    <option value="">Select Country</option>
+                                                    {% for value, label in form.fields.country.choices %}
+                                                        {% if value %}
+                                                            <option value="{{ value }}" {% if form.country.value == value %}selected{% endif %}>{{ label }}</option>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                </select>
+                                                {% if form.country.errors %}
+                                                    <div class="invalid-feedback">{{ form.country.errors.0 }}</div>
+                                                {% endif %}
+                                            </div>
+                                            
+                                            <!-- City (Optional) -->
+                                            <div class="form-group col-sm-6">
+                                                <label for="{{ form.city.id_for_label }}" class="form-label">
+                                                    City <small class="text-muted">(Optional)</small>
+                                                </label>
+                                                <input type="text" 
+                                                       name="city" 
+                                                       class="form-control {% if form.city.errors %}is-invalid{% endif %}" 
+                                                       id="{{ form.city.id_for_label }}"
+                                                       value="{{ form.city.value|default:'' }}"
+                                                       placeholder="City">
+                                                {% if form.city.errors %}
+                                                    <div class="invalid-feedback">{{ form.city.errors.0 }}</div>
+                                                {% endif %}
+                                            </div>
+                                            
+                                            <!-- Date of Birth (Optional) -->
+                                            <div class="form-group col-sm-6">
+                                                <label for="{{ form.date_of_birth.id_for_label }}" class="form-label">
+                                                    Date Of Birth <small class="text-muted">(Optional)</small>
+                                                </label>
+                                                <input type="date" 
+                                                       name="date_of_birth" 
+                                                       class="form-control {% if form.date_of_birth.errors %}is-invalid{% endif %}" 
+                                                       id="{{ form.date_of_birth.id_for_label }}"
+                                                       value="{{ form.date_of_birth.value|date:'Y-m-d'|default:'' }}">
                                                 {% if form.date_of_birth.errors %}
-                                                    <div class="text-danger">{{ form.date_of_birth.errors }}</div>
+                                                    <div class="invalid-feedback">{{ form.date_of_birth.errors.0 }}</div>
                                                 {% endif %}
                                             </div>
                                             
-                                            <!-- Age -->
+                                            <!-- Age (Optional) -->
                                             <div class="form-group col-sm-6">
-                                                <label for="{{ form.age.id_for_label }}" class="form-label">Age <small class="text-muted">(Optional)</small>:</label>
-                                                {{ form.age }}
+                                                <label for="{{ form.age.id_for_label }}" class="form-label">
+                                                    Age <small class="text-muted">(Optional)</small>
+                                                </label>
+                                                <input type="number" 
+                                                       name="age" 
+                                                       class="form-control {% if form.age.errors %}is-invalid{% endif %}" 
+                                                       id="{{ form.age.id_for_label }}"
+                                                       value="{{ form.age.value|default:'' }}"
+                                                       placeholder="Age"
+                                                       min="1"
+                                                       max="150">
                                                 {% if form.age.errors %}
-                                                    <div class="text-danger">{{ form.age.errors }}</div>
+                                                    <div class="invalid-feedback">{{ form.age.errors.0 }}</div>
                                                 {% endif %}
                                             </div>
                                             
-                                            <!-- State -->
+                                            <!-- Phone (Optional) -->
                                             <div class="form-group col-sm-6">
-                                                <label for="{{ form.state.id_for_label }}" class="form-label">State <small class="text-muted">(Optional)</small>:</label>
-                                                {{ form.state }}
-                                                {% if form.state.errors %}
-                                                    <div class="text-danger">{{ form.state.errors }}</div>
-                                                {% endif %}
-                                            </div>
-                                            
-                                            <!-- Phone -->
-                                            <div class="form-group col-sm-6">
-                                                <label for="{{ form.phone.id_for_label }}" class="form-label">Phone <small class="text-muted">(Optional)</small>:</label>
-                                                {{ form.phone }}
+                                                <label for="{{ form.phone.id_for_label }}" class="form-label">
+                                                    Phone <small class="text-muted">(Optional)</small>
+                                                </label>
+                                                <input type="text" 
+                                                       name="phone" 
+                                                       class="form-control {% if form.phone.errors %}is-invalid{% endif %}" 
+                                                       id="{{ form.phone.id_for_label }}"
+                                                       value="{{ form.phone.value|default:'' }}"
+                                                       placeholder="Phone Number">
                                                 {% if form.phone.errors %}
-                                                    <div class="text-danger">{{ form.phone.errors }}</div>
+                                                    <div class="invalid-feedback">{{ form.phone.errors.0 }}</div>
                                                 {% endif %}
                                             </div>
                                             
-                                            <!-- Address -->
+                                            <!-- Bio (Optional) -->
                                             <div class="form-group col-sm-12">
-                                                <label for="{{ form.address.id_for_label }}" class="form-label">Address <small class="text-muted">(Optional)</small>:</label>
-                                                {{ form.address }}
-                                                {% if form.address.errors %}
-                                                    <div class="text-danger">{{ form.address.errors }}</div>
-                                                {% endif %}
-                                            </div>
-                                            
-                                            <!-- Bio -->
-                                            <div class="form-group col-sm-12">
-                                                <label for="{{ form.bio.id_for_label }}" class="form-label">Bio <small class="text-muted">(Optional)</small>:</label>
-                                                {{ form.bio }}
+                                                <label for="{{ form.bio.id_for_label }}" class="form-label">
+                                                    Bio <small class="text-muted">(Optional)</small>
+                                                </label>
+                                                <textarea name="bio" 
+                                                          class="form-control {% if form.bio.errors %}is-invalid{% endif %}" 
+                                                          id="{{ form.bio.id_for_label }}"
+                                                          rows="3"
+                                                          placeholder="Tell us about yourself...">{{ form.bio.value|default:'' }}</textarea>
                                                 {% if form.bio.errors %}
-                                                    <div class="text-danger">{{ form.bio.errors }}</div>
+                                                    <div class="invalid-feedback">{{ form.bio.errors.0 }}</div>
                                                 {% endif %}
                                             </div>
                                         </div>
@@ -380,6 +461,7 @@
 </div>
 {% endblock %}
 
+
 {% block extra_js %}
 <script>
     // Avatar preview on file select
@@ -397,5 +479,18 @@
     document.querySelector('.p-image').addEventListener('click', function() {
         document.querySelector('.file-upload').click();
     });
+    
+    // Form validation
+    (function () {
+        'use strict'
+        var form = document.getElementById('profile-form')
+        form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+                event.preventDefault()
+                event.stopPropagation()
+            }
+            form.classList.add('was-validated')
+        }, false)
+    })()
 </script>
 {% endblock %}

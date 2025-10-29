@@ -100,27 +100,49 @@ class UserProfile(models.Model):
     GENDER_CHOICES = [
         ('male', 'Male'),
         ('female', 'Female'),
-        ('other', 'Other'),
+    ]
+    
+    # ISO 3166-1 alpha-2 country codes - commonly used countries
+    COUNTRY_CHOICES = [
+        ('', 'Select Country'),
+        ('TN', 'Tunisia'),
+        ('DZ', 'Algeria'),
+        ('MA', 'Morocco'),
+        ('EG', 'Egypt'),
+        ('LY', 'Libya'),
+        ('FR', 'France'),
+        ('DE', 'Germany'),
+        ('GB', 'United Kingdom'),
+        ('US', 'United States'),
+        ('CA', 'Canada'),
+        ('IT', 'Italy'),
+        ('ES', 'Spain'),
+        ('PT', 'Portugal'),
+        ('BE', 'Belgium'),
+        ('NL', 'Netherlands'),
+        ('SA', 'Saudi Arabia'),
+        ('AE', 'United Arab Emirates'),
+        ('QA', 'Qatar'),
+        ('KW', 'Kuwait'),
+        ('TR', 'Turkey'),
+        ('XX', 'Other'),
     ]
     
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     
-    # Personal Information
-    first_name = models.CharField(max_length=50, blank=True)
-    last_name = models.CharField(max_length=50, blank=True)
+    # Personal Information (Required fields)
+    first_name = models.CharField(max_length=50, help_text="Required", default='')
+    last_name = models.CharField(max_length=50, help_text="Required", default='')
+    gender = models.CharField(max_length=10, choices=GENDER_CHOICES, help_text="Required", default='male')
+    country = models.CharField(max_length=10, choices=COUNTRY_CHOICES, help_text="Required", default='TN')
+    
+    # Personal Information (Optional fields)
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True, help_text="User profile picture")
     date_of_birth = models.DateField(blank=True, null=True, help_text="Date of birth")
     age = models.PositiveIntegerField(blank=True, null=True, help_text="Age in years")
-    gender = models.CharField(max_length=10, choices=GENDER_CHOICES, blank=True)
-    
-    # Location
-    city = models.CharField(max_length=100, blank=True, null=True)
-    state = models.CharField(max_length=100, blank=True, null=True)
-    address = models.TextField(blank=True, help_text="Full address")
-    
-    # Contact Information
-    phone = models.CharField(max_length=20, blank=True, help_text="Contact phone number")
-    bio = models.TextField(blank=True, help_text="Short bio or description")
+    city = models.CharField(max_length=100, blank=True, default='', help_text="City name")
+    phone = models.CharField(max_length=20, blank=True, default='', help_text="Contact phone number")
+    bio = models.TextField(blank=True, default='', help_text="Short bio or description")
     
     # Sports can be stored as JSON array or comma-separated values
     # For simplicity, using TextField to store JSON

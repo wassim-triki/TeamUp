@@ -194,7 +194,7 @@
 
                   <div class="form-group">
                     <label class="form-label" for="first_name"
-                      >First Name (Optional)</label
+                      >First Name <span class="text-danger">*</span></label
                     >
                     <input
                       type="text"
@@ -203,12 +203,14 @@
                       name="first_name"
                       placeholder="First name"
                       value="{{ first_name|default:'' }}"
+                      required
                     />
+                    <div class="invalid-feedback">First name is required.</div>
                   </div>
 
                   <div class="form-group">
                     <label class="form-label" for="last_name"
-                      >Last Name (Optional)</label
+                      >Last Name <span class="text-danger">*</span></label
                     >
                     <input
                       type="text"
@@ -217,7 +219,77 @@
                       name="last_name"
                       placeholder="Last name"
                       value="{{ last_name|default:'' }}"
+                      required
                     />
+                    <div class="invalid-feedback">Last name is required.</div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label">Gender <span class="text-danger">*</span></label>
+                    <div class="d-flex gap-4">
+                      <div class="form-check">
+                        <input
+                          class="form-check-input"
+                          type="radio"
+                          name="gender"
+                          id="gender-male"
+                          value="male"
+                          {% if gender == 'male' %}checked{% endif %}
+                          required
+                        />
+                        <label class="form-check-label" for="gender-male">Male</label>
+                      </div>
+                      <div class="form-check">
+                        <input
+                          class="form-check-input"
+                          type="radio"
+                          name="gender"
+                          id="gender-female"
+                          value="female"
+                          {% if gender == 'female' %}checked{% endif %}
+                          required
+                        />
+                        <label class="form-check-label" for="gender-female">Female</label>
+                      </div>
+                    </div>
+                    <div class="invalid-feedback d-block" id="gender-error" style="display:none !important;">Please select your gender.</div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label" for="country">Country <span class="text-danger">*</span></label>
+                    <select
+                      class="form-control mb-0"
+                      id="country"
+                      name="country"
+                      required
+                    >
+                      <option value="">Select Country</option>
+                      <option value="TN" {% if country == 'TN' %}selected{% endif %}>Tunisia</option>
+                      <option value="DZ" {% if country == 'DZ' %}selected{% endif %}>Algeria</option>
+                      <option value="MA" {% if country == 'MA' %}selected{% endif %}>Morocco</option>
+                      <option value="EG" {% if country == 'EG' %}selected{% endif %}>Egypt</option>
+                      <option value="LY" {% if country == 'LY' %}selected{% endif %}>Libya</option>
+                      <option value="SA" {% if country == 'SA' %}selected{% endif %}>Saudi Arabia</option>
+                      <option value="AE" {% if country == 'AE' %}selected{% endif %}>UAE</option>
+                      <option value="QA" {% if country == 'QA' %}selected{% endif %}>Qatar</option>
+                      <option value="KW" {% if country == 'KW' %}selected{% endif %}>Kuwait</option>
+                      <option value="BH" {% if country == 'BH' %}selected{% endif %}>Bahrain</option>
+                      <option value="OM" {% if country == 'OM' %}selected{% endif %}>Oman</option>
+                      <option value="JO" {% if country == 'JO' %}selected{% endif %}>Jordan</option>
+                      <option value="LB" {% if country == 'LB' %}selected{% endif %}>Lebanon</option>
+                      <option value="PS" {% if country == 'PS' %}selected{% endif %}>Palestine</option>
+                      <option value="SY" {% if country == 'SY' %}selected{% endif %}>Syria</option>
+                      <option value="IQ" {% if country == 'IQ' %}selected{% endif %}>Iraq</option>
+                      <option value="YE" {% if country == 'YE' %}selected{% endif %}>Yemen</option>
+                      <option value="FR" {% if country == 'FR' %}selected{% endif %}>France</option>
+                      <option value="GB" {% if country == 'GB' %}selected{% endif %}>United Kingdom</option>
+                      <option value="DE" {% if country == 'DE' %}selected{% endif %}>Germany</option>
+                      <option value="IT" {% if country == 'IT' %}selected{% endif %}>Italy</option>
+                      <option value="ES" {% if country == 'ES' %}selected{% endif %}>Spain</option>
+                      <option value="US" {% if country == 'US' %}selected{% endif %}>United States</option>
+                      <option value="CA" {% if country == 'CA' %}selected{% endif %}>Canada</option>
+                    </select>
+                    <div class="invalid-feedback">Please select your country.</div>
                   </div>
 
                   <div class="form-group">

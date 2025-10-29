@@ -8,31 +8,30 @@ class ProfileEditForm(forms.ModelForm):
     """
     Form for editing user profile information
     """
-    # Add username field from User model
-    username = forms.CharField(
-        max_length=150,
-        required=False,
-        widget=forms.TextInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Username'
-        })
-    )
     
     class Meta:
         model = UserProfile
         fields = [
-            'first_name', 'last_name', 'avatar', 'date_of_birth', 
-            'age', 'gender', 'city', 'state', 
-            'address', 'phone', 'bio'
+            'first_name', 'last_name', 'gender', 'country', 'avatar',
+            'date_of_birth', 'age', 'city', 'phone', 'bio'
         ]
         widgets = {
             'first_name': forms.TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'First Name'
+                'placeholder': 'First Name',
+                'required': True
             }),
             'last_name': forms.TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Last Name'
+                'placeholder': 'Last Name',
+                'required': True
+            }),
+            'gender': forms.RadioSelect(attrs={
+                'required': True
+            }),
+            'country': forms.Select(attrs={
+                'class': 'form-select',
+                'required': True
             }),
             'avatar': forms.FileInput(attrs={
                 'class': 'file-upload',
@@ -49,21 +48,9 @@ class ProfileEditForm(forms.ModelForm):
                 'min': 1,
                 'max': 150
             }),
-            'gender': forms.Select(attrs={
-                'class': 'form-select'
-            }),
             'city': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'City'
-            }),
-            'state': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'State'
-            }),
-            'address': forms.Textarea(attrs={
-                'class': 'form-control',
-                'rows': 5,
-                'placeholder': 'Full Address'
             }),
             'phone': forms.TextInput(attrs={
                 'class': 'form-control',
@@ -76,13 +63,33 @@ class ProfileEditForm(forms.ModelForm):
             }),
         }
     
-    def __init__(self, *args, **kwargs):
-        user = kwargs.pop('user', None)
-        super().__init__(*args, **kwargs)
-        
-        # Populate username field if user is provided
-        if user:
-            self.fields['username'].initial = user.username
+    def clean_first_name(self):
+        """Validate first name is provided"""
+        first_name = self.cleaned_data.get('first_name', '').strip()
+        if not first_name:
+            raise forms.ValidationError('First name is required.')
+        return first_name
+    
+    def clean_last_name(self):
+        """Validate last name is provided"""
+        last_name = self.cleaned_data.get('last_name', '').strip()
+        if not last_name:
+            raise forms.ValidationError('Last name is required.')
+        return last_name
+    
+    def clean_gender(self):
+        """Validate gender is provided"""
+        gender = self.cleaned_data.get('gender')
+        if not gender:
+            raise forms.ValidationError('Gender is required.')
+        return gender
+    
+    def clean_country(self):
+        """Validate country is provided"""
+        country = self.cleaned_data.get('country')
+        if not country or country == '':
+            raise forms.ValidationError('Country is required.')
+        return country
     
     def clean_age(self):
         """Validate age is reasonable"""

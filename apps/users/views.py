@@ -123,6 +123,8 @@ def signup_step2_details(request):
         availability = request.POST.get('availability', '')
         first_name = request.POST.get('first_name', '').strip()
         last_name = request.POST.get('last_name', '').strip()
+        gender = request.POST.get('gender', '').strip()
+        country = request.POST.get('country', '').strip()
         city = request.POST.get('city', '').strip()
         
         # Validation with detailed messages
@@ -138,6 +140,19 @@ def signup_step2_details(request):
             # Check password strength
             if not re.search(r'[A-Za-z]', password) or not re.search(r'\d', password):
                 warning_message = 'For better security, consider using a password with both letters and numbers.'
+        
+        # Required field validation
+        if not first_name:
+            error_messages.append('First name is required.')
+        
+        if not last_name:
+            error_messages.append('Last name is required.')
+        
+        if not gender:
+            error_messages.append('Gender is required.')
+        
+        if not country:
+            error_messages.append('Country is required.')
         
         # Sports validation
         if not sports:
@@ -155,6 +170,8 @@ def signup_step2_details(request):
             request.session['signup_availability'] = availability
             request.session['signup_first_name'] = first_name
             request.session['signup_last_name'] = last_name
+            request.session['signup_gender'] = gender
+            request.session['signup_country'] = country
             request.session['signup_city'] = city
             
             return redirect('users:signup_step3')
@@ -166,6 +183,8 @@ def signup_step2_details(request):
                 'availability': availability,
                 'first_name': first_name,
                 'last_name': last_name,
+                'gender': gender,
+                'country': country,
                 'city': city,
                 'error_messages': error_messages,
                 'warning_message': warning_message,
@@ -202,13 +221,15 @@ def signup_step3_confirm(request):
             availability = request.session['signup_availability']
             first_name = request.session.get('signup_first_name', '')
             last_name = request.session.get('signup_last_name', '')
+            gender = request.session.get('signup_gender', '')
+            country = request.session.get('signup_country', '')
             city = request.session.get('signup_city', '')
             
             # Double-check email doesn't exist (in case user opened multiple tabs)
             if User.objects.filter(email=email).exists():
                 error_message = 'An account with this email already exists.'
                 # Clear session
-                for key in required_keys + ['signup_first_name', 'signup_last_name', 'signup_city']:
+                for key in required_keys + ['signup_first_name', 'signup_last_name', 'signup_gender', 'signup_country', 'signup_city']:
                     request.session.pop(key, None)
                 
                 # Clear messages and store success message for login page
@@ -232,6 +253,8 @@ def signup_step3_confirm(request):
                 availability=availability,
                 first_name=first_name,
                 last_name=last_name,
+                gender=gender,
+                country=country,
                 city=city
             )
             
@@ -408,28 +431,16 @@ def edit_profile(request):
     profile, created = UserProfile.objects.get_or_create(user=request.user)
     
     if request.method == 'POST':
-        form = ProfileEditForm(request.POST, request.FILES, instance=profile, user=request.user)
+        form = ProfileEditForm(request.POST, request.FILES, instance=profile)
         
         if form.is_valid():
             # Save profile
-            profile = form.save()
-            
-            # Update username if changed
-            new_username = form.cleaned_data.get('username')
-            if new_username and new_username != request.user.username:
-                # Check if username is available
-                if User.objects.filter(username=new_username).exclude(pk=request.user.pk).exists():
-                    messages.error(request, 'Username already taken. Please choose another.')
-                else:
-                    request.user.username = new_username
-                    request.user.save()
+            form.save()
             
             messages.success(request, 'Profile updated successfully!')
             return redirect('users:edit_profile')
-        else:
-            messages.error(request, 'Please correct the errors below.')
     else:
-        form = ProfileEditForm(instance=profile, user=request.user)
+        form = ProfileEditForm(instance=profile)
     
     context = {
         'form': form,
