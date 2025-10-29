@@ -127,46 +127,42 @@
                           >Contact and Basic Info</a
                         >
                       </li>
+                      {% if interested_sports %}
                       <li>
                         <a
                           class="nav-link"
-                          href="#v-pills-family-tab"
+                          href="#v-pills-sports-tab"
                           data-bs-toggle="pill"
-                          data-bs-target="#v-pills-family"
+                          data-bs-target="#v-pills-sports"
                           role="button"
-                          >Family and Relationship</a
+                          >Sports & Interests</a
                         >
                       </li>
+                      {% endif %}
+                      {% if availability_patterns %}
                       <li>
                         <a
                           class="nav-link"
-                          href="#v-pills-work-tab"
+                          href="#v-pills-availability-tab"
                           data-bs-toggle="pill"
-                          data-bs-target="#v-pills-work-tab"
+                          data-bs-target="#v-pills-availability"
                           role="button"
-                          >Work and Education</a
+                          >Availability</a
                         >
                       </li>
+                      {% endif %}
+                      {% if user_profile and user_profile.bio %}
                       <li>
                         <a
                           class="nav-link"
-                          href="#v-pills-lived-tab"
+                          href="#v-pills-about-tab"
                           data-bs-toggle="pill"
-                          data-bs-target="#v-pills-lived-tab"
+                          data-bs-target="#v-pills-about"
                           role="button"
-                          >Places You've Lived</a
+                          >About Me</a
                         >
                       </li>
-                      <li>
-                        <a
-                          class="nav-link"
-                          href="#v-pills-details-tab"
-                          data-bs-toggle="pill"
-                          data-bs-target="#v-pills-details-tab"
-                          role="button"
-                          >Details About You</a
-                        >
-                      </li>
+                      {% endif %}
                     </ul>
                   </div>
                   <div class="col-md-9 ps-4">
@@ -256,103 +252,94 @@
                             <p class="mb-0">{{ user_profile.get_gender_display }}</p>
                           </div>
                           {% endif %}
-                          
-                          {% if sports_list %}
-                          <div class="col-3">
-                            <h6>Interested In</h6>
-                          </div>
-                          <div class="col-9">
-                            <p class="mb-0">
-                              {% for sport in sports_list %}
-                                {{ sport }}{% if not forloop.last %}, {% endif %}
-                              {% endfor %}
-                            </p>
-                          </div>
-                          {% endif %}
                         </div>
-                        
-                        {% if user_profile and user_profile.bio %}
-                        <h4 class="mt-3">About</h4>
+                      </div>
+                      
+                      <div
+                        class="tab-pane fade"
+                        id="v-pills-sports"
+                        role="tabpanel"
+                        aria-labelledby="v-pills-sports-tab"
+                      >
+                        <h4 class="mb-3">Sports & Interests</h4>
                         <hr />
-                        <div class="row">
-                          <div class="col-12">
-                            <p>{{ user_profile.bio }}</p>
+                        {% if interested_sports %}
+                        <div class="row g-3">
+                          {% for sport in interested_sports %}
+                          <div class="col-md-6">
+                            <div class="card border">
+                              <div class="card-body p-3">
+                                <div class="d-flex align-items-center">
+                                  <span class="fs-1 me-3">{{ sport.emoji }}</span>
+                                  <div>
+                                    <h6 class="mb-1">{{ sport.name }}</h6>
+                                    <small class="text-muted">{{ sport.get_category_display }}</small>
+                                    {% if sport.description %}
+                                    <p class="mb-0 mt-1 small">{{ sport.description }}</p>
+                                    {% endif %}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
                           </div>
+                          {% endfor %}
                         </div>
-                        {% endif %}
-                        
-                        {% if user_profile and user_profile.availability %}
-                        <h4 class="mt-3">Availability</h4>
-                        <hr />
-                        <div class="row">
-                          <div class="col-12">
-                            <p>{{ user_profile.availability }}</p>
-                          </div>
-                        </div>
-                        {% endif %}
-                      </div>
-                      
-                      <div
-                        class="tab-pane fade"
-                        id="v-pills-family"
-                        role="tabpanel"
-                        aria-labelledby="v-pills-family-tab"
-                      >
-                        <h4 class="mb-3">Relationship</h4>
-                        <hr />
-                        <p class="text-muted">No relationship information available.</p>
-                        
-                        <h4 class="mt-3 mb-3">Family Members</h4>
-                        <hr />
-                        <p class="text-muted">No family members added.</p>
-                      </div>
-                      
-                      <div
-                        class="tab-pane fade"
-                        id="v-pills-work-tab"
-                        role="tabpanel"
-                        aria-labelledby="v-pills-work-tab"
-                      >
-                        <h4 class="mb-3">Work</h4>
-                        <hr />
-                        <p class="text-muted">No work experience added.</p>
-                        
-                        <h4 class="mt-3 mb-3">Professional Skills</h4>
-                        <hr />
-                        <p class="text-muted">No professional skills added.</p>
-                        
-                        <h4 class="mt-3 mb-3">Education</h4>
-                        <hr />
-                        <p class="text-muted">No education information added.</p>
-                      </div>
-                      
-                      <div
-                        class="tab-pane fade"
-                        id="v-pills-lived-tab"
-                        role="tabpanel"
-                        aria-labelledby="v-pills-lived-tab"
-                      >
-                        <h4 class="mb-3">Current City and Hometown</h4>
-                        <hr />
-                        <p class="text-muted">No location information available.</p>
-                        
-                        <h4 class="mt-3 mb-3">Other Places Lived</h4>
-                        <hr />
-                        <p class="text-muted">No other places added.</p>
-                      </div>
-                      
-                      <div
-                        class="tab-pane fade"
-                        id="v-pills-details-tab"
-                        role="tabpanel"
-                        aria-labelledby="v-pills-details-tab"
-                      >
-                        <h4 class="mb-3">About You</h4>
-                        <hr />
-                        {% if user_profile and user_profile.bio %}
-                        <p>{{ user_profile.bio }}</p>
                         {% else %}
-                        <p class="text-muted">No additional details available.</p>
+                        <p class="text-muted">No sports interests specified.</p>
+                        {% endif %}
+                      </div>
+                      
+                      <div
+                        class="tab-pane fade"
+                        id="v-pills-availability"
+                        role="tabpanel"
+                        aria-labelledby="v-pills-availability-tab"
+                      >
+                        <h4 class="mb-3">Availability Schedule</h4>
+                        <hr />
+                        {% if availability_patterns %}
+                        <div class="row">
+                          {% for pattern in availability_patterns %}
+                          <div class="col-12 mb-3">
+                            <div class="card border-start border-primary border-4">
+                              <div class="card-body">
+                                <div class="d-flex align-items-start">
+                                  <i class="ri-time-line text-primary fs-4 me-3 mt-1"></i>
+                                  <div>
+                                    <h6 class="mb-1">{{ pattern.name }}</h6>
+                                    <p class="mb-0 text-muted">{{ pattern.description }}</p>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          {% endfor %}
+                        </div>
+                        <div class="alert alert-info mt-3" role="alert">
+                          <i class="ri-information-line me-2"></i>
+                          <strong>Note:</strong> These are the general time windows when {{ profile_user.username }} is typically available for sports activities.
+                        </div>
+                        {% else %}
+                        <p class="text-muted">No availability schedule specified.</p>
+                        {% endif %}
+                      </div>
+                      
+                      <div
+                        class="tab-pane fade"
+                        id="v-pills-about"
+                        role="tabpanel"
+                        aria-labelledby="v-pills-about-tab"
+                      >
+                        <h4 class="mb-3">About Me</h4>
+                        <hr />
+                        {% if user_profile and user_profile.bio %}
+                        <div class="card bg-soft-primary">
+                          <div class="card-body">
+                            <p class="mb-0">{{ user_profile.bio }}</p>
+                          </div>
+                        </div>
+                        {% else %}
+                        <p class="text-muted">No bio available.</p>
                         {% endif %}
                       </div>
                     </div>

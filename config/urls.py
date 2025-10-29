@@ -20,6 +20,9 @@ urlpatterns = [
 
     # API endpoints
     path('api/', include('apps.api.urls')),
+
+    # Search functionality
+    path('search/', include('apps.search.urls')),
 ]
 
 # Serve media files in development

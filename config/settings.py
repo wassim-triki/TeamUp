@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'apps.users',        # user accounts, auth, profiles
     'apps.api',          # REST API endpoints (if/when added)
     'apps.sessions',     # Sessions app - simplified
+    'apps.search',       # Search functionality
 ]
 
 MIDDLEWARE = [
@@ -69,6 +70,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'apps.sessions.context_processors.session_invitations'
+
             ],
         },
     },

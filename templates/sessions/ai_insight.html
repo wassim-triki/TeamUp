@@ -1,71 +1,158 @@
 {% extends '../base.html' %}
 {% load static %}
 
-{% block title %}AI Insight - TeamUp{% endblock %}
+{% block title %}AI Insight - {{ session.get_sport_type_display }} - TeamUp{% endblock %}
 
 {% block header %}
-<div class="header-for-bg">
+<div class="header-for-bg position-relative overflow-hidden">
   <div class="background-header position-relative">
-    <img src="{% static 'assets/images/page-img/profile-bg7.jpg' %}" class="img-fluid w-100" alt="Sports training background">
-    <div class="title-on-header">
-      <div class="data-block text-center text-white py-4">
-        <h2 class="fw-bold display-5">AI Insight for {{ session.get_sport_type_display }}</h2>
-        <p class="lead text-light mb-0">{{ session.location }} — {{ session.start_datetime|date:"M d, Y H:i" }} ({{ session.duration_minutes }} min)</p>
+    <img src="{% static 'assets/images/page-img/profile-bg7.jpg' %}" 
+         class="img-fluid w-100 parallax-bg" 
+         alt="Sports background" 
+         style="object-fit: cover; height: 280px;">
+    <div class="header-overlay position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(135deg, rgba(0,123,255,0.85) 0%, rgba(0,86,179,0.9) 100%);"></div>
+    <div class="title-on-header text-center position-absolute top-50 start-50 translate-middle w-100">
+      <div class="data-block text-white">
+        <div class="sport-icon mb-3 mx-auto" style="width: 80px; height: 80px; background: rgba(255,255,255,0.15); border-radius: 20px; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); border: 2px solid rgba(255,255,255,0.2);">
+          <i class="{% if session.sport_type == 'soccer' %}ri-football-fill
+                    {% elif session.sport_type == 'basketball' %}ri-basketball-fill
+                    {% elif session.sport_type == 'tennis' %}ri-ping-pong-fill
+                    {% elif session.sport_type == 'running' %}ri-run-fill
+                    {% else %}ri-trophy-fill{% endif %}" 
+             style="font-size: 2.5rem; color: white;"></i>
+        </div>
+        <h2 class="fw-bold mb-2" style="font-size: 2.5rem; letter-spacing: -0.5px;">{{ session.get_sport_type_display }} AI Plan</h2>
+        <p class="lead mb-0" style="font-size: 1rem; opacity: 0.95;">
+          {{ session.location }} • {{ session.start_datetime|date:"M d, Y @ g:i A" }} • {{ session.duration_minutes }} min
+        </p>
       </div>
     </div>
   </div>
 </div>
+<style>
+  .parallax-bg { transform: translateY(0); transition: transform 0.5s ease; }
+  .header-for-bg.scrolled .parallax-bg { transform: translateY(-20px); }
+  @media (max-width: 768px) {
+    .background-header img { height: 220px !important; }
+    .header-for-bg h2 { font-size: 1.8rem !important; }
+    .sport-icon { width: 65px !important; height: 65px !important; }
+    .sport-icon i { font-size: 2rem !important; }
+  }
+</style>
+<script>
+  window.addEventListener('scroll', () => {
+    document.querySelector('.header-for-bg').classList.toggle('scrolled', window.scrollY > 50);
+  });
+</script>
 {% endblock %}
 
 {% block content %}
-<div class="container py-5">
+<div class="container py-5" style="max-width: 1100px;">
   <div class="row justify-content-center">
-    <div class="col-lg-10 col-xl-9">
-      <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
-        <div class="card-header bg-primary text-white text-center py-3">
-          <i class="las la-brain fs-1 mb-2 d-block"></i>
-          <h4 class="fw-bold mb-0">AI-Generated Session Plan</h4>
-          <small class="text-white-50">Personalized suggestions powered by Gemini AI</small>
+    <div class="col-12">
+      <div class="card border-0 rounded-4 overflow-hidden" style="box-shadow: 0 8px 30px rgba(0,0,0,0.08);">
+        
+        <!-- Card Header -->
+        <div class="card-header text-center py-4 position-relative" style="background: linear-gradient(180deg, #f8f9fa 0%, #ffffff 100%); border-bottom: 1px solid #e9ecef;">
+          <div class="d-flex align-items-center justify-content-center gap-2 mb-2">
+            <div style="width: 8px; height: 8px; background: #28a745; border-radius: 50%; animation: pulse 2s infinite;"></div>
+            <span style="font-size: 0.85rem; color: #6c757d; font-weight: 500; letter-spacing: 0.5px;">AI-POWERED INSIGHTS</span>
+          </div>
+          <h4 class="fw-bold mb-1" style="font-size: 1.5rem; color: #212529;">Personalized {{ session.get_sport_type_display }} Plan</h4>
+          <small style="color: #6c757d;">Generated with advanced AI technology</small>
+          
+          <!-- Loading Overlay -->
+          <div class="loading-overlay position-absolute top-0 start-0 w-100 h-100 d-none align-items-center justify-content-center" style="background: rgba(255,255,255,0.95); backdrop-filter: blur(5px); z-index: 10;">
+            <div>
+              <div class="spinner-border text-primary mb-2" role="status">
+                <span class="visually-hidden">Generating...</span>
+              </div>
+              <div style="font-size: 0.9rem; color: #6c757d;">Generating insights...</div>
+            </div>
+          </div>
         </div>
-        <div class="card-body p-4 p-md-5">
+
+        <!-- Card Body -->
+        <div class="card-body p-4 p-md-5" style="background: #ffffff;">
           {% if insights_html %}
             <div class="insights-program position-relative" id="insights-container">
               {{ insights_html|safe }}
             </div>
 
-            <!-- Action Buttons with better spacing -->
-            <div class="d-flex flex-column flex-sm-row justify-content-center gap-3 mt-4 mb-4">
-              <button class="btn btn-outline-primary rounded-pill px-4 py-2" onclick="copyInsights()" aria-label="Copy plan to clipboard">
-                <i class="las la-copy me-2"></i> Copy Plan
-              </button>
-              <button class="btn btn-success rounded-pill px-4 py-2" onclick="printPlan()" aria-label="Print or save as PDF">
-                <i class="las la-print me-2"></i> Print/Save PDF
-              </button>
-              <button class="btn btn-info rounded-pill px-4 py-2" onclick="toggleSections()" aria-label="Toggle sections for easier reading">
-                <i class="las la-compress-arrows-alt me-2"></i> Collapse Sections
-              </button>
+            <!-- Action Buttons -->
+            <div class="action-buttons mt-5 p-4 rounded-3" style="background: linear-gradient(180deg, #f8f9fa 0%, #ffffff 100%); border: 1px solid #e9ecef;">
+              <div class="row g-3">
+                <div class="col-6 col-md-3">
+                  <button class="btn btn-light w-100 rounded-3 py-3 border" onclick="copyInsights()" style="transition: all 0.2s;">
+                    <i class="las la-copy d-block mb-1" style="font-size: 1.5rem;"></i>
+                    <span style="font-size: 0.85rem; font-weight: 500;">Copy</span>
+                  </button>
+                </div>
+                <div class="col-6 col-md-3">
+                  <button class="btn btn-light w-100 rounded-3 py-3 border" onclick="downloadPDF()" style="transition: all 0.2s;">
+                    <i class="las la-file-download d-block mb-1" style="font-size: 1.5rem;"></i>
+                    <span style="font-size: 0.85rem; font-weight: 500;">PDF</span>
+                  </button>
+                </div>
+                <div class="col-6 col-md-3">
+                  <button class="btn btn-light w-100 rounded-3 py-3 border" onclick="printPlan()" style="transition: all 0.2s;">
+                    <i class="las la-print d-block mb-1" style="font-size: 1.5rem;"></i>
+                    <span style="font-size: 0.85rem; font-weight: 500;">Print</span>
+                  </button>
+                </div>
+                <div class="col-6 col-md-3">
+                  <button class="btn btn-light w-100 rounded-3 py-3 border" onclick="toggleSections()" style="transition: all 0.2s;">
+                    <i class="las la-compress-arrows-alt d-block mb-1" style="font-size: 1.5rem;"></i>
+                    <span class="toggle-text" style="font-size: 0.85rem; font-weight: 500;">Collapse</span>
+                  </button>
+                </div>
+              </div>
             </div>
           {% else %}
-            <div class="text-center py-5 bg-light rounded-3">
-              <i class="las la-hourglass-start text-muted mb-3" style="font-size: 4rem;"></i>
-              <h5 class="text-muted mb-3">No AI Insight Generated Yet</h5>
-              <p class="text-muted">Add more details to your session description for better suggestions.</p>
-              {% for message in messages %}
-                <div class="alert alert-warning alert-dismissible fade show mt-3" role="alert">
-                  {{ message }}
-                  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <!-- Empty State -->
+            <div class="text-center py-5">
+              <div class="mb-4" style="width: 80px; height: 80px; margin: 0 auto; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 20px; display: flex; align-items: center; justify-content: center;">
+                <i class="las la-magic" style="font-size: 2.5rem; color: #6c757d;"></i>
+              </div>
+              <h5 class="mb-3" style="color: #212529; font-weight: 600;">No AI Insights Yet</h5>
+              <p class="text-muted mb-4" style="max-width: 400px; margin: 0 auto;">Add more details to your session to unlock personalized AI-powered training plans and strategies.</p>
+              
+              {% if messages %}
+                <div id="message-carousel" class="carousel slide w-75 mx-auto mb-4" data-bs-ride="carousel">
+                  <div class="carousel-inner">
+                    {% for message in messages %}
+                      <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                        <div class="alert alert-warning alert-dismissible fade show mb-0" role="alert" style="border-radius: 12px; border: none; background: #fff3cd;">
+                          {{ message }}
+                          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                      </div>
+                    {% endfor %}
+                  </div>
                 </div>
-              {% endfor %}
+              {% endif %}
+
+              <a href="{% url 'sessions:update' session.pk %}" class="btn btn-primary rounded-3 px-5 py-3" style="font-weight: 500;">
+                <i class="las la-edit me-2"></i> Edit Session Details
+              </a>
             </div>
           {% endif %}
 
-          <!-- Navigation Buttons -->
-          <div class="text-center border-top pt-4">
-            <a href="{% url 'sessions:detail' session.pk %}" class="btn btn-secondary rounded-pill px-5 py-2 me-2">
+          <!-- Navigation -->
+          <div class="d-flex flex-column flex-sm-row justify-content-center gap-3 mt-5 pt-4" style="border-top: 1px solid #e9ecef;">
+            <a href="{% url 'sessions:detail' session.pk %}" 
+               class="btn btn-light rounded-3 px-5 py-3 border" 
+               style="font-weight: 500; transition: all 0.2s;">
               <i class="las la-arrow-left me-2"></i> Back to Session
             </a>
-            <a href="{% url 'sessions:ai_insight' session.pk %}" class="btn btn-primary rounded-pill px-5 py-2">
-              <i class="las la-sync-alt me-2"></i> Regenerate Insight
+            <a href="{% url 'sessions:ai_insight' session.pk %}" 
+               class="btn btn-primary rounded-3 px-5 py-3"
+               hx-get="{% url 'sessions:ai_insight' session.pk %}"
+               hx-target="#insights-container"
+               hx-swap="innerHTML"
+               hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+               style="font-weight: 500; transition: all 0.2s;">
+              <i class="las la-sync-alt me-2"></i> Regenerate Plan
             </a>
           </div>
         </div>
@@ -74,299 +161,309 @@
   </div>
 </div>
 
-<!-- Enhanced Styles: Fixed numbering overlap, better hierarchy, modern design -->
+<!-- Toast Container -->
+<div id="toast-container" class="position-fixed bottom-0 end-0 p-3" style="z-index: 1100;"></div>
+
+<!-- Enhanced Styles -->
 <style>
-  /* Reset and Base */
-  .insights-program {
-    font-size: 1.1rem;
-    line-height: 1.7;
-    counter-reset: section-counter; /* For custom numbering */
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.1); }
+  }
+
+  /* Button Hover Effects */
+  .btn-light:hover {
+    background: #ffffff !important;
+    border-color: #007bff !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+  }
+
+  .btn-light:hover i {
+    color: #007bff;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0,123,255,0.3);
   }
   
-  /* Headings: Clear hierarchy with no overlap */
+  /* Insights Program Styling */
+  .insights-program {
+    font-size: 1rem;
+    line-height: 1.7;
+    color: #212529;
+    animation: fadeIn 0.5s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
   .insights-program h1 {
-    counter-increment: section-counter;
     background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
     color: white;
     padding: 1.5rem 2rem;
     margin: 2rem 0 1.5rem;
-    border-radius: 1rem;
-    font-size: 1.75rem;
+    border-radius: 12px;
+    font-size: 1.6rem;
     font-weight: 700;
-    box-shadow: 0 8px 25px rgba(0, 123, 255, 0.2);
-    position: relative;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
+    box-shadow: 0 4px 20px rgba(0,123,255,0.2);
+    border: none;
+    transition: transform 0.2s;
   }
-  .insights-program h1::before {
-    content: counter(section-counter) ". ";
-    background: rgba(255,255,255,0.2);
-    padding: 0.5rem 1rem;
-    border-radius: 50%;
-    font-weight: bold;
-    min-width: 2.5rem;
-    text-align: center;
+
+  .insights-program h1:hover {
+    transform: translateX(5px);
   }
-  .insights-program h1::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 4px;
-    background: rgba(255,255,255,0.3);
-  }
-  
-  .insights-program h2 {
-    background: linear-gradient(90deg, #f8f9fa 0%, #e9ecef 100%);
-    color: #343a40;
-    padding: 1.25rem 1.5rem;
-    margin: 1.5rem 0 1rem;
-    border-left: 6px solid #007bff;
-    border-radius: 0 1rem 1rem 0;
-    font-size: 1.4rem;
-    font-weight: 600;
-    position: relative;
-  }
-  .insights-program h2::before {
-    content: "Step";
-    font-size: 0.8rem;
-    color: #007bff;
-    position: absolute;
-    left: -0.5rem;
-    top: -0.5rem;
-    background: white;
-    padding: 0.25rem 0.5rem;
-    border-radius: 50%;
-    border: 2px solid #007bff;
-  }
-  .insights-program h2 strong {
-    color: #28a745;
-    background: rgba(40, 167, 69, 0.1);
-    padding: 0.25rem 0.75rem;
-    border-radius: 0.5rem;
-    display: inline-block;
-  }
-  
+
+  .insights-program h2,
   .insights-program h3 {
-    color: #495057;
-    padding: 1rem 1.25rem;
-    margin: 1rem 0 0.75rem 0.5rem;
+    background: #f8f9fa;
+    color: #212529;
+    padding: 1rem 1.5rem;
+    margin: 1.5rem 0 1rem;
+    border-left: 4px solid #007bff;
+    border-radius: 8px;
+    font-weight: 600;
     font-size: 1.2rem;
-    background: rgba(0, 123, 255, 0.05);
-    border-radius: 0.75rem;
-    border-left: 4px solid #6c757d;
-    position: relative;
+    cursor: pointer;
+    transition: all 0.2s;
   }
-  .insights-program h3::before {
-    content: "→";
-    position: absolute;
-    left: -1.5rem;
-    top: 1rem;
-    font-size: 1.2rem;
-    color: #6c757d;
+
+  .insights-program h2:hover,
+  .insights-program h3:hover {
+    background: #e9ecef;
+    transform: translateX(3px);
   }
-  
-  /* Lists: Fixed numbering - no overlap, better spacing */
-  .insights-program ul, .insights-program ol {
+
+  .insights-program h2::after,
+  .insights-program h3::after {
+    content: "−";
+    float: right;
+    color: #007bff;
+    font-weight: bold;
+    font-size: 1.3rem;
+  }
+
+  .insights-program h2.collapsed::after,
+  .insights-program h3.collapsed::after {
+    content: "+";
+  }
+
+  .insights-program h2 + *,
+  .insights-program h3 + * {
+    transition: all 0.3s;
+  }
+
+  .insights-program h2.collapsed + *,
+  .insights-program h3.collapsed + * {
+    display: none;
+  }
+
+  .insights-program ul,
+  .insights-program ol {
     list-style: none;
     padding-left: 0;
-    margin-bottom: 1.5rem;
+    margin: 1.5rem 0;
   }
+
   .insights-program ol {
     counter-reset: item;
   }
+
   .insights-program ol li {
     counter-increment: item;
+    position: relative;
+    padding: 1.2rem 1.2rem 1.2rem 3.5rem;
+    margin-bottom: 0.8rem;
+    background: white;
+    border-radius: 10px;
+    border: 1px solid #e9ecef;
+    transition: all 0.2s;
   }
+
   .insights-program ol li::before {
-    content: counter(item) ".";
+    content: counter(item);
     background: #007bff;
     color: white;
-    width: 2rem;
-    height: 2rem;
-    border-radius: 50%;
-    display: inline-flex;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: bold;
-    margin-right: 1rem;
-    flex-shrink: 0;
+    font-weight: 600;
+    font-size: 0.9rem;
     position: absolute;
-    left: 0;
-    top: 1rem;
+    left: 1rem;
+    top: 1.2rem;
   }
-  .insights-program ol li {
-    display: block;
-    position: relative;
-    padding-left: 3rem;
-    margin-bottom: 1rem;
-  }
+
   .insights-program ul li {
     position: relative;
-    padding-left: 2rem;
-    margin-bottom: 1rem;
-  }
-  .insights-program ul li::before {
-    content: "•";
-    color: #007bff;
-    font-size: 1.5rem;
-    position: absolute;
-    left: 0;
-    top: 0.5rem;
-    font-weight: bold;
-  }
-  .insights-program li {
+    padding: 1rem 1rem 1rem 2.5rem;
+    margin-bottom: 0.8rem;
     background: white;
-    padding: 1.25rem;
-    border-radius: 0.75rem;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    transition: all 0.3s ease;
-    border-left: 4px solid #e9ecef;
+    border-radius: 10px;
+    border: 1px solid #e9ecef;
+    transition: all 0.2s;
   }
+
+  .insights-program ul li::before {
+    content: "●";
+    color: #007bff;
+    font-size: 1.2rem;
+    position: absolute;
+    left: 1rem;
+    top: 1rem;
+  }
+
   .insights-program li:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
-    border-left-color: #007bff;
+    border-color: #007bff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transform: translateX(3px);
   }
+
   .insights-program li strong {
     color: #dc3545;
-    background: rgba(220, 53, 69, 0.1);
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.25rem;
-    font-weight: 700;
+    font-weight: 600;
+    background: rgba(220,53,69,0.08);
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
   }
-  
-  /* Paragraphs: Better readability */
+
   .insights-program p {
-    margin-bottom: 1.25rem;
+    margin-bottom: 1rem;
     padding: 1rem;
-    background: rgba(248, 249, 250, 0.6);
-    border-radius: 0.5rem;
+    background: #f8f9fa;
+    border-radius: 8px;
     border-left: 3px solid #dee2e6;
   }
-  
-  /* HR: Stylish divider */
+
   .insights-program hr {
+    height: 2px;
+    background: linear-gradient(to right, transparent, #dee2e6, transparent);
     border: none;
-    height: 3px;
-    background: linear-gradient(to right, #007bff, #28a745, #ffc107);
-    margin: 3rem 0;
-    border-radius: 2px;
+    margin: 2.5rem 0;
   }
-  
-  /* Sentiment: Dynamic colors */
-  .insights-program h1:has(+ * [class*="positive"]) {
-    background: linear-gradient(135deg, #28a745, #20c997) !important;
-  }
-  .insights-program h1:has(+ * [class*="neutral"]) {
-    background: linear-gradient(135deg, #6c757d, #495057) !important;
-  }
-  .insights-program h1:has(+ * [class*="negative"]) {
-    background: linear-gradient(135deg, #dc3545, #c82333) !important;
-  }
-  
-  /* Collapsible Sections (JS controlled) */
-  .insights-program h2.collapsed + * {
-    display: none;
-  }
-  .insights-program h2.collapsed::after {
-    content: " +";
-    font-size: 1.2rem;
-    margin-left: 0.5rem;
-  }
-  .insights-program h2:not(.collapsed)::after {
-    content: " −";
-    font-size: 1.2rem;
-    margin-left: 0.5rem;
-  }
-  
-  /* Mobile: Ensure no overlaps */
+
   @media (max-width: 768px) {
-    .insights-program h1, .insights-program h2, .insights-program h3 {
-      font-size: 1.25rem;
-      padding: 1rem;
+    .insights-program h1 {
+      font-size: 1.3rem;
+      padding: 1.2rem 1.5rem;
     }
+
+    .insights-program h2,
+    .insights-program h3 {
+      font-size: 1.1rem;
+      padding: 0.9rem 1.2rem;
+    }
+
     .insights-program ol li {
-      padding-left: 3.5rem;
+      padding-left: 3rem;
     }
+
     .insights-program ol li::before {
-      left: 0.5rem;
-      top: 1.25rem;
-    }
-    .insights-program li:hover {
-      transform: none;
-    }
-    .d-flex {
-      flex-direction: column;
+      left: 0.8rem;
     }
   }
-  
-  /* Print: Optimized for PDF */
+
   @media print {
-    .card-header, .btn, .alert {
+    .card-header,
+    .btn,
+    .alert,
+    .loading-overlay,
+    .action-buttons {
       display: none !important;
     }
-    .insights-program h1, .insights-program h2 {
-      background: none !important;
+
+    .insights-program h1,
+    .insights-program h2,
+    .insights-program h3 {
+      background: white !important;
       color: black !important;
-      border: 2px solid black !important;
-      page-break-inside: avoid;
+      border: 1px solid black !important;
     }
+
     .insights-program li {
-      background: #f9f9f9 !important;
-      box-shadow: none !important;
+      background: white !important;
       border: 1px solid #ddd !important;
     }
-    .insights-program {
-      font-size: 12pt;
-    }
-  }
-  
-  /* Ensure all buttons and links are clickable */
-  .btn, button, a {
-    position: relative;
-    z-index: 100;
-    pointer-events: auto;
-    cursor: pointer;
   }
 </style>
 
+<!-- Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
-let collapsed = false;
-function copyInsights() {
-  const program = document.querySelector('.insights-program').innerText;
-  navigator.clipboard.writeText(program).then(() => {
-    const btn = event.target.closest('button');
-    const original = btn.innerHTML;
-    btn.innerHTML = '<i class="las la-check me-2"></i> Copied!';
-    btn.classList.replace('btn-outline-primary', 'btn-success');
-    setTimeout(() => {
-      btn.innerHTML = original;
-      btn.classList.replace('btn-success', 'btn-outline-primary');
-    }, 2000);
-  }).catch(err => alert('Copy failed: ' + err));
-}
+  let collapsed = false;
 
-function printPlan() {
-  window.print();
-}
+  function copyInsights() {
+    const text = document.querySelector('.insights-program').innerText;
+    navigator.clipboard.writeText(text).then(() => {
+      showToast('Plan copied to clipboard!', 'success');
+    }).catch(() => showToast('Failed to copy', 'danger'));
+  }
 
-function toggleSections() {
-  collapsed = !collapsed;
-  const h2s = document.querySelectorAll('.insights-program h2');
-  h2s.forEach(h2 => {
-    h2.classList.toggle('collapsed', collapsed);
+  function downloadPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('p', 'mm', 'a4');
+    html2canvas(document.querySelector('.insights-program'), { scale: 2 }).then(canvas => {
+      const img = canvas.toDataURL('image/png');
+      const width = doc.internal.pageSize.getWidth() - 20;
+      const height = (canvas.height * width) / canvas.width;
+      doc.addImage(img, 'PNG', 10, 15, width, height);
+      doc.save(`{{ session.get_sport_type_display|lower }}_ai_plan.pdf`);
+      showToast('PDF downloaded successfully!', 'success');
+    }).catch(() => showToast('Failed to generate PDF', 'danger'));
+  }
+
+  function printPlan() {
+    window.print();
+  }
+
+  function toggleSections() {
+    collapsed = !collapsed;
+    document.querySelectorAll('.insights-program h2, .insights-program h3').forEach(h => {
+      h.classList.toggle('collapsed', collapsed);
+    });
+    const txt = document.querySelector('.toggle-text');
+    txt.textContent = collapsed ? 'Expand' : 'Collapse';
+  }
+
+  function showToast(msg, type = 'success') {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `toast align-items-center text-white bg-${type} border-0`;
+    toast.setAttribute('role', 'alert');
+    toast.innerHTML = `
+      <div class="d-flex">
+        <div class="toast-body">${msg}</div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+      </div>
+    `;
+    container.appendChild(toast);
+    const bsToast = new bootstrap.Toast(toast);
+    bsToast.show();
+    toast.addEventListener('hidden.bs.toast', () => toast.remove());
+  }
+
+  // HTMX Event Handlers
+  document.body.addEventListener('htmx:beforeRequest', () => {
+    document.querySelector('.loading-overlay')?.classList.remove('d-none');
   });
-  const btn = event.target.closest('button');
-  btn.innerHTML = collapsed ? '<i class="las la-expand-arrows-alt me-2"></i> Expand Sections' : '<i class="las la-compress-arrows-alt me-2"></i> Collapse Sections';
-}
 
-// Auto-collapse on load for better mobile view
-document.addEventListener('DOMContentLoaded', () => {
-  if (window.innerWidth < 768) toggleSections();
-});
+  document.body.addEventListener('htmx:afterRequest', () => {
+    document.querySelector('.loading-overlay')?.classList.add('d-none');
+    showToast('AI plan regenerated successfully!', 'success');
+  });
+
+  // Initialize
+  document.addEventListener('DOMContentLoaded', () => {
+    const tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    tooltips.forEach(el => new bootstrap.Tooltip(el));
+  });
 </script>
 {% endblock %}

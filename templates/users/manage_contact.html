@@ -123,17 +123,27 @@
                     <div class="card-body p-0">
                         <div class="iq-edit-list">
                             <ul class="iq-edit-profile row nav nav-pills">
-                                <li class="col-md-4 p-0">
+                                <li class="col-md p-0">
                                     <a class="nav-link {% if active_tab == 'personal-information' %}active{% endif %}" href="{% url 'users:edit_profile' %}">
                                         Personal Information
                                     </a>
                                 </li>
-                                <li class="col-md-4 p-0">
+                                <li class="col-md p-0">
+                                    <a class="nav-link {% if active_tab == 'edit-sports' %}active{% endif %}" href="{% url 'users:edit_sports' %}">
+                                        Sports Interests
+                                    </a>
+                                </li>
+                                <li class="col-md p-0">
+                                    <a class="nav-link {% if active_tab == 'edit-availability' %}active{% endif %}" href="{% url 'users:edit_availability' %}">
+                                        Availability
+                                    </a>
+                                </li>
+                                <li class="col-md p-0">
                                     <a class="nav-link {% if active_tab == 'change-pwd' %}active{% endif %}" href="{% url 'users:change_password' %}">
                                         Change Password
                                     </a>
                                 </li>
-                                <li class="col-md-4 p-0">
+                                <li class="col-md p-0">
                                     <a class="nav-link {% if active_tab == 'manage-contact' %}active{% endif %}" href="{% url 'users:manage_contact' %}">
                                         Change Email
                                     </a>
