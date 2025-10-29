@@ -6,7 +6,7 @@ register = template.Library()
 @register.filter(name='user_initials')
 def user_initials(user):
     """
-    Returns user initials based on display_name, username, or email.
+    Returns user initials based on first_name/last_name, username, or email.
     Falls back gracefully if user or attributes are missing.
     
     Usage in template: {{ user|user_initials }}
@@ -14,14 +14,17 @@ def user_initials(user):
     if not user:
         return "?"
     
-    # Try to get display_name from profile
-    if hasattr(user, 'profile') and user.profile.display_name:
-        name = user.profile.display_name.strip()
-        parts = name.split()
-        if len(parts) >= 2:
-            return f"{parts[0][0]}{parts[1][0]}".upper()
-        elif len(parts) == 1 and len(parts[0]) > 0:
-            return parts[0][0].upper()
+    # Try to get first_name and last_name from profile
+    if hasattr(user, 'profile'):
+        first_name = getattr(user.profile, 'first_name', '').strip()
+        last_name = getattr(user.profile, 'last_name', '').strip()
+        
+        if first_name and last_name:
+            return f"{first_name[0]}{last_name[0]}".upper()
+        elif first_name:
+            return first_name[:2].upper() if len(first_name) >= 2 else first_name[0].upper()
+        elif last_name:
+            return last_name[:2].upper() if len(last_name) >= 2 else last_name[0].upper()
     
     # Fall back to username
     if hasattr(user, 'username') and user.username:
@@ -46,16 +49,18 @@ def user_initials(user):
 def user_display_name(user):
     """
     Returns the best display name for a user.
-    Tries display_name, then username, then email.
+    Tries full_name property (first_name + last_name), then username, then email.
     
     Usage in template: {{ user|user_display_name }}
     """
     if not user:
         return "Unknown User"
     
-    # Try to get display_name from profile
-    if hasattr(user, 'profile') and user.profile.display_name:
-        return user.profile.display_name
+    # Try to get full_name from profile
+    if hasattr(user, 'profile') and hasattr(user.profile, 'full_name'):
+        full_name = user.profile.full_name
+        if full_name and full_name != user.username:  # Don't return username again
+            return full_name
     
     # Fall back to username
     if hasattr(user, 'username') and user.username:

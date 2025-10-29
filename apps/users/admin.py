@@ -24,14 +24,16 @@ class UserAdmin(BaseUserAdmin):
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
     """UserProfile admin configuration."""
-    list_display = ('user', 'display_name', 'city', 'created_at')
-    search_fields = ('user__email', 'display_name', 'city')
-    list_filter = ('created_at',)
+    list_display = ('user', 'full_name', 'city', 'created_at')
+    search_fields = ('user__email', 'first_name', 'last_name', 'city')
+    list_filter = ('created_at', 'gender')
     readonly_fields = ('created_at', 'updated_at')
     
     fieldsets = (
         ('User', {'fields': ('user',)}),
-        ('Profile Info', {'fields': ('display_name', 'city')}),
+        ('Personal Info', {'fields': ('first_name', 'last_name', 'avatar', 'date_of_birth', 'age', 'gender', 'bio')}),
+        ('Location', {'fields': ('city', 'state', 'address')}),
+        ('Contact', {'fields': ('phone',)}),
         ('Sports & Availability', {'fields': ('sports', 'availability')}),
         ('Timestamps', {'fields': ('created_at', 'updated_at')}),
     )

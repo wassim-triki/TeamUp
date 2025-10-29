@@ -19,4 +19,7 @@ urlpatterns = [
     path('email-sent/', views.email_sent_view, name='email_sent'),
     path('verify/<str:token>/', views.verify_email, name='verify_email'),
     path('resend-verification/', views.resend_verification, name='resend_verification'),
+    
+    # Profile Management
+    path('profile/edit/', views.edit_profile, name='edit_profile'),
 ]
