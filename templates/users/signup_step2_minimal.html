@@ -54,6 +54,100 @@
         font-size: 18px;
         margin-right: 8px;
       }
+
+      /* Bumble-style sport capsules */
+      .sport-capsules-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+
+      .sport-capsule {
+        position: relative;
+        display: inline-block;
+      }
+
+      .sport-capsule input[type="checkbox"] {
+        position: absolute;
+        opacity: 0;
+        cursor: pointer;
+      }
+
+      .sport-capsule-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 18px;
+        border: 2px solid #e0e0e0;
+        border-radius: 50px;
+        background: #fff;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 14px;
+        font-weight: 500;
+        color: #333;
+        user-select: none;
+      }
+
+      .sport-capsule-icon {
+        font-size: 20px;
+        line-height: 1;
+      }
+
+      .sport-capsule-name {
+        line-height: 1;
+      }
+
+      /* Hover effect */
+      .sport-capsule-label:hover {
+        border-color: #50b5ff;
+        background: #f8fcff;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(80, 181, 255, 0.15);
+      }
+
+      /* Selected state */
+      .sport-capsule input[type="checkbox"]:checked + .sport-capsule-label {
+        background: linear-gradient(135deg, #50b5ff 0%, #2e8bc0 100%);
+        border-color: #50b5ff;
+        color: #fff;
+        box-shadow: 0 4px 12px rgba(80, 181, 255, 0.3);
+      }
+
+      /* Selected hover */
+      .sport-capsule input[type="checkbox"]:checked + .sport-capsule-label:hover {
+        background: linear-gradient(135deg, #2e8bc0 0%, #1a5f8a 100%);
+        transform: translateY(-2px);
+      }
+
+      /* Animation */
+      .sport-capsule-label {
+        animation: fadeInUp 0.4s ease;
+      }
+
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Stagger animation for capsules */
+      .sport-capsule:nth-child(1) .sport-capsule-label { animation-delay: 0.05s; }
+      .sport-capsule:nth-child(2) .sport-capsule-label { animation-delay: 0.1s; }
+      .sport-capsule:nth-child(3) .sport-capsule-label { animation-delay: 0.15s; }
+      .sport-capsule:nth-child(4) .sport-capsule-label { animation-delay: 0.2s; }
+      .sport-capsule:nth-child(5) .sport-capsule-label { animation-delay: 0.25s; }
+      .sport-capsule:nth-child(6) .sport-capsule-label { animation-delay: 0.3s; }
+      .sport-capsule:nth-child(7) .sport-capsule-label { animation-delay: 0.35s; }
+      .sport-capsule:nth-child(8) .sport-capsule-label { animation-delay: 0.4s; }
+      .sport-capsule:nth-child(9) .sport-capsule-label { animation-delay: 0.45s; }
+      .sport-capsule:nth-child(10) .sport-capsule-label { animation-delay: 0.5s; }
     </style>
   </head>
   <body class="">
@@ -306,133 +400,158 @@
 
                   <div class="form-group">
                     <label class="form-label">Sports Interests *</label>
-                    <small class="d-block mb-2 text-muted"
-                      >Select at least one sport</small
+                    <small class="d-block mb-3 text-muted"
+                      >Select at least one sport you're interested in</small
                     >
-                    <div class="row">
-                      <div class="col-md-6">
-                        <div class="form-check mb-2">
-                          <input
-                            class="form-check-input"
-                            type="checkbox"
-                            name="sports"
-                            value="football"
-                            id="sport_football"
-                          />
-                          <label class="form-check-label" for="sport_football"
-                            >⚽ Football</label
-                          >
-                        </div>
-                        <div class="form-check mb-2">
-                          <input
-                            class="form-check-input"
-                            type="checkbox"
-                            name="sports"
-                            value="basketball"
-                            id="sport_basketball"
-                          />
-                          <label class="form-check-label" for="sport_basketball"
-                            >🏀 Basketball</label
-                          >
-                        </div>
-                        <div class="form-check mb-2">
-                          <input
-                            class="form-check-input"
-                            type="checkbox"
-                            name="sports"
-                            value="tennis"
-                            id="sport_tennis"
-                          />
-                          <label class="form-check-label" for="sport_tennis"
-                            >🎾 Tennis</label
-                          >
-                        </div>
-                        <div class="form-check mb-2">
-                          <input
-                            class="form-check-input"
-                            type="checkbox"
-                            name="sports"
-                            value="volleyball"
-                            id="sport_volleyball"
-                          />
-                          <label class="form-check-label" for="sport_volleyball"
-                            >🏐 Volleyball</label
-                          >
-                        </div>
-                        <div class="form-check mb-2">
-                          <input
-                            class="form-check-input"
-                            type="checkbox"
-                            name="sports"
-                            value="swimming"
-                            id="sport_swimming"
-                          />
-                          <label class="form-check-label" for="sport_swimming"
-                            >🏊 Swimming</label
-                          >
-                        </div>
+                    <div class="sport-capsules-container">
+                      <!-- Football -->
+                      <div class="sport-capsule">
+                        <input
+                          type="checkbox"
+                          name="sports"
+                          value="football"
+                          id="sport_football"
+                          {% if sports and 'football' in sports %}checked{% endif %}
+                        />
+                        <label class="sport-capsule-label" for="sport_football">
+                          <span class="sport-capsule-icon">⚽</span>
+                          <span class="sport-capsule-name">Football</span>
+                        </label>
                       </div>
-                      <div class="col-md-6">
-                        <div class="form-check mb-2">
-                          <input
-                            class="form-check-input"
-                            type="checkbox"
-                            name="sports"
-                            value="running"
-                            id="sport_running"
-                          />
-                          <label class="form-check-label" for="sport_running"
-                            >🏃 Running</label
-                          >
-                        </div>
-                        <div class="form-check mb-2">
-                          <input
-                            class="form-check-input"
-                            type="checkbox"
-                            name="sports"
-                            value="cycling"
-                            id="sport_cycling"
-                          />
-                          <label class="form-check-label" for="sport_cycling"
-                            >🚴 Cycling</label
-                          >
-                        </div>
-                        <div class="form-check mb-2">
-                          <input
-                            class="form-check-input"
-                            type="checkbox"
-                            name="sports"
-                            value="gym"
-                            id="sport_gym"
-                          />
-                          <label class="form-check-label" for="sport_gym"
-                            >💪 Gym</label
-                          >
-                        </div>
-                        <div class="form-check mb-2">
-                          <input
-                            class="form-check-input"
-                            type="checkbox"
-                            name="sports"
-                            value="yoga"
-                            id="sport_yoga"
-                          />
-                          <label class="form-check-label" for="sport_yoga"
-                            >🧘 Yoga</label
-                          >
-                        </div>
-                        <div class="form-check mb-2">
-                          <input
-                            class="form-check-input"
-                            type="checkbox"
-                            name="sports"
-                            value="other"
-                            id="sport_other"
-                          />
-                          <label class="form-check-label" for="sport_other"
-                            >🎯 Other</label
-                          >
-                        </div>
+
+                      <!-- Basketball -->
+                      <div class="sport-capsule">
+                        <input
+                          type="checkbox"
+                          name="sports"
+                          value="basketball"
+                          id="sport_basketball"
+                          {% if sports and 'basketball' in sports %}checked{% endif %}
+                        />
+                        <label class="sport-capsule-label" for="sport_basketball">
+                          <span class="sport-capsule-icon">🏀</span>
+                          <span class="sport-capsule-name">Basketball</span>
+                        </label>
+                      </div>
+
+                      <!-- Tennis -->
+                      <div class="sport-capsule">
+                        <input
+                          type="checkbox"
+                          name="sports"
+                          value="tennis"
+                          id="sport_tennis"
+                          {% if sports and 'tennis' in sports %}checked{% endif %}
+                        />
+                        <label class="sport-capsule-label" for="sport_tennis">
+                          <span class="sport-capsule-icon">🎾</span>
+                          <span class="sport-capsule-name">Tennis</span>
+                        </label>
+                      </div>
+
+                      <!-- Volleyball -->
+                      <div class="sport-capsule">
+                        <input
+                          type="checkbox"
+                          name="sports"
+                          value="volleyball"
+                          id="sport_volleyball"
+                          {% if sports and 'volleyball' in sports %}checked{% endif %}
+                        />
+                        <label class="sport-capsule-label" for="sport_volleyball">
+                          <span class="sport-capsule-icon">🏐</span>
+                          <span class="sport-capsule-name">Volleyball</span>
+                        </label>
+                      </div>
+
+                      <!-- Swimming -->
+                      <div class="sport-capsule">
+                        <input
+                          type="checkbox"
+                          name="sports"
+                          value="swimming"
+                          id="sport_swimming"
+                          {% if sports and 'swimming' in sports %}checked{% endif %}
+                        />
+                        <label class="sport-capsule-label" for="sport_swimming">
+                          <span class="sport-capsule-icon">🏊</span>
+                          <span class="sport-capsule-name">Swimming</span>
+                        </label>
+                      </div>
+
+                      <!-- Running -->
+                      <div class="sport-capsule">
+                        <input
+                          type="checkbox"
+                          name="sports"
+                          value="running"
+                          id="sport_running"
+                          {% if sports and 'running' in sports %}checked{% endif %}
+                        />
+                        <label class="sport-capsule-label" for="sport_running">
+                          <span class="sport-capsule-icon">🏃</span>
+                          <span class="sport-capsule-name">Running</span>
+                        </label>
+                      </div>
+
+                      <!-- Cycling -->
+                      <div class="sport-capsule">
+                        <input
+                          type="checkbox"
+                          name="sports"
+                          value="cycling"
+                          id="sport_cycling"
+                          {% if sports and 'cycling' in sports %}checked{% endif %}
+                        />
+                        <label class="sport-capsule-label" for="sport_cycling">
+                          <span class="sport-capsule-icon">🚴</span>
+                          <span class="sport-capsule-name">Cycling</span>
+                        </label>
+                      </div>
+
+                      <!-- Gym -->
+                      <div class="sport-capsule">
+                        <input
+                          type="checkbox"
+                          name="sports"
+                          value="gym"
+                          id="sport_gym"
+                          {% if sports and 'gym' in sports %}checked{% endif %}
+                        />
+                        <label class="sport-capsule-label" for="sport_gym">
+                          <span class="sport-capsule-icon">💪</span>
+                          <span class="sport-capsule-name">Gym</span>
+                        </label>
+                      </div>
+
+                      <!-- Yoga -->
+                      <div class="sport-capsule">
+                        <input
+                          type="checkbox"
+                          name="sports"
+                          value="yoga"
+                          id="sport_yoga"
+                          {% if sports and 'yoga' in sports %}checked{% endif %}
+                        />
+                        <label class="sport-capsule-label" for="sport_yoga">
+                          <span class="sport-capsule-icon">🧘</span>
+                          <span class="sport-capsule-name">Yoga</span>
+                        </label>
+                      </div>
+
+                      <!-- Other -->
+                      <div class="sport-capsule">
+                        <input
+                          type="checkbox"
+                          name="sports"
+                          value="other"
+                          id="sport_other"
+                          {% if sports and 'other' in sports %}checked{% endif %}
+                        />
+                        <label class="sport-capsule-label" for="sport_other">
+                          <span class="sport-capsule-icon">🎯</span>
+                          <span class="sport-capsule-name">Other</span>
+                        </label>
                       </div>
                     </div>
                     <div
