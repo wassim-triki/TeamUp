@@ -11,6 +11,7 @@
     <div class="title-on-header">
       <div class="data-block">
         <h2>{{ session.get_sport_type_display }}</h2>
+        <p class="lead mt-2 opacity-90">Join the action on {{ session.start_datetime|date:"M d, Y @ g:i A" }}</p>
       </div>
     </div>
   </div>
@@ -18,186 +19,379 @@
 {% endblock %}
 
 {% block content %}
-<div class="row mt-4">
-  <div class="col-lg-8">
-    <div class="card">
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <h4 class="card-title mb-0">Session Details</h4>
-        <a href="{% url 'sessions:list' %}" class="btn btn-sm btn-soft-secondary">
-          <i class="ri-arrow-left-line"></i> Back
-        </a>
-      </div>
-      <div class="card-body">
-        <h5 class="mb-3">
-          <i class="ri-football-line text-primary me-2"></i>{{ session.get_sport_type_display }}
-        </h5>
-        
-        {% if session.description %}
-          <p class="card-text mb-4">{{ session.description|linebreaks }}</p>
-        {% else %}
-          <p class="text-muted fst-italic mb-4">No description provided.</p>
-        {% endif %}
-
-        <div class="row g-3 mb-4">
-          <div class="col-md-6">
-            <div class="d-flex align-items-start">
-              <i class="ri-calendar-line text-primary me-2 mt-1"></i>
-              <div>
-                <strong class="d-block">Start Date & Time</strong>
-                <span>{{ session.start_datetime|date:"l, F j, Y" }}</span><br>
-                <span>{{ session.start_datetime|date:"g:i A" }}</span>
-              </div>
+<div class="container-fluid">
+  <div class="row mt-4">
+    <!-- Main Session Card (Simplified and cleaner) -->
+    <div class="col-lg-8">
+      <div class="card card-block card-stretch shadow-lg">
+        <!-- Hero Image -->
+        <div class="position-relative overflow-hidden rounded-top">
+          <img src="{% static 'assets/images/page-img/profile-bg7.jpg' %}" class="img-fluid w-100" alt="{{ session.get_sport_type_display }}" style="height: 280px; object-fit: cover;">
+          <div class="hero-overlay position-absolute top-0 start-0 end-0 bottom-0" style="background: linear-gradient(135deg, rgba(0,0,0,0.4), rgba(0,0,0,0.7));"></div>
+          <div class="position-absolute top-50 start-50 translate-middle text-center text-white">
+            <div class="sport-icon mb-2" style="width: 80px; height: 80px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+              <i class="{% if session.sport_type == 'soccer' %}ri-football-fill{% elif session.sport_type == 'basketball' %}ri-basketball-fill{% elif session.sport_type == 'tennis' %}ri-ping-pong-fill{% elif session.sport_type == 'running' %}ri-run-fill{% else %}ri-trophy-fill{% endif %}" style="font-size: 2.5rem;"></i>
             </div>
-          </div>
-          <div class="col-md-6">
-            <div class="d-flex align-items-start">
-              <i class="ri-time-line text-primary me-2 mt-1"></i>
-              <div>
-                <strong class="d-block">Duration</strong>
-                <span>{{ session.duration_minutes }} minutes</span>
-              </div>
-            </div>
-          </div>
-          <div class="col-12">
-            <div class="d-flex align-items-start">
-              <i class="ri-map-pin-line text-primary me-2 mt-1"></i>
-              <div>
-                <strong class="d-block">Location</strong>
-                <span>{{ session.location }}</span>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-6">
-            <div class="d-flex align-items-start">
-              <i class="ri-user-line text-primary me-2 mt-1"></i>
-              <div>
-                <strong class="d-block">Created By</strong>
-                <span>{{ session.creator.username }}</span>
-                {% if session.creator == user %}
-                  <span class="badge bg-primary ms-1">You</span>
-                {% endif %}
-              </div>
-            </div>
-          </div>
-          <div class="col-md-6">
-            <div class="d-flex align-items-start">
-              <i class="ri-information-line text-primary me-2 mt-1"></i>
-              <div>
-                <strong class="d-block">Status</strong>
-                <span class="badge bg-{% if session.status == 'draft' %}secondary{% elif session.status == 'proposed' %}info{% elif session.status == 'confirmed' %}success{% elif session.status == 'cancelled' %}danger{% else %}primary{% endif %} mt-1">
-                  {{ session.get_status_display }}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="border-top pt-3">
-          <small class="text-muted">
-            <i class="ri-time-line me-1"></i>Created on {{ session.created_at|date:"M d, Y \a\t g:i A" }}
-            {% if session.updated_at != session.created_at %}
-              <span class="ms-2">• Updated {{ session.updated_at|date:"M d, Y \a\t g:i A" }}</span>
+            <h3 class="fw-bold mb-1">{{ session.get_sport_type_display }}</h3>
+            {% if user == session.creator %}
+              <span class="badge bg-warning rounded-pill px-3 py-1">Session Creator</span>
             {% endif %}
-          </small>
+          </div>
         </div>
 
-        <!-- Action Buttons for Authenticated Users -->
-        {% if user.is_authenticated %}
-          <div class="mt-4">
-            {% if session.is_upcoming %}
-              {% with user_invitation=session.invitation_set.filter|default:None %}
+        <!-- Content -->
+        <div class="card-body p-4">
+          <!-- Quick Info Row -->
+          <div class="row g-3 mb-4">
+            <div class="col-md-3 col-sm-6">
+              <div class="text-center p-3 border rounded-3 bg-light">
+                <div class="mb-2"><i class="ri-calendar-line text-primary fs-3"></i></div>
+                <strong class="d-block">{{ session.start_datetime|date:"M d, Y" }}</strong>
+                <small class="text-muted">Date</small>
+              </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <div class="text-center p-3 border rounded-3 bg-light">
+                <div class="mb-2"><i class="ri-clock-line text-primary fs-3"></i></div>
+                <strong class="d-block">{{ session.start_datetime|time:"g:i A" }}</strong>
+                <small class="text-muted">Time</small>
+              </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <div class="text-center p-3 border rounded-3 bg-light">
+                <div class="mb-2"><i class="ri-timer-line text-primary fs-3"></i></div>
+                <strong class="d-block">{{ session.duration_minutes }} min</strong>
+                <small class="text-muted">Duration</small>
+              </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <div class="text-center p-3 border rounded-3 bg-light">
+                <div class="mb-2"><i class="ri-group-line text-primary fs-3"></i></div>
+                <strong class="d-block">{{ session.invitation_set.count }}</strong>
+                <small class="text-muted">Players</small>
+              </div>
+            </div>
+          </div>
+
+          <!-- Location & Status -->
+          <div class="row g-3 mb-4">
+            <div class="col-lg-8">
+              <div class="d-flex p-3 border rounded-3 bg-light">
+                <div class="me-3"><i class="ri-map-pin-line text-primary fs-3 mt-1"></i></div>
+                <div>
+                  <h6 class="mb-1 fw-semibold">Location</h6>
+                  <p class="mb-0 text-muted">{{ session.location }}</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-4">
+              <div class="d-flex p-3 border rounded-3 bg-light">
+                <div class="me-3"><i class="ri-information-line text-primary fs-3 mt-1"></i></div>
+                <div class="text-end">
+                  <h6 class="mb-1 fw-semibold">Status</h6>
+                  <span class="badge bg-{% if session.status == 'draft' %}secondary{% elif session.status == 'proposed' %}warning{% elif session.status == 'confirmed' %}success{% elif session.status == 'cancelled' %}danger{% else %}info{% endif %} rounded-pill px-3 py-2 fs-6">
+                    {{ session.get_status_display|default:session.status|title }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div class="mb-4">
+            <h5 class="fw-bold mb-3"><i class="ri-file-text-line me-2 text-primary"></i>About This Session</h5>
+            {% if session.description %}
+              <div class="p-3 bg-light rounded-3">
+                <p class="mb-0 text-muted">{{ session.description|linebreaks }}</p>
+              </div>
+            {% else %}
+              <div class="text-center p-4 bg-light rounded-3 border-dashed">
+                <i class="ri-file-add-line text-muted mb-2 d-block" style="font-size: 3rem; opacity: 0.5;"></i>
+                <p class="text-muted mb-0">No description yet. Share details to rally your team!</p>
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- Creator Info -->
+          <div class="d-flex align-items-center p-3 bg-light rounded-3 mb-4">
+            <img src="{% static 'assets/images/user/1.jpg' %}" class="rounded-circle me-3" alt="{{ session.creator.username }}" style="width: 50px; height: 50px; object-fit: cover;">
+            <div class="flex-grow-1">
+              <h6 class="mb-1">{{ session.creator.username }}</h6>
+              <small class="text-muted">Session Creator</small>
+            </div>
+            <div class="text-end">
+              <small class="text-muted d-block">Created</small>
+              <span class="text-primary fw-semibold">{{ session.created_at|date:"M d, Y" }}</span>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          {% if user.is_authenticated %}
+            <div class="row g-2 mb-4">
+              {% if session.is_upcoming %}
                 {% if user_invitation %}
-                  <div class="alert alert-info d-flex align-items-center">
-                    <i class="ri-information-line me-2"></i>
-                    <span>You are invited to this session!</span>
+                  <div class="col-12">
+                    <div class="alert alert-info d-flex align-items-center rounded-3">
+                      <i class="ri-checkbox-circle-line me-2 fs-5"></i>
+                      <span class="ms-2">You're invited! Update your response.</span>
+                    </div>
+                  </div>
+                  <div class="col-12">
+                    <a href="{% url 'sessions:respond' invitation_id=user_invitation.id %}" class="btn btn-primary w-100 rounded-pill">
+                      <i class="ri-edit-line me-2"></i>Update Response
+                    </a>
                   </div>
                 {% elif session.creator != user %}
-                  <button class="btn btn-primary w-100" disabled>
-                    <i class="ri-user-add-line me-2"></i>Request to Join (Coming Soon)
-                  </button>
+                  <div class="col-12">
+                    <form method="post" action="{% url 'sessions:detail' session.pk %}">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-outline-primary w-100 rounded-pill">
+                        <i class="ri-user-add-line me-2"></i>Request to Join
+                      </button>
+                    </form>
+                  </div>
                 {% endif %}
-              {% endwith %}
-            {% else %}
-              <div class="alert alert-secondary">
-                <i class="ri-information-line me-2"></i>This session has already started or ended.
-              </div>
-            {% endif %}
-          </div>
-        {% endif %}
+              {% else %}
+                <div class="col-12">
+                  <div class="alert alert-secondary d-flex align-items-center rounded-3">
+                    <i class="ri-time-line me-2 fs-5"></i>
+                    <span class="ms-2">This session has already started or ended.</span>
+                  </div>
+                </div>
+              {% endif %}
+              {% if user == session.creator %}
+                <div class="col-md-6">
+                  <a href="{% url 'sessions:update' session.pk %}" class="btn btn-warning w-100 rounded-pill">
+                    <i class="ri-edit-box-line me-2"></i>Edit
+                  </a>
+                </div>
+                <div class="col-md-6">
+                  <a href="{% url 'sessions:delete' session.pk %}" class="btn btn-danger w-100 rounded-pill" onclick="return confirm('Delete this session? All invites will be cancelled.');">
+                    <i class="ri-delete-bin-line me-2"></i>Delete
+                  </a>
+                </div>
+              {% endif %}
+            </div>
+          {% endif %}
+
+          <!-- Back Link -->
+          <a href="{% url 'sessions:list' %}" class="btn btn-link text-decoration-none">
+            <i class="ri-arrow-left-line me-2"></i>Back to Sessions
+          </a>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="col-lg-4">
-    <!-- Invitees Card -->
-    <div class="card mb-3">
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">
-          <i class="ri-group-line me-2"></i>Invitees
-        </h5>
-        <span class="badge bg-primary">{{ session.invitation_set.count }}</span>
-      </div>
-      <div class="card-body p-0">
-        {% if session.invitation_set.exists %}
-          <ul class="list-unstyled mb-0">
-            {% for invitation in session.invitation_set.all %}
-            <li class="border-bottom p-3">
-              <div class="d-flex align-items-center">
-                <img src="{% static 'assets/images/user/1.jpg' %}" class="avatar-40 rounded-circle me-3" alt="{{ invitation.invitee.username }}">
-                <div class="flex-grow-1">
-                  <div class="fw-bold">{{ invitation.invitee.username }}</div>
-                  <small class="text-muted">{{ invitation.invitee.email }}</small>
+    <!-- Sidebar (4 columns - Clean invitees list) -->
+    <div class="col-lg-4">
+      <!-- Invitees Card -->
+      <div class="card card-block card-stretch shadow-sm">
+        <div class="card-header bg-primary text-white">
+          <h6 class="mb-0 d-flex justify-content-between align-items-center">
+            <span><i class="ri-group-line me-2"></i>Team Members</span>
+            <span class="badge bg-light text-primary">{{ invitations|length }}</span>
+          </h6>
+        </div>
+        <div class="card-body p-0">
+          {% if invitations %}
+            <div class="list-group list-group-flush" style="max-height: 400px; overflow-y: auto;">
+              {% for invitation in invitations %}
+              <div class="list-group-item d-flex align-items-center p-3">
+                <div class="flex-shrink-0">
+                  <img src="{% static 'assets/images/user/' %}{{ forloop.counter }}.jpg" class="rounded-circle" alt="{{ invitation.invitee.username }}" style="width: 45px; height: 45px; object-fit: cover;">
                 </div>
-                <span class="badge bg-{% if invitation.status == 'accepted' %}success{% elif invitation.status == 'refused' %}danger{% elif invitation.status == 'rescheduled' %}warning{% else %}secondary{% endif %}">
-                  {{ invitation.get_status_display }}
-                </span>
+                <div class="flex-grow-1 ms-3">
+                  <h6 class="mb-0 small">{{ invitation.invitee.username }}</h6>
+                  <span class="badge bg-{% if invitation.status == 'accepted' %}success{% elif invitation.status == 'refused' %}danger{% elif invitation.status == 'rescheduled' %}warning{% else %}secondary{% endif %} rounded-pill">
+                    {{ invitation.get_status_display|default:invitation.status|title }}
+                  </span>
+                  {% if invitation.response_notes %}
+                    <small class="d-block text-muted mt-1">{{ invitation.response_notes|truncatechars:30 }}</small>
+                  {% endif %}
+                </div>
+                {% if user == session.creator and invitation.status == 'pending' %}
+                <div class="ms-2 d-flex gap-2">
+                  <form method="post" action="{% url 'sessions:manage_invitation' invitation.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="accept">
+                    <button type="submit" class="btn btn-sm btn-success rounded-pill">Accept</button>
+                  </form>
+                  <form method="post" action="{% url 'sessions:manage_invitation' invitation.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="refuse">
+                    <button type="submit" class="btn btn-sm btn-danger rounded-pill">Decline</button>
+                  </form>
+                </div>
+                {% endif %}
               </div>
-              {% if invitation.response_notes %}
-                <div class="mt-2 ps-5">
-                  <small class="text-muted">
-                    <i class="ri-chat-3-line me-1"></i>{{ invitation.response_notes|truncatewords:10 }}
-                  </small>
-                </div>
-              {% endif %}
-              {% if invitation.rescheduled_datetime %}
-                <div class="mt-1 ps-5">
-                  <small class="text-warning">
-                    <i class="ri-calendar-line me-1"></i>Suggested: {{ invitation.rescheduled_datetime|date:"M d, Y g:i A" }}
-                  </small>
-                </div>
-              {% endif %}
-            </li>
-            {% endfor %}
-          </ul>
-        {% else %}
-          <div class="text-center text-muted py-4">
-            <i class="ri-user-line" style="font-size: 48px; opacity: 0.3;"></i>
-            <p class="mb-0 mt-2">No invitees yet</p>
-          </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="text-center py-4 text-muted">
+              <i class="ri-user-add-line mb-2 d-block" style="font-size: 3rem; opacity: 0.5;"></i>
+              <p class="mb-0">No team members yet</p>
+              <small>Invite players to join!</small>
+            </div>
+          {% endif %}
+        </div>
+        {% if user == session.creator %}
+        <div class="card-footer bg-light border-0">
+          <a href="{% url 'sessions:invite' session.pk %}" class="btn btn-primary w-100 rounded-pill">
+            <i class="ri-user-add-line me-2"></i>Invite Players
+          </a>
+        </div>
         {% endif %}
       </div>
+
+      <!-- AI Suggestions Card -->
       {% if user == session.creator %}
-      <div class="card-footer">
-        <a href="{% url 'sessions:invite' session.pk %}" class="btn btn-primary btn-sm w-100">
-          <i class="ri-user-add-line me-2"></i>Invite Users
-        </a>
+      <div class="card card-block card-stretch shadow-sm mt-4">
+        <div class="card-body text-center p-4">
+          <div class="mb-3">
+            <i class="ri-lightbulb-flash-line text-primary fs-1"></i>
+          </div>
+          <h6 class="fw-bold mb-2">AI Insights</h6>
+          <p class="text-muted small mb-3">Smart recommendations for your team and schedule.</p>
+          <a href="{% url 'sessions:ai_suggest' session.pk %}" class="btn btn-outline-primary w-100 rounded-pill">
+            <i class="ri-magic-line me-2"></i>View Suggestions
+          </a>
+        </div>
       </div>
       {% endif %}
     </div>
-
-    <!-- AI Suggestions Card -->
-    {% if user == session.creator %}
-    <div class="card">
-      <div class="card-body text-center">
-        <i class="ri-lightbulb-line text-info mb-2" style="font-size: 32px;"></i>
-        <h6 class="mb-2">Need Help?</h6>
-        <p class="text-muted small mb-3">Get AI-powered suggestions for optimal attendees and scheduling.</p>
-        <a href="{% url 'sessions:ai_suggest' session.pk %}" class="btn btn-info w-100">
-          <i class="ri-magic-line me-2"></i>AI Suggestions
-        </a>
-      </div>
-    </div>
-    {% endif %}
   </div>
 </div>
+
+<style>
+  /* Hero Image */
+  .session-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 3.5rem;
+    color: rgba(255, 255, 255, 0.9);
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  }
+
+  /* Info Cards */
+  .info-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .info-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .info-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 0.75rem;
+  }
+
+  .info-content strong {
+    color: var(--text-primary);
+    font-size: 1.1rem;
+  }
+
+  /* Location & Status */
+  .location-card, .status-card {
+    transition: transform 0.2s ease;
+  }
+
+  .location-card:hover, .status-card:hover {
+    transform: translateY(-2px);
+  }
+
+  .status-badge {
+    font-size: 0.85rem;
+    padding: 0.5rem 1rem;
+  }
+
+  /* Description */
+  .description-section {
+    background: var(--surface-elevated);
+    padding: 1.5rem;
+    border-radius: var(--radius-lg);
+  }
+
+  .empty-state {
+    padding: 2rem;
+    text-align: center;
+  }
+
+  .empty-state i {
+    font-size: 4rem;
+    opacity: 0.5;
+  }
+
+  /* Creator Section */
+  .creator-section {
+    background: var(--surface-elevated);
+    border-radius: var(--radius-lg);
+  }
+
+  /* Actions */
+  .action-section {
+    background: var(--surface-elevated);
+    padding: 1.5rem;
+    border-radius: var(--radius-lg);
+  }
+
+  .btn {
+    transition: all 0.2s ease;
+  }
+
+  .btn:hover {
+    transform: translateY(-1px);
+  }
+
+  /* Sidebar */
+  .blog-post .list-group-item {
+    border-color: var(--border-color);
+  }
+
+  .blog-post img {
+    height: 80px;
+    object-fit: cover;
+  }
+
+  .user-comment .blog {
+    margin-bottom: 1rem;
+  }
+
+  .user-comment .blog:hover {
+    box-shadow: var(--shadow-md);
+  }
+
+  .avatar-50 {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+  }
+
+  /* Dark Mode */
+  [data-theme="dark"] .bg-light {
+    background-color: var(--surface-elevated) !important;
+  }
+
+  [data-theme="dark"] .text-muted {
+    color: var(--text-secondary) !important;
+  }
+
+  @media (max-width: 768px) {
+    .session-overlay {
+      font-size: 2rem;
+    }
+
+    .hero-content h3 {
+      font-size: 1.5rem;
+    }
+  }
+</style>
 {% endblock %}

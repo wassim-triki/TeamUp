@@ -1,16 +1,15 @@
-<!-- templates/sessions/create.html -->
 {% extends 'sessions/base.html' %}
 {% load static %}
 
-{% block title %}Create Session - TeamUp{% endblock %}
+{% block title %}{{ title|default:"Create Session" }} - TeamUp{% endblock %}
 
 {% block header %}
 <div class="header-for-bg">
   <div class="background-header position-relative">
-    <img src="{% static 'assets/images/page-img/profile-bg7.jpg' %}" class="img-fluid w-100" alt="Create Session Header">
+    <img src="{% static 'assets/images/page-img/profile-bg7.jpg' %}" class="img-fluid w-100" alt="{{ title|default:'Session Form' }} Header">
     <div class="title-on-header">
       <div class="data-block">
-        <h2>Create Session</h2>
+        <h2>{{ title|default:"Create Session" }}</h2>
       </div>
     </div>
   </div>
@@ -22,7 +21,7 @@
   <div class="col-lg-8">
     <div class="card">
       <div class="card-header d-flex justify-content-between align-items-center">
-        <h4 class="card-title mb-0">New Session Details</h4>
+        <h4 class="card-title mb-0">{{ title|default:"New Session Details" }}</h4>
         <a href="{% url 'sessions:list' %}" class="btn btn-sm btn-soft-secondary">
           <i class="ri-arrow-left-line"></i> Back to Sessions
         </a>
@@ -141,7 +140,7 @@
               <i class="ri-close-line me-1"></i>Cancel
             </a>
             <button type="submit" class="btn btn-primary">
-              <i class="ri-add-line me-1"></i>Create Session
+              <i class="ri-{% if submit_text == 'Update Session' %}edit-box-line{% else %}add-line{% endif %} me-1"></i>{{ submit_text|default:"Create Session" }}
             </button>
           </div>
         </form>
