@@ -107,8 +107,8 @@ def signup_step1_email(request):
 
 def signup_step2_details(request):
     """
-    Step 2: User enters password, sports, and availability.
-    Store all data in session and proceed to confirmation.
+    Step 2: User enters password and basic personal information.
+    No sports or availability - just core account details.
     """
     # Check if email exists in session
     if 'signup_email' not in request.session:
@@ -120,8 +120,6 @@ def signup_step2_details(request):
     if request.method == 'POST':
         password = request.POST.get('password', '')
         password_confirm = request.POST.get('password_confirm', '')
-        sports = request.POST.getlist('sports')  # Multiple sports selection
-        availability = request.POST.get('availability', '')
         first_name = request.POST.get('first_name', '').strip()
         last_name = request.POST.get('last_name', '').strip()
         gender = request.POST.get('gender', '').strip()
@@ -155,20 +153,10 @@ def signup_step2_details(request):
         if not country:
             error_messages.append('Country is required.')
         
-        # Sports validation
-        if not sports:
-            error_messages.append('Please select at least one sport.')
-        
-        # Availability validation
-        if not availability:
-            error_messages.append('Please select your availability.')
-        
-        # If no errors, store and proceed
+        # If no errors, store and proceed to sports selection
         if not error_messages:
             # Store everything in session
             request.session['signup_password'] = password
-            request.session['signup_sports'] = sports
-            request.session['signup_availability'] = availability
             request.session['signup_first_name'] = first_name
             request.session['signup_last_name'] = last_name
             request.session['signup_gender'] = gender
@@ -180,8 +168,6 @@ def signup_step2_details(request):
             # Return to form with context
             context = {
                 'email': request.session.get('signup_email'),
-                'sports': sports,
-                'availability': availability,
                 'first_name': first_name,
                 'last_name': last_name,
                 'gender': gender,
@@ -197,29 +183,88 @@ def signup_step2_details(request):
     storage.used = True
     
     return render(request, 'users/signup_step2_minimal.html', {
-        'email': request.session.get('signup_email')
+        'email': request.session.get('signup_email'),
+        'first_name': request.session.get('signup_first_name', ''),
+        'last_name': request.session.get('signup_last_name', ''),
+        'gender': request.session.get('signup_gender', ''),
+        'country': request.session.get('signup_country', ''),
+        'city': request.session.get('signup_city', ''),
     })
 
 
-def signup_step3_confirm(request):
+def signup_step3_sports(request):
     """
-    Step 3: Review and confirm signup data.
+    Step 3: User selects sports interests.
+    """
+    # Check if previous steps are completed
+    if 'signup_email' not in request.session or 'signup_password' not in request.session:
+        return redirect('users:signup_step1')
+    
+    error_messages = []
+    
+    if request.method == 'POST':
+        sports = request.POST.getlist('sports')  # Multiple sports selection
+        
+        # Sports validation
+        if not sports:
+            error_messages.append('Please select at least one sport.')
+        
+        # If no errors, store and proceed to availability
+        if not error_messages:
+            request.session['signup_sports'] = sports
+            return redirect('users:signup_step4')
+        else:
+            context = {
+                'email': request.session.get('signup_email'),
+                'sports': sports,
+                'error_messages': error_messages,
+            }
+            return render(request, 'users/signup_step3_minimal.html', context)
+    
+    # Clear any stale messages
+    storage = messages.get_messages(request)
+    storage.used = True
+    
+    return render(request, 'users/signup_step3_minimal.html', {
+        'email': request.session.get('signup_email'),
+        'sports': request.session.get('signup_sports', []),
+    })
+
+
+def signup_step4_availability(request):
+    """
+    Step 4: User enters availability and confirms.
     Create user, profile, and send verification email.
     """
-    # Check if all session data exists
-    required_keys = ['signup_email', 'signup_password', 'signup_sports', 'signup_availability']
+    # Check if all previous steps are completed
+    required_keys = ['signup_email', 'signup_password', 'signup_sports']
     if not all(key in request.session for key in required_keys):
         return redirect('users:signup_step1')
     
     error_message = None
     
     if request.method == 'POST':
+        availability = request.POST.get('availability', '')
+        
+        # Availability validation
+        if not availability:
+            error_message = 'Please enter your availability.'
+            context = {
+                'email': request.session.get('signup_email'),
+                'availability': availability,
+                'error_message': error_message,
+            }
+            return render(request, 'users/signup_step4_minimal.html', context)
+        
+        # Store availability
+        request.session['signup_availability'] = availability
+        
+        # Now create the user account
         try:
             # Retrieve data from session
             email = request.session['signup_email']
             password = request.session['signup_password']
             sports = request.session['signup_sports']
-            availability = request.session['signup_availability']
             first_name = request.session.get('signup_first_name', '')
             last_name = request.session.get('signup_last_name', '')
             gender = request.session.get('signup_gender', '')
@@ -230,7 +275,8 @@ def signup_step3_confirm(request):
             if User.objects.filter(email=email).exists():
                 error_message = 'An account with this email already exists.'
                 # Clear session
-                for key in required_keys + ['signup_first_name', 'signup_last_name', 'signup_gender', 'signup_country', 'signup_city']:
+                for key in ['signup_email', 'signup_password', 'signup_sports', 'signup_availability', 
+                           'signup_first_name', 'signup_last_name', 'signup_gender', 'signup_country', 'signup_city']:
                     request.session.pop(key, None)
                 
                 # Clear messages and store success message for login page
@@ -283,7 +329,8 @@ def signup_step3_confirm(request):
             )
             
             # Clear session data
-            for key in required_keys + ['signup_display_name', 'signup_city']:
+            for key in ['signup_email', 'signup_password', 'signup_sports', 'signup_availability',
+                       'signup_first_name', 'signup_last_name', 'signup_gender', 'signup_country', 'signup_city']:
                 request.session.pop(key, None)
             
             # Clear any stale messages before redirect
@@ -295,21 +342,23 @@ def signup_step3_confirm(request):
             
         except Exception as e:
             error_message = 'An error occurred while creating your account. Please try again.'
+            context = {
+                'email': request.session.get('signup_email'),
+                'availability': availability,
+                'error_message': error_message,
+            }
+            return render(request, 'users/signup_step4_minimal.html', context)
     
     # Clear any stale messages from other pages
     storage = messages.get_messages(request)
     storage.used = True
     
-    # Display confirmation page
+    # Display availability form
     context = {
         'email': request.session.get('signup_email'),
-        'sports': request.session.get('signup_sports', []),
-        'availability': request.session.get('signup_availability'),
-        'display_name': request.session.get('signup_display_name', ''),
-        'city': request.session.get('signup_city', ''),
-        'error_message': error_message,
+        'availability': request.session.get('signup_availability', ''),
     }
-    return render(request, 'users/signup_step3_minimal.html', context)
+    return render(request, 'users/signup_step4_minimal.html', context)
 
 
 def email_sent_view(request):

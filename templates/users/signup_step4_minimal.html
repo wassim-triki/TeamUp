@@ -1,0 +1,224 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <title>Sign Up - Step 4 | TeamUp</title>
+
+    <link rel="shortcut icon" href="{% static 'core/images/favicon.ico' %}" />
+    <link rel="stylesheet" href="{% static 'core/css/libs.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'core/css/socialv.css' %}" />
+    <link
+      rel="stylesheet"
+      href="{% static 'core/vendor/remixicon/fonts/remixicon.css' %}"
+    />
+    <style>
+      /* Enable scrolling for form content */
+      .sign-in-page {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+      }
+      .sign-in-from {
+        max-height: calc(100vh - 100px);
+        overflow-y: auto;
+        padding-right: 15px;
+      }
+      /* Custom scrollbar */
+      .sign-in-from::-webkit-scrollbar {
+        width: 6px;
+      }
+      .sign-in-from::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+      }
+      .sign-in-from::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 10px;
+      }
+      .sign-in-from::-webkit-scrollbar-thumb:hover {
+        background: #555;
+      }
+      .alert-solid {
+        color: #fff;
+        border: none;
+      }
+      .alert-solid .btn-close {
+        filter: brightness(0) invert(1);
+      }
+      .alert-solid i {
+        font-size: 18px;
+        margin-right: 8px;
+      }
+    </style>
+  </head>
+  <body class="">
+    <div id="loading">
+      <div id="loading-center"></div>
+    </div>
+
+    <div class="wrapper">
+      <section class="sign-in-page">
+        <div id="container-inside">
+          <div id="circle-small"></div>
+          <div id="circle-medium"></div>
+          <div id="circle-large"></div>
+          <div id="circle-xlarge"></div>
+          <div id="circle-xxlarge"></div>
+        </div>
+        <div class="container p-0">
+          <div class="row no-gutters">
+            <div class="col-md-6 text-center pt-5">
+              <div class="sign-in-detail text-white">
+                <a class="sign-in-logo mb-5" href="/"
+                  ><img
+                    src="{% static 'core/images/logo-full.png' %}"
+                    class="img-fluid"
+                    alt="logo"
+                /></a>
+                <div class="sign-slider overflow-hidden">
+                  <ul class="swiper-wrapper list-inline m-0 p-0">
+                    <li class="swiper-slide">
+                      <img
+                        src="{% static 'core/images/login/3.png' %}"
+                        class="img-fluid mb-4"
+                        alt="logo"
+                      />
+                      <h4 class="mb-1 text-white">Almost Done!</h4>
+                      <p>
+                        Tell us when you're available to play and complete your registration.
+                      </p>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6 bg-white pt-5 pb-lg-0 pb-5">
+              <div class="sign-in-from">
+                <h1 class="mb-0">Availability</h1>
+                <p>Step 4 of 4 - When can you play?</p>
+
+                <div class="progress mb-3" style="height: 5px">
+                  <div
+                    class="progress-bar bg-primary"
+                    role="progressbar"
+                    style="width: 100%"
+                  ></div>
+                </div>
+
+                {% if error_messages %} {% for error in error_messages %}
+                <div
+                  class="alert alert-solid alert-danger alert-dismissible fade show mb-3"
+                  role="alert"
+                >
+                  <span><i class="ri-alert-line"></i></span>
+                  <span> {{ error }}</span>
+                  <button
+                    type="button"
+                    class="btn-close btn-close-white"
+                    data-bs-dismiss="alert"
+                    aria-label="Close"
+                  ></button>
+                </div>
+                {% endfor %} {% endif %}
+
+                <form
+                  class="mt-4"
+                  method="post"
+                  action="{% url 'users:signup_step4' %}"
+                  id="signupStep4Form"
+                  novalidate
+                >
+                  {% csrf_token %}
+
+                  <div class="form-group">
+                    <label class="form-label" for="availability"
+                      >When are you available to play? *</label
+                    >
+                    <textarea
+                      class="form-control"
+                      id="availability"
+                      name="availability"
+                      rows="4"
+                      placeholder="E.g., Weekdays after 6 PM, Weekends mornings, Saturday afternoons..."
+                      required
+                    >{{ availability|default:'' }}</textarea>
+                    <div class="invalid-feedback">
+                      Please enter your availability.
+                    </div>
+                    <small class="form-text text-muted"
+                      >This helps others know when you're free to play sports together.</small
+                    >
+                  </div>
+
+                  <div
+                    class="alert alert-info d-flex align-items-start mt-4"
+                    role="alert"
+                  >
+                    <i class="ri-information-line me-2 fs-5 mt-1"></i>
+                    <div>
+                      <strong>Final Step!</strong><br />
+                      <small
+                        >After submitting, we'll send a verification email to activate your
+                        account.</small
+                      >
+                    </div>
+                  </div>
+
+                  <div class="d-inline-block w-100 mt-4">
+                    <a
+                      href="{% url 'users:signup_step3' %}"
+                      class="btn btn-outline-secondary"
+                      >Back</a
+                    >
+                    <button type="submit" class="btn btn-success float-end">
+                      <i class="ri-check-line me-1"></i> Create Account
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <script src="{% static 'core/js/libs.min.js' %}"></script>
+    <script src="{% static 'core/js/slider.js' %}"></script>
+    <script src="{% static 'core/js/app.js' %}"></script>
+    <script src="{% static 'core/js/lottie.js' %}"></script>
+
+    <script>
+      // Client-side validation for signup step 4
+      document
+        .getElementById('signupStep4Form')
+        .addEventListener('submit', function (e) {
+          const availability = document.getElementById('availability');
+          let isValid = true;
+
+          // Availability validation
+          if (!availability.value.trim()) {
+            e.preventDefault();
+            availability.classList.add('is-invalid');
+            isValid = false;
+          } else {
+            availability.classList.remove('is-invalid');
+            availability.classList.add('is-valid');
+          }
+
+          return isValid;
+        });
+
+      // Remove invalid state on input - Availability
+      document
+        .getElementById('availability')
+        .addEventListener('input', function () {
+          this.classList.remove('is-invalid');
+        });
+    </script>
+  </body>
+</html>
