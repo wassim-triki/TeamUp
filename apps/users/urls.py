@@ -24,6 +24,7 @@ urlpatterns = [
     # Profile Management
     path('profile/edit/', views.edit_profile, name='edit_profile'),
     path('profile/edit/sports/', views.edit_sports, name='edit_sports'),
+    path('profile/edit/availability/', views.edit_availability, name='edit_availability'),
     path('profile/change-password/', views.change_password, name='change_password'),
     path('profile/manage-contact/', views.manage_contact, name='manage_contact'),
     path('profile/<str:username>/', views.profile_view, name='profile'),

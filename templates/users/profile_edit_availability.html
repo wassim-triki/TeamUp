@@ -1,0 +1,278 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Edit Availability - TeamUp{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Availability grid layout */
+    .availability-patterns {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        margin-top: 15px;
+    }
+    
+    /* Availability card styling - Modern design */
+    .availability-card {
+        position: relative;
+        border: 2px solid #e3e6ea;
+        border-radius: 12px;
+        padding: 16px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        background: #fff;
+        margin-bottom: 0;
+    }
+    
+    .availability-card:hover {
+        border-color: #50b5ff;
+        box-shadow: 0 4px 12px rgba(80, 181, 255, 0.2);
+        transform: translateY(-2px);
+    }
+    
+    /* Hide default checkbox */
+    .availability-card .form-check-input {
+        position: absolute;
+        opacity: 0;
+        cursor: pointer;
+    }
+    
+    /* Custom checkbox design */
+    .availability-card .form-check-label {
+        cursor: pointer;
+        margin-bottom: 0;
+        padding-left: 0;
+        display: block;
+        width: 100%;
+        position: relative;
+    }
+    
+    .availability-card .form-check-label::before {
+        content: '';
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        width: 20px;
+        height: 20px;
+        border: 2px solid #cbd5e0;
+        border-radius: 6px;
+        background: #fff;
+        transition: all 0.3s ease;
+    }
+    
+    .availability-card .form-check-label::after {
+        content: '✓';
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-weight: bold;
+        font-size: 14px;
+        opacity: 0;
+        transform: scale(0.5);
+        transition: all 0.3s ease;
+    }
+    
+    /* Checked state */
+    .availability-card .form-check-input:checked ~ .form-check-label::before {
+        background: linear-gradient(135deg, #50b5ff 0%, #2e8bc0 100%);
+        border-color: #50b5ff;
+    }
+    
+    .availability-card .form-check-input:checked ~ .form-check-label::after {
+        opacity: 1;
+        transform: scale(1);
+    }
+    
+    .availability-card .form-check-input:checked ~ .form-check-label {
+        color: #2d3748;
+    }
+    
+    /* When card is checked, change border and background */
+    .availability-card:has(.form-check-input:checked) {
+        border-color: #50b5ff;
+        background: linear-gradient(135deg, rgba(80, 181, 255, 0.05) 0%, rgba(46, 139, 192, 0.05) 100%);
+        box-shadow: 0 4px 12px rgba(80, 181, 255, 0.25);
+    }
+    
+    .availability-title {
+        font-weight: 600;
+        color: #2d3748;
+        margin-bottom: 4px;
+        font-size: 15px;
+        padding-right: 30px;
+    }
+    
+    .availability-description {
+        color: #718096;
+        font-size: 13px;
+        line-height: 1.4;
+        padding-right: 30px;
+    }
+
+    .iq-edit-list ul {
+        display: flex;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        border-bottom: 2px solid #e6e6e6;
+    }
+
+    .iq-edit-list ul li {
+        flex: 1;
+    }
+
+    .iq-edit-list ul li a {
+        display: block;
+        padding: 20px;
+        text-align: center;
+        text-decoration: none;
+        color: #6c757d;
+        font-weight: 500;
+        border-bottom: 3px solid transparent;
+        transition: all 0.3s ease;
+    }
+
+    .iq-edit-list ul li a:hover {
+        color: #667eea;
+        background: #f8f9fa;
+    }
+
+    .iq-edit-list ul li a.active {
+        color: #667eea;
+        border-bottom-color: #667eea;
+        background: #f8f9fa;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="content-page" class="content-page">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-body p-0">
+                        <div class="iq-edit-list">
+                            <ul class="iq-edit-profile row nav nav-pills">
+                                <li class="col-md p-0">
+                                    <a class="nav-link {% if active_tab == 'personal-information' %}active{% endif %}" href="{% url 'users:edit_profile' %}">
+                                        Personal Information
+                                    </a>
+                                </li>
+                                <li class="col-md p-0">
+                                    <a class="nav-link {% if active_tab == 'edit-sports' %}active{% endif %}" href="{% url 'users:edit_sports' %}">
+                                        Sports Interests
+                                    </a>
+                                </li>
+                                <li class="col-md p-0">
+                                    <a class="nav-link {% if active_tab == 'edit-availability' %}active{% endif %}" href="{% url 'users:edit_availability' %}">
+                                        Availability
+                                    </a>
+                                </li>
+                                <li class="col-md p-0">
+                                    <a class="nav-link {% if active_tab == 'change-pwd' %}active{% endif %}" href="{% url 'users:change_password' %}">
+                                        Change Password
+                                    </a>
+                                </li>
+                                <li class="col-md p-0">
+                                    <a class="nav-link {% if active_tab == 'manage-contact' %}active{% endif %}" href="{% url 'users:manage_contact' %}">
+                                        Change Email
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between">
+                        <div class="header-title">
+                            <h4 class="card-title">Availability</h4>
+                        </div>
+                    </div>
+                    <div class="card-body">
+
+                        <form method="POST" action="{% url 'users:edit_availability' %}" id="availabilityForm">
+                            {% csrf_token %}
+
+                            <div class="form-group">
+                                <label class="form-label mb-2">
+                                    <strong>When are you available to play?</strong>
+                                </label>
+                                <small class="form-text text-muted d-block mb-3">
+                                    Select all that apply. This helps us match you with others.
+                                </small>
+
+                                <div class="availability-patterns">
+                                    {% for code, name, description in availability_patterns %}
+                                    <div class="form-check availability-card">
+                                        <input
+                                            class="form-check-input"
+                                            type="checkbox"
+                                            name="availability"
+                                            value="{{ code }}"
+                                            id="availability_{{ code }}"
+                                            {% if code in user_availability %}checked{% endif %}
+                                        />
+                                        <label class="form-check-label" for="availability_{{ code }}">
+                                            <div class="availability-title">{{ name }}</div>
+                                            <div class="availability-description">{{ description }}</div>
+                                        </label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+
+                                <div class="invalid-feedback" id="availability-error" style="display: none;">
+                                    Please select at least one availability option.
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-end mt-4">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="ri-save-line me-2"></i>Save Changes
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Client-side validation
+    document.getElementById('availabilityForm').addEventListener('submit', function(e) {
+        const checkboxes = document.querySelectorAll('input[name="availability"]:checked');
+        const errorDiv = document.getElementById('availability-error');
+
+        if (checkboxes.length === 0) {
+            e.preventDefault();
+            errorDiv.style.display = 'block';
+        } else {
+            errorDiv.style.display = 'none';
+        }
+    });
+
+    // Remove error when an option is selected
+    document.querySelectorAll('input[name="availability"]').forEach(function(checkbox) {
+        checkbox.addEventListener('change', function() {
+            const checkboxes = document.querySelectorAll('input[name="availability"]:checked');
+            const errorDiv = document.getElementById('availability-error');
+
+            if (checkboxes.length > 0) {
+                errorDiv.style.display = 'none';
+            }
+        });
+    });
+</script>
+{% endblock %}

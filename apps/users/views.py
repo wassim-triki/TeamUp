@@ -549,6 +549,46 @@ def edit_sports(request):
 
 
 @login_required
+def edit_availability(request):
+    """
+    Edit user availability - Uses the same component as signup step 4
+    """
+    # Get or create profile for the user
+    profile, created = UserProfile.objects.get_or_create(user=request.user)
+    
+    # Get availability patterns from model
+    availability_patterns = UserProfile.get_availability_choices()
+    
+    # Get user's current availability (JSONField stores list of pattern codes)
+    user_availability = profile.availability if profile.availability else []
+    
+    if request.method == 'POST':
+        # Get selected availability patterns from form
+        selected_availability = request.POST.getlist('availability')
+        
+        # Validate that at least one option is selected
+        if not selected_availability:
+            messages.error(request, 'Please select at least one availability option.')
+        else:
+            # Update user's availability
+            profile.availability = selected_availability
+            profile.save()
+            
+            messages.success(request, 'Availability updated successfully!')
+            return redirect('users:edit_availability')
+    
+    context = {
+        'profile': profile,
+        'user': request.user,
+        'availability_patterns': availability_patterns,
+        'user_availability': user_availability,
+        'active_tab': 'edit-availability'
+    }
+    
+    return render(request, 'users/profile_edit_availability.html', context)
+
+
+@login_required
 def change_password(request):
     """
     Change user password
