@@ -1,0 +1,47 @@
+{% extends 'sessions/base.html' %}
+{% load static %}
+
+{% block title %}Delete Session - TeamUp{% endblock %}
+
+{% block header %}
+<div class="header-for-bg">
+  <div class="background-header position-relative">
+    <img src="{% static 'assets/images/page-img/profile-bg7.jpg' %}" class="img-fluid w-100" alt="Delete Session Header">
+    <div class="title-on-header">
+      <div class="data-block">
+        <h2>Delete Session</h2>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-4">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h4 class="card-title mb-0 text-danger">Confirm Deletion</h4>
+        <a href="{% url 'sessions:list' %}" class="btn btn-sm btn-soft-secondary">
+          <i class="ri-arrow-left-line"></i> Back to Sessions
+        </a>
+      </div>
+      <div class="card-body text-center py-5">
+        <i class="ri-delete-bin-line text-danger mb-4" style="font-size: 64px; opacity: 0.7;"></i>
+        <h5 class="mb-3">Are you sure you want to delete this session?</h5>
+        <p class="text-muted mb-4">Session: <strong>"{{ session.get_sport_type_display }} on {{ session.start_datetime|date:"M d, Y @ g:i A" }} at {{ session.location|truncatechars:50 }}"</strong></p>
+        <p class="text-danger mb-4">This action will permanently delete the session and cancel all related invitations. This cannot be undone.</p>
+        <form method="post" class="d-inline">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger rounded-pill px-4 py-2 me-3">
+            <i class="ri-delete-bin-line me-2"></i>Yes, Delete Session
+          </button>
+        </form>
+        <a href="{% url 'sessions:list' %}" class="btn btn-secondary rounded-pill px-4 py-2">
+          <i class="ri-close-line me-2"></i>Cancel
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

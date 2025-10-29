@@ -11,6 +11,7 @@
     <div class="title-on-header">
       <div class="data-block">
         <h2>Sessions</h2>
+        <p class="lead mt-2 opacity-90">Organize, join, and conquer your next game</p>
       </div>
     </div>
   </div>
@@ -18,184 +19,989 @@
 {% endblock %}
 
 {% block content %}
-<div class="row mt-4">
-  <div class="col-lg-12">
-    <div class="card">
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <div class="header-title">
-          <h4 class="card-title mb-0">Your Sessions</h4>
-          <small class="text-muted">Upcoming and past sessions you've created or been invited to.</small>
+<div class="container">
+  <div class="row">
+    <!-- Header Card with Search & Filters -->
+    <div class="col-lg-12">
+      <div class="card card-block card-stretch mb-4">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+              <h4 class="mb-1">{% if request.GET.view == 'my' %}Your Sessions{% else %}All Sessions{% endif %}</h4>
+              <small class="text-muted">
+                {% if request.GET.view == 'my' %}
+                  Sessions you've created or been invited to.
+                {% else %}
+                  Discover and join sessions from the community.
+                {% endif %}
+              </small>
+            </div>
+            <div class="d-flex gap-2 align-items-center">
+              {% if user.is_authenticated %}
+                <div class="btn-group me-2" role="group" aria-label="view-toggle">
+                  <a href="{% url 'sessions:list' %}" class="btn btn-sm {% if not request.GET.view or request.GET.view != 'my' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                    <i class="ri-earth-line me-1"></i>All
+                  </a>
+                  <a href="{% url 'sessions:list' %}?view=my" class="btn btn-sm {% if request.GET.view == 'my' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                    <i class="ri-user-line me-1"></i>My
+                  </a>
+                </div>
+                <a href="{% url 'sessions:create' %}" class="btn btn-primary btn-icon-label btn-sm">
+                  <span class="btn-inner">
+                    <i class="ri-add-circle-line"></i>
+                  </span>
+                  New
+                </a>
+              {% else %}
+                <a href="{% url 'sessions:create' %}" class="btn btn-primary btn-icon-label btn-sm">
+                  <span class="btn-inner">
+                    <i class="ri-add-circle-line"></i>
+                  </span>
+                  New
+                </a>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Search Bar -->
+          <div class="row g-3 mb-4">
+            <div class="col-lg-5">
+              <div class="input-group input-group-lg search-input-wrapper">
+                <span class="input-group-text bg-white border-end-0">
+                  <i class="ri-search-2-line text-primary"></i>
+                </span>
+                <input type="text" class="form-control border-start-0 ps-0" id="search-sessions" placeholder="Search sessions by sport, location...">
+                <button class="btn btn-light border" type="button" id="clear-search" style="display: none;">
+                  <i class="ri-close-line"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="col-lg-7">
+              <div class="d-flex gap-2 flex-wrap">
+                <div class="dropdown">
+                  <button class="btn btn-light dropdown-toggle px-3" type="button" id="sportFilter" data-bs-toggle="dropdown">
+                    <i class="ri-football-line me-1"></i>
+                    <span id="sport-filter-text">All Sports</span>
+                  </button>
+                  <ul class="dropdown-menu" aria-labelledby="sportFilter">
+                    <li><a class="dropdown-item sport-filter" href="#" data-sport="all">
+                      <i class="ri-refresh-line me-2"></i>All Sports
+                    </a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item sport-filter" href="#" data-sport="soccer">
+                      <i class="ri-football-line me-2 text-success"></i>Soccer
+                    </a></li>
+                    <li><a class="dropdown-item sport-filter" href="#" data-sport="basketball">
+                      <i class="ri-basketball-line me-2 text-warning"></i>Basketball
+                    </a></li>
+                    <li><a class="dropdown-item sport-filter" href="#" data-sport="tennis">
+                      <i class="ri-ping-pong-line me-2 text-info"></i>Tennis
+                    </a></li>
+                    <li><a class="dropdown-item sport-filter" href="#" data-sport="running">
+                      <i class="ri-run-line me-2 text-danger"></i>Running
+                    </a></li>
+                  </ul>
+                </div>
+
+                <div class="dropdown">
+                  <button class="btn btn-light dropdown-toggle px-3" type="button" id="statusFilter" data-bs-toggle="dropdown">
+                    <i class="ri-check-double-line me-1"></i>
+                    <span id="status-filter-text">All Status</span>
+                  </button>
+                  <ul class="dropdown-menu" aria-labelledby="statusFilter">
+                    <li><a class="dropdown-item status-filter" href="#" data-status="all">
+                      <i class="ri-refresh-line me-2"></i>All Status
+                    </a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item status-filter" href="#" data-status="confirmed">
+                      <i class="ri-checkbox-circle-line me-2 text-success"></i>Confirmed
+                    </a></li>
+                    <li><a class="dropdown-item status-filter" href="#" data-status="proposed">
+                      <i class="ri-time-line me-2 text-warning"></i>Proposed
+                    </a></li>
+                    <li><a class="dropdown-item status-filter" href="#" data-status="cancelled">
+                      <i class="ri-close-circle-line me-2 text-danger"></i>Cancelled
+                    </a></li>
+                    <li><a class="dropdown-item status-filter" href="#" data-status="draft">
+                      <i class="ri-draft-line me-2 text-secondary"></i>Draft
+                    </a></li>
+                  </ul>
+                </div>
+
+                <div class="dropdown">
+                  <button class="btn btn-light dropdown-toggle px-3" type="button" id="roleFilter" data-bs-toggle="dropdown">
+                    <i class="ri-user-star-line me-1"></i>
+                    <span id="role-filter-text">All Roles</span>
+                  </button>
+                  <ul class="dropdown-menu" aria-labelledby="roleFilter">
+                    <li><a class="dropdown-item role-filter" href="#" data-role="all">
+                      <i class="ri-refresh-line me-2"></i>All Roles
+                    </a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item role-filter" href="#" data-role="creator">
+                      <i class="ri-user-star-fill me-2 text-primary"></i>My Sessions
+                    </a></li>
+                    <li><a class="dropdown-item role-filter" href="#" data-role="invited">
+                      <i class="ri-user-received-line me-2 text-info"></i>Invited To
+                    </a></li>
+                  </ul>
+                </div>
+
+                <button class="btn btn-soft-danger" id="reset-filters" style="display: none;">
+                  <i class="ri-filter-off-line me-1"></i>Reset
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Active Filters Display -->
+          <div id="active-filters" class="mt-3" style="display: none;">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <small class="text-muted">Active filters:</small>
+              <div id="filter-badges"></div>
+            </div>
+          </div>
+
+          <!-- Results Count -->
+          <div class="mt-3">
+            <small class="text-muted">
+              <i class="ri-file-list-3-line me-1"></i>
+              Showing <strong id="results-count">{{ object_list|length }}</strong> session(s)
+            </small>
+          </div>
         </div>
-        {% if user.is_authenticated %}
-        <a href="{% url 'sessions:create' %}" class="btn btn-primary">
-          <i class="ri-add-line me-1"></i>New Session
-        </a>
-        {% endif %}
       </div>
-      <div class="card-body">
-        <div class="table-responsive">
-          <table class="table table-striped table-hover mb-0">
-            <thead>
-              <tr>
-                <th>Sport</th>
-                <th>Date & Time</th>
-                <th>Duration</th>
-                <th>Location</th>
-                <th>Status</th>
-                <th class="text-center">Invitees</th>
-                <th class="text-end">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for session in object_list %}
-              <tr>
-                <td>
-                  <div class="d-flex align-items-center">
-                    <i class="{% if session.sport_type == 'soccer' %}ri-football-line{% elif session.sport_type == 'basketball' %}ri-basketball-line{% elif session.sport_type == 'tennis' %}ri-ping-pong-line{% elif session.sport_type == 'running' %}ri-run-line{% else %}ri-trophy-line{% endif %} text-primary me-2"></i>
-                    <div>
-                      <strong class="text-capitalize">{{ session.get_sport_type_display }}</strong>
-                      {% if session.creator == user %}
-                        <span class="badge bg-primary badge-sm ms-1">Creator</span>
+    </div>
+
+    <!-- Sessions List -->
+    <div id="sessions-container">
+      {% if object_list %}
+        {% for session in object_list %}
+        <div class="col-lg-12 session-item" 
+             data-sport="{{ session.sport_type }}" 
+             data-status="{{ session.status|default:'proposed' }}"
+             data-role="{% if session.creator == user %}creator{% else %}invited{% endif %}"
+             data-search="{{ session.get_sport_type_display|lower }} {{ session.location|lower }}">
+          <div class="card card-block card-stretch card-height blog-list {% cycle '' 'list-even' %} mb-4">
+            <div class="card-body p-0">
+              <div class="row g-0 align-items-stretch">
+                {% if forloop.counter0|divisibleby:2 %}
+                  <!-- Image on left -->
+                  <div class="col-md-5">
+                    <div class="image-block h-100">
+                      <img src="{% static 'assets/images/page-img/profile-bg7.jpg' %}" class="img-fluid h-100 w-100 rounded-start" alt="{{ session.get_sport_type_display }}" style="object-fit: cover;">
+                      <div class="session-overlay">
+                        <i class="{% if session.sport_type == 'soccer' %}ri-football-fill{% elif session.sport_type == 'basketball' %}ri-basketball-fill{% elif session.sport_type == 'tennis' %}ri-ping-pong-fill{% elif session.sport_type == 'running' %}ri-run-fill{% else %}ri-trophy-fill{% endif %}"></i>
+                      </div>
+                      <div class="sport-badge">
+                        <span class="badge bg-{% if session.sport_type == 'soccer' %}success{% elif session.sport_type == 'basketball' %}warning{% elif session.sport_type == 'tennis' %}info{% elif session.sport_type == 'running' %}danger{% else %}primary{% endif %} rounded-pill px-3 py-2">
+                          {{ session.get_sport_type_display }}
+                        </span>
+                      </div>
+                      {% if session.start_datetime|timeuntil < '1 hour' %}
+                      <div class="live-badge">
+                        <span class="badge bg-danger rounded-pill px-3 py-2">
+                          <i class="ri-live-line me-1"></i>Live Now
+                        </span>
+                      </div>
                       {% endif %}
                     </div>
                   </div>
-                </td>
-                <td>
-                  <div>
-                    <strong>{{ session.start_datetime|date:"M d, Y" }}</strong>
-                    <br>
-                    <small class="text-muted">
-                      <i class="ri-time-line"></i> {{ session.start_datetime|time:"g:i A" }}
-                    </small>
+                  <div class="col-md-7">
+                    <div class="blog-description p-4 h-100 d-flex flex-column justify-content-between">
+                      <div>
+                        <div class="blog-meta d-flex align-items-center justify-content-between mb-3">
+                          <div class="date">
+                            <a href="{% url 'sessions:detail' session.pk %}" class="text-decoration-none">
+                              <i class="ri-calendar-event-line me-1 text-muted"></i>
+                              <span class="fw-medium">{{ session.start_datetime|date:"M d, Y" }}</span>
+                            </a>
+                          </div>
+                          <span class="badge bg-{% if session.status == 'confirmed' %}success{% elif session.status == 'proposed' %}warning{% elif session.status == 'cancelled' %}danger{% elif session.status == 'draft' %}secondary{% else %}info{% endif %} rounded-pill px-3 py-2">
+                            <i class="ri-{% if session.status == 'confirmed' %}checkbox-circle-line{% elif session.status == 'proposed' %}time-line{% elif session.status == 'cancelled' %}close-circle-line{% else %}draft-line{% endif %} me-1"></i>
+                            {{ session.get_status_display|default:session.status }}
+                          </span>
+                        </div>
+                        
+                        <h5 class="mb-3 fs-3 fw-bold">
+                          <i class="{% if session.sport_type == 'soccer' %}ri-football-line text-success{% elif session.sport_type == 'basketball' %}ri-basketball-line text-warning{% elif session.sport_type == 'tennis' %}ri-ping-pong-line text-info{% elif session.sport_type == 'running' %}ri-run-line text-danger{% else %}ri-trophy-line text-primary{% endif %} me-2 fs-4"></i>
+                          {{ session.get_sport_type_display }}
+                          {% if session.creator == user %}
+                            <span class="badge bg-primary rounded-pill px-3 py-2 ms-2">
+                              <i class="ri-user-star-line me-1"></i>Creator
+                            </span>
+                          {% endif %}
+                        </h5>
+
+                        <div class="session-details mb-4">
+                          <p class="mb-2 fs-6">
+                            <i class="ri-time-line text-primary me-2"></i>
+                            <strong class="text-dark">{{ session.start_datetime|time:"g:i A" }}</strong>
+                            <span class="badge bg-light text-dark rounded-pill ms-2 px-3 py-2">
+                              <i class="ri-timer-line me-1"></i>{{ session.duration_minutes }} min
+                            </span>
+                          </p>
+                          <p class="mb-0 fs-6">
+                            <i class="ri-map-pin-2-line text-danger me-2"></i>
+                            <span class="text-muted fw-medium">{{ session.location|truncatechars:60 }}</span>
+                          </p>
+                        </div>
+                      </div>
+
+                      <div>
+                        <div class="d-flex gap-2 mb-3">
+                          <a href="{% url 'sessions:detail' session.pk %}" class="btn btn-sm btn-soft-primary" tabindex="-1">
+                            <i class="ri-eye-line me-1"></i>View Details
+                            <i class="ri-arrow-right-s-line ms-1"></i>
+                          </a>
+                          {% if session.creator == user %}
+                            <a href="{% url 'sessions:ai_suggest' session.pk %}" class="btn btn-sm btn-soft-info" title="AI Time Suggestions">
+                              <i class="ri-magic-line me-1"></i>AI Suggest
+                            </a>
+                          {% endif %}
+                        </div>
+
+                        <div class="group-smile d-flex flex-wrap align-items-center justify-content-between position-right-side">
+                          <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-secondary rounded-pill px-3 py-2">
+                              <i class="ri-group-line me-1"></i>{{ session.invitation_set.count }} Invitees
+                            </span>
+                            {% if session.status %}
+                              <span class="badge bg-{% if session.status == 'confirmed' %}success{% elif session.status == 'proposed' %}info{% else %}secondary{% endif %} rounded-pill px-3 py-2">
+                                {{ session.get_status_display|default:session.status }}
+                              </span>
+                            {% endif %}
+                          </div>
+                          <div class="d-flex gap-2">
+                            {% if user == session.creator %}
+                              <a href="{% url 'sessions:update' session.pk %}" class="btn btn-sm btn-soft-warning rounded-pill px-3 py-2" title="Edit Session">
+                                <i class="ri-edit-box-line"></i>
+                              </a>
+                              <form method="post" action="{% url 'sessions:delete' session.pk %}" class="d-inline" style="margin: 0;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-soft-danger rounded-pill px-3 py-2" title="Delete Session" onclick="return confirm('Are you sure you want to delete this session? All invitations will be cancelled.')">
+                                  <i class="ri-delete-bin-line"></i>
+                                </button>
+                              </form>
+                            {% else %}
+                              {% if user.is_authenticated %}
+                                <form method="post" action="{% url 'sessions:detail' session.pk %}" class="d-inline" style="margin: 0;">
+                                  {% csrf_token %}
+                                  <button type="submit" class="btn btn-sm btn-soft-primary rounded-pill px-3 py-2" title="Request to Join">
+                                    <i class="ri-user-add-line me-1"></i>Join
+                                  </button>
+                                </form>
+                              {% endif %}
+                            {% endif %}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                </td>
-                <td>
-                  <span class="badge bg-light text-dark">{{ session.duration_minutes }} min</span>
-                </td>
-                <td>
-                  <div class="d-flex align-items-center">
-                    <i class="ri-map-pin-line text-muted me-1"></i>
-                    <small title="{{ session.location }}">{{ session.location|truncatechars:30 }}</small>
+                {% else %}
+                  <!-- Image on right -->
+                  <div class="col-md-7 order-md-1 order-2">
+                    <div class="blog-description p-4 h-100 d-flex flex-column justify-content-between">
+                      <div>
+                        <div class="blog-meta d-flex align-items-center justify-content-between mb-3">
+                          <div class="date">
+                            <a href="{% url 'sessions:detail' session.pk %}" class="text-decoration-none">
+                              <i class="ri-calendar-event-line me-1 text-muted"></i>
+                              <span class="fw-medium">{{ session.start_datetime|date:"M d, Y" }}</span>
+                            </a>
+                          </div>
+                          <span class="badge bg-{% if session.status == 'confirmed' %}success{% elif session.status == 'proposed' %}warning{% elif session.status == 'cancelled' %}danger{% elif session.status == 'draft' %}secondary{% else %}info{% endif %} rounded-pill px-3 py-2">
+                            <i class="ri-{% if session.status == 'confirmed' %}checkbox-circle-line{% elif session.status == 'proposed' %}time-line{% elif session.status == 'cancelled' %}close-circle-line{% else %}draft-line{% endif %} me-1"></i>
+                            {{ session.get_status_display|default:session.status }}
+                          </span>
+                        </div>
+                        
+                        <h5 class="mb-3 fs-3 fw-bold">
+                          <i class="{% if session.sport_type == 'soccer' %}ri-football-line text-success{% elif session.sport_type == 'basketball' %}ri-basketball-line text-warning{% elif session.sport_type == 'tennis' %}ri-ping-pong-line text-info{% elif session.sport_type == 'running' %}ri-run-line text-danger{% else %}ri-trophy-line text-primary{% endif %} me-2 fs-4"></i>
+                          {{ session.get_sport_type_display }}
+                          {% if session.creator == user %}
+                            <span class="badge bg-primary rounded-pill px-3 py-2 ms-2">
+                              <i class="ri-user-star-line me-1"></i>Creator
+                            </span>
+                          {% endif %}
+                        </h5>
+
+                        <div class="session-details mb-4">
+                          <p class="mb-2 fs-6">
+                            <i class="ri-time-line text-primary me-2"></i>
+                            <strong class="text-dark">{{ session.start_datetime|time:"g:i A" }}</strong>
+                            <span class="badge bg-light text-dark rounded-pill ms-2 px-3 py-2">
+                              <i class="ri-timer-line me-1"></i>{{ session.duration_minutes }} min
+                            </span>
+                          </p>
+                          <p class="mb-0 fs-6">
+                            <i class="ri-map-pin-2-line text-danger me-2"></i>
+                            <span class="text-muted fw-medium">{{ session.location|truncatechars:60 }}</span>
+                          </p>
+                        </div>
+                      </div>
+
+                      <div>
+                        <div class="d-flex gap-2 mb-3">
+                          <a href="{% url 'sessions:detail' session.pk %}" class="btn btn-sm btn-soft-primary" tabindex="-1">
+                            <i class="ri-eye-line me-1"></i>View Details
+                            <i class="ri-arrow-right-s-line ms-1"></i>
+                          </a>
+                          {% if session.creator == user %}
+                            <a href="{% url 'sessions:ai_suggest' session.pk %}" class="btn btn-sm btn-soft-info" title="AI Time Suggestions">
+                              <i class="ri-magic-line me-1"></i>AI Suggest
+                            </a>
+                          {% endif %}
+                        </div>
+
+                        <div class="group-smile d-flex flex-wrap align-items-center justify-content-between position-right-side">
+                          <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-secondary rounded-pill px-3 py-2">
+                              <i class="ri-group-line me-1"></i>{{ session.invitation_set.count }} Invitees
+                            </span>
+                            {% if session.status %}
+                              <span class="badge bg-{% if session.status == 'confirmed' %}success{% elif session.status == 'proposed' %}info{% else %}secondary{% endif %} rounded-pill px-3 py-2">
+                                {{ session.get_status_display|default:session.status }}
+                              </span>
+                            {% endif %}
+                          </div>
+                          <div class="d-flex gap-2">
+                            {% if user == session.creator %}
+                              <a href="{% url 'sessions:update' session.pk %}" class="btn btn-sm btn-soft-warning rounded-pill px-3 py-2" title="Edit Session">
+                                <i class="ri-edit-box-line"></i>
+                              </a>
+                              <form method="post" action="{% url 'sessions:delete' session.pk %}" class="d-inline" style="margin: 0;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-soft-danger rounded-pill px-3 py-2" title="Delete Session" onclick="return confirm('Are you sure you want to delete this session? All invitations will be cancelled.')">
+                                  <i class="ri-delete-bin-line"></i>
+                                </button>
+                              </form>
+                            {% else %}
+                              {% if user.is_authenticated %}
+                                <form method="post" action="{% url 'sessions:detail' session.pk %}" class="d-inline" style="margin: 0;">
+                                  {% csrf_token %}
+                                  <button type="submit" class="btn btn-sm btn-soft-primary rounded-pill px-3 py-2" title="Request to Join">
+                                    <i class="ri-user-add-line me-1"></i>Join
+                                  </button>
+                                </form>
+                              {% endif %}
+                            {% endif %}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                </td>
-                <td>
-                  <span class="badge bg-{% if session.status == 'confirmed' %}success{% elif session.status == 'proposed' %}warning{% elif session.status == 'cancelled' %}danger{% elif session.status == 'draft' %}secondary{% else %}info{% endif %}">
-                    {{ session.get_status_display }}
-                  </span>
-                </td>
-                <td class="text-center">
-                  <span class="badge bg-secondary">
-                    <i class="ri-group-line"></i> {{ session.invitation_set.count }}
-                  </span>
-                </td>
-                <td>
-                  <div class="btn-group btn-group-sm float-end">
-                    <a href="{% url 'sessions:detail' session.pk %}" class="btn btn-soft-info" title="View Details">
-                      <i class="ri-eye-line"></i>
-                    </a>
-                    {% if user == session.creator %}
-                    <a href="#" class="btn btn-soft-warning" title="Edit" onclick="alert('Edit functionality coming soon!'); return false;">
-                      <i class="ri-edit-line"></i>
-                    </a>
-                    <button type="button" class="btn btn-soft-danger" title="Delete" onclick="if(confirm('Delete this session? All invites will be cancelled.')) { alert('Delete functionality coming soon!'); }">
-                      <i class="ri-delete-bin-line"></i>
-                    </button>
-                    {% endif %}
+                  <div class="col-md-5 order-md-2 order-1">
+                    <div class="image-block h-100 rounded-end">
+                      <img src="{% static 'assets/images/page-img/profile-bg7.jpg' %}" class="img-fluid h-100 w-100" alt="{{ session.get_sport_type_display }}" style="object-fit: cover;">
+                      <div class="session-overlay">
+                        <i class="{% if session.sport_type == 'soccer' %}ri-football-fill{% elif session.sport_type == 'basketball' %}ri-basketball-fill{% elif session.sport_type == 'tennis' %}ri-ping-pong-fill{% elif session.sport_type == 'running' %}ri-run-fill{% else %}ri-trophy-fill{% endif %}"></i>
+                      </div>
+                      <div class="sport-badge">
+                        <span class="badge bg-{% if session.sport_type == 'soccer' %}success{% elif session.sport_type == 'basketball' %}warning{% elif session.sport_type == 'tennis' %}info{% elif session.sport_type == 'running' %}danger{% else %}primary{% endif %} rounded-pill px-3 py-2">
+                          {{ session.get_sport_type_display }}
+                        </span>
+                      </div>
+                      {% if session.start_datetime|timeuntil < '1 hour' %}
+                      <div class="live-badge">
+                        <span class="badge bg-danger rounded-pill px-3 py-2">
+                          <i class="ri-live-line me-1"></i>Live Now
+                        </span>
+                      </div>
+                      {% endif %}
+                    </div>
                   </div>
-                </td>
-              </tr>
-              {% empty %}
-              <tr>
-                <td colspan="7" class="text-center py-5">
-                  <div class="empty-state">
-                    <i class="ri-calendar-line text-muted mb-3" style="font-size: 64px; opacity: 0.3;"></i>
-                    <h5 class="text-muted mb-2">No Sessions Found</h5>
-                    <p class="text-muted mb-3">You haven't created or been invited to any sessions yet.</p>
-                    {% if user.is_authenticated %}
-                    <a href="{% url 'sessions:create' %}" class="btn btn-primary">
-                      <i class="ri-add-line me-1"></i>Create Your First Session
-                    </a>
-                    {% else %}
-                    <a href="{% url 'users:login' %}" class="btn btn-outline-primary">
-                      <i class="ri-login-box-line me-1"></i>Sign In to Get Started
-                    </a>
-                    {% endif %}
-                  </div>
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
+                {% endif %}
+              </div>
+            </div>
+          </div>
         </div>
-
-        <!-- Pagination -->
-        {% if is_paginated %}
-        <nav class="d-flex justify-content-center mt-4" aria-label="Sessions pagination">
-          <ul class="pagination">
-            {% if page_obj.has_previous %}
-              <li class="page-item">
-                <a class="page-link" href="?page=1" aria-label="First">
-                  <i class="ri-arrow-left-s-line"></i><i class="ri-arrow-left-s-line"></i>
-                </a>
-              </li>
-              <li class="page-item">
-                <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
-                  <i class="ri-arrow-left-s-line"></i>
-                </a>
-              </li>
-            {% else %}
-              <li class="page-item disabled">
-                <span class="page-link">
-                  <i class="ri-arrow-left-s-line"></i><i class="ri-arrow-left-s-line"></i>
-                </span>
-              </li>
-              <li class="page-item disabled">
-                <span class="page-link">
-                  <i class="ri-arrow-left-s-line"></i>
-                </span>
-              </li>
-            {% endif %}
-
-            {% for num in page_obj.paginator.page_range %}
-              {% if page_obj.number == num %}
-                <li class="page-item active" aria-current="page">
-                  <span class="page-link">{{ num }}</span>
-                </li>
-              {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                <li class="page-item">
-                  <a class="page-link" href="?page={{ num }}">{{ num }}</a>
-                </li>
+        {% endfor %}
+      {% else %}
+        <!-- Empty State -->
+        <div class="col-lg-12" id="empty-state">
+          <div class="card card-block card-stretch card-height text-center py-5">
+            <div class="empty-state">
+              <i class="ri-calendar-line text-muted mb-3" style="font-size: 80px; opacity: 0.3;"></i>
+              <h3 class="text-muted mb-3">No Sessions Yet</h3>
+              <p class="text-muted mb-4 lead">Time to kick things off! Create your first session and rally your team.</p>
+              {% if user.is_authenticated %}
+              <a href="{% url 'sessions:create' %}" class="btn btn-primary btn-lg rounded-pill px-5">
+                <i class="ri-add-circle-line me-2"></i>Create Your First Session
+              </a>
+              {% else %}
+              <a href="{% url 'users:login' %}" class="btn btn-outline-primary btn-lg rounded-pill px-5 me-2">
+                <i class="ri-login-box-line me-2"></i>Sign In
+              </a>
+              <a href="{% url 'users:signup' %}" class="btn btn-primary btn-lg rounded-pill px-5">
+                <i class="ri-user-add-line me-2"></i>Sign Up
+              </a>
               {% endif %}
-            {% endfor %}
+            </div>
+          </div>
+        </div>
+      {% endif %}
+    </div>
 
-            {% if page_obj.has_next %}
-              <li class="page-item">
-                <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
-                  <i class="ri-arrow-right-s-line"></i>
-                </a>
-              </li>
-              <li class="page-item">
-                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}" aria-label="Last">
-                  <i class="ri-arrow-right-s-line"></i><i class="ri-arrow-right-s-line"></i>
-                </a>
-              </li>
-            {% else %}
-              <li class="page-item disabled">
-                <span class="page-link">
-                  <i class="ri-arrow-right-s-line"></i>
-                </span>
-              </li>
-              <li class="page-item disabled">
-                <span class="page-link">
-                  <i class="ri-arrow-right-s-line"></i><i class="ri-arrow-right-s-line"></i>
-                </span>
-              </li>
-            {% endif %}
-          </ul>
-        </nav>
-        {% endif %}
+    <!-- No Results Message -->
+    <div class="col-lg-12" id="no-results" style="display: none;">
+      <div class="card card-block card-stretch text-center py-5">
+        <i class="ri-search-line text-muted mb-3" style="font-size: 80px; opacity: 0.3;"></i>
+        <h3 class="text-muted mb-3">No Sessions Match</h3>
+        <p class="text-muted mb-4 lead">Try tweaking your search or filters to discover more.</p>
+        <button class="btn btn-primary rounded-pill px-4" id="clear-all-filters">
+          <i class="ri-refresh-line me-2"></i>Clear All Filters
+        </button>
       </div>
     </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <div class="col-lg-12">
+      <div class="card card-block card-stretch">
+        <div class="card-body p-3">
+          <nav class="d-flex justify-content-center" aria-label="Sessions pagination">
+            <ul class="pagination mb-0">
+              {% if page_obj.has_previous %}
+                <li class="page-item">
+                  <a class="page-link rounded-pill" href="?page=1" aria-label="First" style="min-width: 45px;">
+                    <i class="ri-arrow-left-s-line"></i><i class="ri-arrow-left-s-line"></i>
+                  </a>
+                </li>
+                <li class="page-item">
+                  <a class="page-link rounded-pill" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous" style="min-width: 45px;">
+                    <i class="ri-arrow-left-s-line"></i>
+                  </a>
+                </li>
+              {% else %}
+                <li class="page-item disabled">
+                  <span class="page-link rounded-pill opacity-50" style="min-width: 45px;">
+                    <i class="ri-arrow-left-s-line"></i><i class="ri-arrow-left-s-line"></i>
+                  </span>
+                </li>
+                <li class="page-item disabled">
+                  <span class="page-link rounded-pill opacity-50" style="min-width: 45px;">
+                    <i class="ri-arrow-left-s-line"></i>
+                  </span>
+                </li>
+              {% endif %}
+
+              {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                  <li class="page-item active" aria-current="page">
+                    <span class="page-link rounded-pill fw-bold" style="min-width: 45px;">{{ num }}</span>
+                  </li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                  <li class="page-item">
+                    <a class="page-link rounded-pill" href="?page={{ num }}" style="min-width: 45px;">{{ num }}</a>
+                  </li>
+                {% endif %}
+              {% endfor %}
+
+              {% if page_obj.has_next %}
+                <li class="page-item">
+                  <a class="page-link rounded-pill" href="?page={{ page_obj.next_page_number }}" aria-label="Next" style="min-width: 45px;">
+                    <i class="ri-arrow-right-s-line"></i>
+                  </a>
+                </li>
+                <li class="page-item">
+                  <a class="page-link rounded-pill" href="?page={{ page_obj.paginator.num_pages }}" aria-label="Last" style="min-width: 45px;">
+                    <i class="ri-arrow-right-s-line"></i><i class="ri-arrow-right-s-line"></i>
+                  </a>
+                </li>
+              {% else %}
+                <li class="page-item disabled">
+                  <span class="page-link rounded-pill opacity-50" style="min-width: 45px;">
+                    <i class="ri-arrow-right-s-line"></i>
+                  </span>
+                </li>
+                <li class="page-item disabled">
+                  <span class="page-link rounded-pill opacity-50" style="min-width: 45px;">
+                    <i class="ri-arrow-right-s-line"></i><i class="ri-arrow-right-s-line"></i>
+                  </span>
+                </li>
+              {% endif %}
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </div>
+    {% endif %}
   </div>
 </div>
+
+<style>
+  /* Enhanced Session List Styles */
+  .blog-list {
+    border: none;
+    overflow: hidden;
+    transition: var(--transition);
+    position: relative;
+  }
+  
+  .blog-list::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.02) 0%, rgba(118, 75, 162, 0.02) 100%);
+    opacity: 0;
+    transition: var(--transition);
+    z-index: 0;
+  }
+
+  .blog-list:hover::before {
+    opacity: 1;
+  }
+
+  .blog-list:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .list-even {
+    background: linear-gradient(135deg, #f9fafb 0%, #ffffff 100%);
+  }
+
+  [data-theme="dark"] .list-even {
+    background: linear-gradient(135deg, #1e1e1e 0%, #2a2a2a 100%);
+  }
+
+  /* Image Block Enhancements */
+  .image-block {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .image-block img {
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .blog-list:hover .image-block img {
+    transform: scale(1.1);
+  }
+
+  .session-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.8);
+    font-size: 100px;
+    color: rgba(255, 255, 255, 0.95);
+    text-shadow: 4px 4px 16px rgba(0, 0, 0, 0.5);
+    pointer-events: none;
+    transition: all 0.4s ease;
+    z-index: 1;
+  }
+
+  .blog-list:hover .session-overlay {
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  .sport-badge {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 2;
+    animation: slideInDown 0.5s ease-out;
+  }
+
+  .live-badge {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    z-index: 2;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+  }
+
+  /* Search and Filters */
+  .search-input-wrapper {
+    box-shadow: var(--shadow-sm);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: var(--transition);
+    border: 1px solid rgba(0,0,0,0.05);
+  }
+
+  .search-input-wrapper:focus-within {
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    border-color: var(--primary);
+  }
+
+  .search-input-wrapper .form-control:focus {
+    box-shadow: none;
+    border-color: transparent;
+  }
+
+  .dropdown-menu {
+    border: none;
+    box-shadow: var(--shadow-md);
+    border-radius: var(--radius);
+    padding: 0.5rem;
+    background: var(--card-bg-light);
+  }
+
+  [data-theme="dark"] .dropdown-menu {
+    background: var(--card-bg-dark);
+  }
+
+  .dropdown-item {
+    border-radius: 10px;
+    padding: 12px 16px;
+    transition: var(--transition);
+    margin-bottom: 0.25rem;
+  }
+
+  .dropdown-item:hover {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
+    transform: translateX(8px);
+  }
+
+  /* Badges and Buttons */
+  .badge {
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 20px;
+    transition: var(--transition);
+  }
+
+  .btn-soft-primary, .btn-soft-warning, .btn-soft-danger {
+    border: 1px solid;
+    transition: var(--transition);
+  }
+
+  .btn-soft-primary:hover, .btn-soft-warning:hover, .btn-soft-danger:hover {
+    transform: translateY(-2px);
+  }
+
+  /* Session Description */
+  .blog-description {
+    background: var(--card-bg-light);
+  }
+
+  [data-theme="dark"] .blog-description {
+    background: var(--card-bg-dark);
+  }
+
+  .blog-description h5 {
+    color: var(--text-dark);
+    line-height: 1.3;
+  }
+
+  .position-right-side {
+    margin-top: auto;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+  }
+
+  [data-theme="dark"] .position-right-side {
+    border-top-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .date a {
+    color: #6c757d;
+    transition: var(--transition);
+  }
+
+  .date a:hover {
+    color: var(--primary);
+  }
+
+  /* Filter Badges */
+  .filter-badge {
+    animation: slideIn 0.3s ease-out;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+
+  .filter-badge:hover {
+    transform: scale(1.05);
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(-10px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  /* Empty States */
+  .empty-state i, #no-results i {
+    transition: var(--transition);
+  }
+
+  .empty-state:hover i, #no-results:hover i {
+    transform: scale(1.1) rotate(5deg);
+  }
+
+  /* Pagination */
+  .pagination .page-link {
+    color: var(--primary);
+    border: 1px solid rgba(102, 126, 234, 0.2);
+    margin: 0 2px;
+    transition: var(--transition);
+  }
+
+  .pagination .page-item.active .page-link {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    border-color: var(--primary);
+  }
+
+  .pagination .page-link:hover {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
+    transform: translateY(-2px);
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .session-overlay {
+      font-size: 60px;
+    }
+
+    .sport-badge, .live-badge {
+      top: 15px;
+      right: 15px;
+      bottom: auto;
+      left: auto;
+    }
+
+    .live-badge {
+      bottom: 15px;
+      left: 15px;
+    }
+
+    .blog-description {
+      padding: 2rem !important;
+    }
+
+    .title-on-header h2 {
+      font-size: 2.5rem;
+    }
+
+    .header-for-bg .lead {
+      font-size: 1.1rem;
+    }
+  }
+
+  /* Dark Mode Adjustments */
+  [data-theme="dark"] .search-input-wrapper .input-group-text,
+  [data-theme="dark"] .btn-light {
+    background: var(--card-bg-dark);
+    color: var(--text-light);
+    border-color: rgba(255,255,255,0.1);
+  }
+
+  [data-theme="dark"] .text-muted {
+    color: #a0a0a0 !important;
+  }
+
+  [data-theme="dark"] .blog-description h5 {
+    color: var(--text-light);
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Filter state
+    let activeFilters = {
+      sport: 'all',
+      status: 'all',
+      role: 'all'
+    };
+    let searchTerm = '';
+
+    // DOM elements
+    const sessionItems = document.querySelectorAll('.session-item');
+    const searchInput = document.getElementById('search-sessions');
+    const clearSearchBtn = document.getElementById('clear-search');
+    const resultsCount = document.getElementById('results-count');
+    const activeFiltersDiv = document.getElementById('active-filters');
+    const filterBadges = document.getElementById('filter-badges');
+    const resetFiltersBtn = document.getElementById('reset-filters');
+    const sessionsContainer = document.getElementById('sessions-container');
+    const noResultsDiv = document.getElementById('no-results');
+    const emptyState = document.getElementById('empty-state');
+    const clearAllFiltersBtn = document.getElementById('clear-all-filters');
+
+    // Update filter text
+    function updateFilterText(filterType, value, text) {
+      document.getElementById(`${filterType}-filter-text`).textContent = text;
+    }
+
+    // Show/hide active filters
+    function toggleActiveFilters() {
+      const hasFilters = Object.values(activeFilters).some(val => val !== 'all') || searchTerm.trim() !== '';
+      activeFiltersDiv.style.display = hasFilters ? 'block' : 'none';
+      resetFiltersBtn.style.display = hasFilters ? 'inline-block' : 'none';
+    }
+
+    // Update active filter badges
+    function updateFilterBadges() {
+      filterBadges.innerHTML = '';
+      if (activeFilters.sport !== 'all') {
+        const badge = document.createElement('span');
+        badge.className = 'badge bg-primary filter-badge me-1 mb-1 rounded-pill px-3 py-2';
+        badge.innerHTML = `Sport: ${activeFilters.sport.charAt(0).toUpperCase() + activeFilters.sport.slice(1)} <button class="btn-close btn-close-sm ms-1" style="filter: invert(1);" onclick="removeFilter('sport')"></button>`;
+        filterBadges.appendChild(badge);
+      }
+      if (activeFilters.status !== 'all') {
+        const badge = document.createElement('span');
+        badge.className = 'badge bg-warning filter-badge me-1 mb-1 rounded-pill px-3 py-2';
+        badge.innerHTML = `Status: ${activeFilters.status.charAt(0).toUpperCase() + activeFilters.status.slice(1)} <button class="btn-close btn-close-sm ms-1" onclick="removeFilter('status')"></button>`;
+        filterBadges.appendChild(badge);
+      }
+      if (activeFilters.role !== 'all') {
+        const badge = document.createElement('span');
+        badge.className = 'badge bg-info filter-badge me-1 mb-1 rounded-pill px-3 py-2';
+        badge.innerHTML = `Role: ${activeFilters.role.charAt(0).toUpperCase() + activeFilters.role.slice(1)} <button class="btn-close btn-close-sm ms-1" onclick="removeFilter('role')"></button>`;
+        filterBadges.appendChild(badge);
+      }
+      if (searchTerm.trim() !== '') {
+        const badge = document.createElement('span');
+        badge.className = 'badge bg-secondary filter-badge me-1 mb-1 rounded-pill px-3 py-2';
+        badge.innerHTML = `Search: ${searchTerm} <button class="btn-close btn-close-sm ms-1" onclick="clearSearch()"></button>`;
+        filterBadges.appendChild(badge);
+      }
+    }
+
+    // Remove specific filter
+    window.removeFilter = function(type) {
+      if (type === 'sport') activeFilters.sport = 'all';
+      if (type === 'status') activeFilters.status = 'all';
+      if (type === 'role') activeFilters.role = 'all';
+      applyFilters();
+    };
+
+    // Clear search
+    window.clearSearch = function() {
+      searchTerm = '';
+      searchInput.value = '';
+      clearSearchBtn.style.display = 'none';
+      applyFilters();
+    };
+
+    // Filter event handlers
+    document.querySelectorAll('.sport-filter').forEach(item => {
+      item.addEventListener('click', function(e) {
+        e.preventDefault();
+        const sport = this.dataset.sport;
+        activeFilters.sport = sport;
+        updateFilterText('sport', sport, this.textContent.trim());
+        applyFilters();
+      });
+    });
+
+    document.querySelectorAll('.status-filter').forEach(item => {
+      item.addEventListener('click', function(e) {
+        e.preventDefault();
+        const status = this.dataset.status;
+        activeFilters.status = status;
+        updateFilterText('status', status, this.textContent.trim());
+        applyFilters();
+      });
+    });
+
+    document.querySelectorAll('.role-filter').forEach(item => {
+      item.addEventListener('click', function(e) {
+        e.preventDefault();
+        const role = this.dataset.role;
+        activeFilters.role = role;
+        updateFilterText('role', role, this.textContent.trim());
+        applyFilters();
+      });
+    });
+
+    // Search handlers
+    searchInput.addEventListener('input', function() {
+      searchTerm = this.value.toLowerCase();
+      clearSearchBtn.style.display = searchTerm ? 'block' : 'none';
+      applyFilters();
+    });
+
+    clearSearchBtn.addEventListener('click', clearSearch);
+
+    // Reset all filters
+    resetFiltersBtn.addEventListener('click', function() {
+      activeFilters = { sport: 'all', status: 'all', role: 'all' };
+      searchTerm = '';
+      searchInput.value = '';
+      clearSearchBtn.style.display = 'none';
+      updateFilterText('sport', 'all', 'All Sports');
+      updateFilterText('status', 'all', 'All Status');
+      updateFilterText('role', 'all', 'All Roles');
+      applyFilters();
+    });
+
+    if (clearAllFiltersBtn) {
+      clearAllFiltersBtn.addEventListener('click', function() {
+        resetFiltersBtn.click();
+      });
+    }
+
+    // Apply filters and search
+    function applyFilters() {
+      let visibleCount = 0;
+
+      sessionItems.forEach(item => {
+        const sportMatch = activeFilters.sport === 'all' || item.dataset.sport === activeFilters.sport;
+        const statusMatch = activeFilters.status === 'all' || item.dataset.status === activeFilters.status;
+        const roleMatch = activeFilters.role === 'all' || item.dataset.role === activeFilters.role;
+        const searchMatch = !searchTerm || item.dataset.search.includes(searchTerm);
+
+        if (sportMatch && statusMatch && roleMatch && searchMatch) {
+          item.style.display = 'block';
+          visibleCount++;
+        } else {
+          item.style.display = 'none';
+        }
+      });
+
+      // Update results count
+      resultsCount.textContent = visibleCount;
+
+      // Show/hide sections
+      toggleActiveFilters();
+      updateFilterBadges();
+
+      if (visibleCount === 0) {
+        if (sessionItems.length > 0) {
+          sessionsContainer.style.display = 'none';
+          noResultsDiv.style.display = 'block';
+        } else {
+          sessionsContainer.style.display = 'none';
+          noResultsDiv.style.display = 'none';
+          if (emptyState) emptyState.style.display = 'block';
+        }
+      } else {
+        sessionsContainer.style.display = 'block';
+        noResultsDiv.style.display = 'none';
+        if (emptyState) emptyState.style.display = 'none';
+      }
+    }
+
+    // Initial apply
+    applyFilters();
+
+    // Staggered Animation on Load
+    sessionItems.forEach((item, index) => {
+      item.style.opacity = '0';
+      item.style.transform = 'translateY(20px)';
+      setTimeout(() => {
+        item.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+        item.style.opacity = '1';
+        item.style.transform = 'translateY(0)';
+      }, index * 150);
+    });
+  });
+</script>
 {% endblock %}
