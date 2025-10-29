@@ -496,13 +496,58 @@
         .addEventListener('submit', function (e) {
           const password = document.getElementById('password');
           const passwordConfirm = document.getElementById('password_confirm');
+          const firstName = document.getElementById('first_name');
+          const lastName = document.getElementById('last_name');
+          const genderRadios = document.querySelectorAll('input[name="gender"]');
+          const country = document.getElementById('country');
           const availability = document.getElementById('availability');
           const sportsCheckboxes = document.querySelectorAll(
             'input[name="sports"]:checked'
           );
           const sportsError = document.getElementById('sports-error');
+          const genderError = document.getElementById('gender-error');
 
           let isValid = true;
+
+          // First name validation
+          if (!firstName.value.trim()) {
+            e.preventDefault();
+            firstName.classList.add('is-invalid');
+            isValid = false;
+          } else {
+            firstName.classList.remove('is-invalid');
+            firstName.classList.add('is-valid');
+          }
+
+          // Last name validation
+          if (!lastName.value.trim()) {
+            e.preventDefault();
+            lastName.classList.add('is-invalid');
+            isValid = false;
+          } else {
+            lastName.classList.remove('is-invalid');
+            lastName.classList.add('is-valid');
+          }
+
+          // Gender validation
+          const genderChecked = Array.from(genderRadios).some(radio => radio.checked);
+          if (!genderChecked) {
+            e.preventDefault();
+            genderError.style.display = 'block';
+            isValid = false;
+          } else {
+            genderError.style.display = 'none';
+          }
+
+          // Country validation
+          if (!country.value || country.value === '') {
+            e.preventDefault();
+            country.classList.add('is-invalid');
+            isValid = false;
+          } else {
+            country.classList.remove('is-invalid');
+            country.classList.add('is-valid');
+          }
 
           // Password validation
           if (!password.value.trim() || password.value.length < 8) {
@@ -549,7 +594,38 @@
           return isValid;
         });
 
-      // Remove invalid state on input
+      // Remove invalid state on input - First Name
+      document
+        .getElementById('first_name')
+        .addEventListener('input', function () {
+          this.classList.remove('is-invalid');
+        });
+
+      // Remove invalid state on input - Last Name
+      document
+        .getElementById('last_name')
+        .addEventListener('input', function () {
+          this.classList.remove('is-invalid');
+        });
+
+      // Remove invalid state on change - Gender
+      document
+        .querySelectorAll('input[name="gender"]')
+        .forEach(function (radio) {
+          radio.addEventListener('change', function () {
+            const genderError = document.getElementById('gender-error');
+            genderError.style.display = 'none';
+          });
+        });
+
+      // Remove invalid state on change - Country
+      document
+        .getElementById('country')
+        .addEventListener('change', function () {
+          this.classList.remove('is-invalid');
+        });
+
+      // Remove invalid state on input - Password
       document
         .getElementById('password')
         .addEventListener('input', function () {
@@ -562,12 +638,14 @@
           }
         });
 
+      // Remove invalid state on input - Password Confirm
       document
         .getElementById('password_confirm')
         .addEventListener('input', function () {
           this.classList.remove('is-invalid');
         });
 
+      // Remove invalid state on input - Availability
       document
         .getElementById('availability')
         .addEventListener('input', function () {
