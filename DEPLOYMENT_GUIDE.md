@@ -99,13 +99,10 @@ Still in the web service creation page, scroll to **"Environment Variables"** an
 | `PYTHON_VERSION` | `3.11.0` | Or your preferred Python version |
 | `SECRET_KEY` | (Click "Generate" or use your own) | Django secret key |
 | `DEBUG` | `False` | **IMPORTANT**: Must be False in production |
-| `ALLOWED_HOSTS` | `your-app-name.onrender.com` | Replace with your actual Render URL |
 | `DATABASE_URL` | (Paste Internal Database URL from Step 3) | PostgreSQL connection string |
 | `GEMINI_API_KEY` | `your-gemini-api-key` | Your actual Gemini API key |
 
-**To get your Render URL:**
-- It will be in the format: `your-app-name.onrender.com`
-- You can see it in the service info once created, or it's derived from the name you chose
+**Note:** You don't need to manually set `ALLOWED_HOSTS` - the app automatically detects the Render hostname using the `RENDER_EXTERNAL_HOSTNAME` environment variable that Render provides.
 
 ### Step 6: Deploy
 
@@ -149,12 +146,14 @@ To create an admin user, you'll need to connect to your Render instance:
 
 ### Update ALLOWED_HOSTS if URL Changes
 
-If you change your Render URL or add a custom domain:
+If you add a custom domain, you may need to update allowed hosts:
 
 1. Go to your web service in Render
 2. Navigate to **"Environment"** tab
-3. Update the `ALLOWED_HOSTS` variable
+3. Add or update the `ALLOWED_HOSTS` variable with your custom domain (comma-separated)
 4. Click **"Save Changes"** - this will trigger a re-deployment
+
+**Note:** The Render hostname is automatically included, so you only need to add custom domains.
 
 ### Set Up Custom Domain (Optional)
 

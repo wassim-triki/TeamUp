@@ -56,10 +56,11 @@ git push origin render
 PYTHON_VERSION = 3.11.0
 SECRET_KEY = [Generate]
 DEBUG = False
-ALLOWED_HOSTS = your-app.onrender.com
 DATABASE_URL = [Paste Internal DB URL]
 GEMINI_API_KEY = [Your API key]
 ```
+
+**Note:** ALLOWED_HOSTS is automatically detected from Render's environment!
 
 ### 3. Deploy
 - Click "Create Web Service"
