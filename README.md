@@ -6,8 +6,16 @@ Repository: https://github.com/KamilChakroun/TeamUp.git
 
 This repository was scaffolded from a previous project. The README and settings have been updated to provide a minimal, local-first development setup.
 
+## 🔒 Security Notice
+
+**If deploying to production:** A default admin account (admin@teamup.com / password) is automatically created during deployment. **Change this password immediately!** See `SECURITY_NOTICE.md` for details.
+
 ## Quick links
 
+- **Deployment:** `DEPLOYMENT_GUIDE.md` (step-by-step Render deployment)
+- **Quick Start:** `QUICK_START_RENDER.md` (fast deployment reference)
+- **Security:** `SECURITY_NOTICE.md` (⚠️ important security information)
+- **Troubleshooting:** `TROUBLESHOOTING.md` (common issues and fixes)
 - Architecture: `ARCHITECTURE.md` (brief overview of the app layout)
 - Contributing: `CONTRIBUTING.md` (how to run, branch & PR guidance)
 

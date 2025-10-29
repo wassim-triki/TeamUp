@@ -67,10 +67,13 @@ GEMINI_API_KEY = [Your API key]
 - Wait 5-10 minutes for first deployment
 - Visit your URL!
 
-### 4. Create Admin User (via Shell)
-```bash
-python manage.py createsuperuser
-```
+### 4. Access Admin Panel
+Default admin account (created automatically):
+- Email: `admin@teamup.com`
+- Password: `password`
+- URL: `https://your-app.onrender.com/admin/`
+
+**⚠️ Change the password after first login!**
 
 ---
 

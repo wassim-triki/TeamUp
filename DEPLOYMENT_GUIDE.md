@@ -112,6 +112,7 @@ Still in the web service creation page, scroll to **"Environment Variables"** an
    - Install dependencies
    - Collect static files
    - Run migrations
+   - **Create default admin account** (email: admin@teamup.com, password: password)
    - Start the gunicorn server
 
 3. Monitor the deployment logs in real-time
@@ -127,18 +128,25 @@ Still in the web service creation page, scroll to **"Environment Variables"** an
    - User registration works
    - Login/logout functionality works
 
-### Step 8: Create Superuser (Optional)
+### Step 8: Access Admin Panel
 
-To create an admin user, you'll need to connect to your Render instance:
+A default admin account is automatically created during deployment:
+- **Email:** admin@teamup.com
+- **Password:** password
+
+**⚠️ IMPORTANT SECURITY:** Change this password immediately after first login!
+
+1. Go to: `https://your-app-name.onrender.com/admin/`
+2. Login with the credentials above
+3. Click on your username → Change password
+4. Set a strong, unique password
+
+**Alternative:** If you prefer to create your own admin account via Shell (paid plans only):
 
 1. In your Render dashboard, go to your web service
-2. Click on **"Shell"** in the left sidebar
-3. Run the following commands:
-   ```bash
-   python manage.py createsuperuser
-   ```
+2. Click on **"Shell"** in the left sidebar  
+3. Run: `python manage.py createsuperuser`
 4. Follow the prompts to create your admin account
-5. Access the admin panel at: `https://your-app-name.onrender.com/admin/`
 
 ---
 
