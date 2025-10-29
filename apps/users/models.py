@@ -84,6 +84,7 @@ class UserProfile(models.Model):
     User profile with additional information like sports and availability.
     OneToOne relationship with User model.
     """
+    # Keep old choices for backwards compatibility during migration
     SPORT_CHOICES = [
         ('football', 'Football'),
         ('basketball', 'Basketball'),
@@ -144,9 +145,16 @@ class UserProfile(models.Model):
     phone = models.CharField(max_length=20, blank=True, default='', help_text="Contact phone number")
     bio = models.TextField(blank=True, default='', help_text="Short bio or description")
     
-    # Sports can be stored as JSON array or comma-separated values
-    # For simplicity, using TextField to store JSON
-    sports = models.TextField(help_text="JSON array of selected sports", blank=True, default='[]')
+    # Sports - ManyToMany relationship with Sport model
+    interested_sports = models.ManyToManyField(
+        'core.Sport',
+        blank=True,
+        related_name='interested_users',
+        help_text="Sports the user is interested in"
+    )
+    
+    # Keep old sports field for backwards compatibility during migration
+    sports = models.TextField(help_text="JSON array of selected sports (deprecated - use interested_sports)", blank=True, default='[]')
     
     # Availability stored as text summary or JSON
     availability = models.TextField(help_text="User's availability schedule", blank=True, default='')

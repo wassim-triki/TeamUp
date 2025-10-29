@@ -559,7 +559,7 @@
                         </div>
                       </div>
                       <div class="card-body p-0">
-                        <a href="#" class="iq-sub-card iq-bg-primary-hover">
+                        <a href="{% url 'users:profile' username=user.username %}" class="iq-sub-card iq-bg-primary-hover">
                           <div class="d-flex align-items-center">
                             <div class="rounded card-icon bg-soft-primary">
                               <i class="ri-file-user-line"></i>
@@ -585,7 +585,7 @@
                             </div>
                           </div>
                         </a>
-                        <a href="#" class="iq-sub-card iq-bg-info-hover">
+                        <!-- <a href="#" class="iq-sub-card iq-bg-info-hover">
                           <div class="d-flex align-items-center">
                             <div class="rounded card-icon bg-soft-info">
                               <i class="ri-account-box-line"></i>
@@ -610,7 +610,7 @@
                               </p>
                             </div>
                           </div>
-                        </a>
+                        </a> -->
                         <div class="d-inline-block w-100 text-center p-3">
                           <a
                             class="btn btn-primary iq-sign-btn"
