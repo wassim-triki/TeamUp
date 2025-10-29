@@ -148,6 +148,107 @@
       .sport-capsule:nth-child(8) .sport-capsule-label { animation-delay: 0.4s; }
       .sport-capsule:nth-child(9) .sport-capsule-label { animation-delay: 0.45s; }
       .sport-capsule:nth-child(10) .sport-capsule-label { animation-delay: 0.5s; }
+
+      /* Search results dropdown */
+      .sport-search-results {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        max-height: 300px;
+        overflow-y: auto;
+        background: #fff;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        margin-top: 4px;
+      }
+
+      .sport-search-item {
+        padding: 10px 15px;
+        cursor: pointer;
+        transition: background 0.2s ease;
+        border-bottom: 1px solid #f5f5f5;
+      }
+
+      .sport-search-item:last-child {
+        border-bottom: none;
+      }
+
+      .sport-search-item:hover {
+        background: #f8fcff;
+      }
+
+      .sport-search-item-content {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .sport-search-icon {
+        font-size: 20px;
+      }
+
+      .sport-search-name {
+        font-weight: 500;
+        color: #333;
+      }
+
+      .sport-search-category {
+        font-size: 12px;
+        color: #999;
+        margin-left: auto;
+      }
+
+      /* Category filter buttons */
+      .category-filter {
+        text-transform: capitalize;
+      }
+
+      .category-filter.active {
+        background-color: #50b5ff;
+        border-color: #50b5ff;
+        color: #fff;
+      }
+
+      /* Input group styling */
+      .input-group-text {
+        border-right: none;
+      }
+
+      #sportSearch {
+        border-left: none;
+      }
+
+      #sportSearch:focus {
+        box-shadow: none;
+        border-color: #ced4da;
+      }
+
+      /* Loading state */
+      .loading-overlay {
+        position: relative;
+        opacity: 0.5;
+        pointer-events: none;
+      }
+
+      /* Load More Button */
+      #loadMoreBtn {
+        padding: 8px 24px;
+        font-size: 14px;
+        transition: all 0.3s ease;
+      }
+
+      #loadMoreBtn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(80, 181, 255, 0.3);
+      }
+
+      #remainingCount {
+        font-size: 12px;
+        opacity: 0.8;
+      }
     </style>
   </head>
   <body class="">
@@ -400,164 +501,80 @@
 
                   <div class="form-group">
                     <label class="form-label">Sports Interests *</label>
-                    <small class="d-block mb-3 text-muted"
+                    <small class="d-block mb-2 text-muted"
                       >Select at least one sport you're interested in</small
                     >
-                    <div class="sport-capsules-container">
-                      <!-- Football -->
-                      <div class="sport-capsule">
+                    
+                    <!-- Search Bar -->
+                    <div class="mb-3">
+                      <div class="input-group">
+                        <span class="input-group-text bg-white">
+                          <i class="ri-search-line"></i>
+                        </span>
                         <input
-                          type="checkbox"
-                          name="sports"
-                          value="football"
-                          id="sport_football"
-                          {% if sports and 'football' in sports %}checked{% endif %}
+                          type="text"
+                          class="form-control"
+                          id="sportSearch"
+                          placeholder="Search sports..."
+                          autocomplete="off"
                         />
-                        <label class="sport-capsule-label" for="sport_football">
-                          <span class="sport-capsule-icon">⚽</span>
-                          <span class="sport-capsule-name">Football</span>
-                        </label>
                       </div>
+                      <div id="searchResults" class="sport-search-results" style="display: none;"></div>
+                    </div>
 
-                      <!-- Basketball -->
-                      <div class="sport-capsule">
-                        <input
-                          type="checkbox"
-                          name="sports"
-                          value="basketball"
-                          id="sport_basketball"
-                          {% if sports and 'basketball' in sports %}checked{% endif %}
-                        />
-                        <label class="sport-capsule-label" for="sport_basketball">
-                          <span class="sport-capsule-icon">🏀</span>
-                          <span class="sport-capsule-name">Basketball</span>
-                        </label>
-                      </div>
-
-                      <!-- Tennis -->
-                      <div class="sport-capsule">
-                        <input
-                          type="checkbox"
-                          name="sports"
-                          value="tennis"
-                          id="sport_tennis"
-                          {% if sports and 'tennis' in sports %}checked{% endif %}
-                        />
-                        <label class="sport-capsule-label" for="sport_tennis">
-                          <span class="sport-capsule-icon">🎾</span>
-                          <span class="sport-capsule-name">Tennis</span>
-                        </label>
-                      </div>
-
-                      <!-- Volleyball -->
-                      <div class="sport-capsule">
-                        <input
-                          type="checkbox"
-                          name="sports"
-                          value="volleyball"
-                          id="sport_volleyball"
-                          {% if sports and 'volleyball' in sports %}checked{% endif %}
-                        />
-                        <label class="sport-capsule-label" for="sport_volleyball">
-                          <span class="sport-capsule-icon">🏐</span>
-                          <span class="sport-capsule-name">Volleyball</span>
-                        </label>
-                      </div>
-
-                      <!-- Swimming -->
-                      <div class="sport-capsule">
-                        <input
-                          type="checkbox"
-                          name="sports"
-                          value="swimming"
-                          id="sport_swimming"
-                          {% if sports and 'swimming' in sports %}checked{% endif %}
-                        />
-                        <label class="sport-capsule-label" for="sport_swimming">
-                          <span class="sport-capsule-icon">🏊</span>
-                          <span class="sport-capsule-name">Swimming</span>
-                        </label>
-                      </div>
-
-                      <!-- Running -->
-                      <div class="sport-capsule">
-                        <input
-                          type="checkbox"
-                          name="sports"
-                          value="running"
-                          id="sport_running"
-                          {% if sports and 'running' in sports %}checked{% endif %}
-                        />
-                        <label class="sport-capsule-label" for="sport_running">
-                          <span class="sport-capsule-icon">🏃</span>
-                          <span class="sport-capsule-name">Running</span>
-                        </label>
-                      </div>
-
-                      <!-- Cycling -->
-                      <div class="sport-capsule">
-                        <input
-                          type="checkbox"
-                          name="sports"
-                          value="cycling"
-                          id="sport_cycling"
-                          {% if sports and 'cycling' in sports %}checked{% endif %}
-                        />
-                        <label class="sport-capsule-label" for="sport_cycling">
-                          <span class="sport-capsule-icon">🚴</span>
-                          <span class="sport-capsule-name">Cycling</span>
-                        </label>
-                      </div>
-
-                      <!-- Gym -->
-                      <div class="sport-capsule">
-                        <input
-                          type="checkbox"
-                          name="sports"
-                          value="gym"
-                          id="sport_gym"
-                          {% if sports and 'gym' in sports %}checked{% endif %}
-                        />
-                        <label class="sport-capsule-label" for="sport_gym">
-                          <span class="sport-capsule-icon">💪</span>
-                          <span class="sport-capsule-name">Gym</span>
-                        </label>
-                      </div>
-
-                      <!-- Yoga -->
-                      <div class="sport-capsule">
-                        <input
-                          type="checkbox"
-                          name="sports"
-                          value="yoga"
-                          id="sport_yoga"
-                          {% if sports and 'yoga' in sports %}checked{% endif %}
-                        />
-                        <label class="sport-capsule-label" for="sport_yoga">
-                          <span class="sport-capsule-icon">🧘</span>
-                          <span class="sport-capsule-name">Yoga</span>
-                        </label>
-                      </div>
-
-                      <!-- Other -->
-                      <div class="sport-capsule">
-                        <input
-                          type="checkbox"
-                          name="sports"
-                          value="other"
-                          id="sport_other"
-                          {% if sports and 'other' in sports %}checked{% endif %}
-                        />
-                        <label class="sport-capsule-label" for="sport_other">
-                          <span class="sport-capsule-icon">🎯</span>
-                          <span class="sport-capsule-name">Other</span>
-                        </label>
+                    <!-- Category Filter -->
+                    <div class="mb-3">
+                      <div class="btn-group" role="group" aria-label="Sport categories">
+                        <button type="button" class="btn btn-sm btn-outline-primary category-filter active" data-category="all">
+                          All
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-primary category-filter" data-category="team">
+                          Team
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-primary category-filter" data-category="racket">
+                          Racket
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-primary category-filter" data-category="fitness">
+                          Fitness
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-primary category-filter" data-category="water">
+                          Water
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-primary category-filter" data-category="combat">
+                          Combat
+                        </button>
                       </div>
                     </div>
+                    
+                    <!-- Selected Sports Display -->
+                    <div id="selectedSportsContainer" class="sport-capsules-container mb-3">
+                      <!-- Selected sports will appear here -->
+                    </div>
+                    
+                    <!-- Available Sports Display -->
+                    <div id="availableSportsContainer" class="sport-capsules-container">
+                      <!-- Loading indicator -->
+                      <div class="text-center w-100 py-3" id="sportsLoader">
+                        <div class="spinner-border text-primary" role="status">
+                          <span class="visually-hidden">Loading...</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- Load More Button -->
+                    <div class="text-center mt-3" id="loadMoreContainer" style="display: none;">
+                      <button type="button" class="btn btn-outline-primary" id="loadMoreBtn" onclick="loadMoreSports()">
+                        Load More Sports <span id="remainingCount"></span>
+                      </button>
+                    </div>
+                    
+                    <!-- Hidden inputs for form submission -->
+                    <div id="hiddenSportsInputs"></div>
+                    
                     <div
-                      class="invalid-feedback d-block"
+                      class="invalid-feedback"
                       id="sports-error"
-                      style="display: none !important"
+                      style="display: none;"
                     >
                       Please select at least one sport.
                     </div>
@@ -609,6 +626,269 @@
     <script src="{% static 'core/js/lottie.js' %}"></script>
 
     <script>
+      // Sports Management System with Pagination
+      let allSports = [];
+      let selectedSports = new Set();
+      let currentCategory = 'all';
+      let displayedSportsCount = 0;
+      const INITIAL_LOAD = 15; // Show 15 sports initially
+      const LOAD_MORE_COUNT = 10; // Load 10 more each time
+      let isSearching = false;
+      let searchQuery = '';
+
+      // Load sports from API
+      async function loadSports() {
+        try {
+          const response = await fetch('/api/sports/search/?limit=100');
+          const data = await response.json();
+          
+          if (data.status === 'success') {
+            allSports = data.results;
+            displayedSportsCount = 0;
+            renderAvailableSports(INITIAL_LOAD);
+            updateLoadMoreButton();
+            
+            // Pre-select sports if coming back from validation error
+            {% if sports %}
+              const preSelectedSports = {{ sports|safe }};
+              preSelectedSports.forEach(sportSlug => {
+                const sport = allSports.find(s => s.slug === sportSlug || s.name.toLowerCase() === sportSlug.toLowerCase());
+                if (sport) {
+                  selectSport(sport);
+                }
+              });
+            {% endif %}
+          }
+        } catch (error) {
+          console.error('Error loading sports:', error);
+          document.getElementById('sportsLoader').innerHTML = '<p class="text-danger">Error loading sports. Please refresh the page.</p>';
+        }
+      }
+
+      // Get filtered sports based on category and search
+      function getFilteredSports() {
+        return allSports.filter(sport => {
+          const matchesCategory = currentCategory === 'all' || sport.category === currentCategory;
+          const notSelected = !selectedSports.has(sport.id);
+          const matchesSearch = !searchQuery || 
+            sport.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (sport.description && sport.description.toLowerCase().includes(searchQuery.toLowerCase()));
+          
+          return matchesCategory && notSelected && matchesSearch;
+        });
+      }
+
+      // Render available sports with pagination
+      function renderAvailableSports(count = null) {
+        const container = document.getElementById('availableSportsContainer');
+        const loader = document.getElementById('sportsLoader');
+        
+        if (loader) {
+          loader.remove();
+        }
+        
+        const filteredSports = getFilteredSports();
+        
+        // Determine how many to show
+        let sportsToShow;
+        if (count !== null) {
+          sportsToShow = filteredSports.slice(0, count);
+          displayedSportsCount = count;
+        } else {
+          sportsToShow = filteredSports.slice(0, displayedSportsCount);
+        }
+        
+        if (sportsToShow.length === 0) {
+          container.innerHTML = '<p class="text-muted text-center w-100 py-3">No sports found</p>';
+          document.getElementById('loadMoreContainer').style.display = 'none';
+          return;
+        }
+        
+        container.innerHTML = sportsToShow.map(sport => `
+          <div class="sport-capsule" data-sport-id="${sport.id}">
+            <label class="sport-capsule-label" onclick="selectSportById(${sport.id})" style="cursor: pointer;">
+              <span class="sport-capsule-icon">${sport.emoji}</span>
+              <span class="sport-capsule-name">${sport.name}</span>
+            </label>
+          </div>
+        `).join('');
+        
+        updateLoadMoreButton();
+      }
+
+      // Update Load More button visibility and text
+      function updateLoadMoreButton() {
+        const loadMoreContainer = document.getElementById('loadMoreContainer');
+        const remainingCountSpan = document.getElementById('remainingCount');
+        const filteredSports = getFilteredSports();
+        const remaining = filteredSports.length - displayedSportsCount;
+        
+        if (remaining > 0 && !isSearching) {
+          loadMoreContainer.style.display = 'block';
+          remainingCountSpan.textContent = `(${remaining} more)`;
+        } else {
+          loadMoreContainer.style.display = 'none';
+        }
+      }
+
+      // Load more sports
+      function loadMoreSports() {
+        displayedSportsCount += LOAD_MORE_COUNT;
+        renderAvailableSports(displayedSportsCount);
+      }
+
+      // Select a sport
+      function selectSport(sport) {
+        if (selectedSports.has(sport.id)) return;
+        
+        selectedSports.add(sport.id);
+        renderSelectedSports();
+        renderAvailableSports();
+        updateHiddenInputs();
+        hideError();
+      }
+
+      // Select sport by ID
+      function selectSportById(sportId) {
+        const sport = allSports.find(s => s.id === sportId);
+        if (sport) {
+          selectSport(sport);
+        }
+      }
+
+      // Deselect a sport
+      function deselectSport(sportId) {
+        selectedSports.delete(sportId);
+        renderSelectedSports();
+        renderAvailableSports();
+        updateHiddenInputs();
+      }
+
+      // Render selected sports
+      function renderSelectedSports() {
+        const container = document.getElementById('selectedSportsContainer');
+        const selectedSportsList = Array.from(selectedSports).map(id => 
+          allSports.find(s => s.id === id)
+        ).filter(Boolean);
+        
+        if (selectedSportsList.length === 0) {
+          container.innerHTML = '';
+          return;
+        }
+        
+        container.innerHTML = selectedSportsList.map(sport => `
+          <div class="sport-capsule" data-sport-id="${sport.id}">
+            <label class="sport-capsule-label" style="background: linear-gradient(135deg, #50b5ff 0%, #2e8bc0 100%); color: #fff; border-color: #50b5ff; position: relative; padding-right: 35px;">
+              <span class="sport-capsule-icon">${sport.emoji}</span>
+              <span class="sport-capsule-name">${sport.name}</span>
+              <button type="button" onclick="deselectSport(${sport.id})" style="position: absolute; right: 10px; background: none; border: none; color: #fff; font-size: 18px; cursor: pointer; padding: 0; line-height: 1;" aria-label="Remove ${sport.name}">×</button>
+            </label>
+          </div>
+        `).join('');
+      }
+
+      // Update hidden inputs for form submission
+      function updateHiddenInputs() {
+        const container = document.getElementById('hiddenSportsInputs');
+        const selectedSportsList = Array.from(selectedSports).map(id => 
+          allSports.find(s => s.id === id)
+        ).filter(Boolean);
+        
+        container.innerHTML = selectedSportsList.map(sport => `
+          <input type="hidden" name="sports" value="${sport.slug}">
+        `).join('');
+      }
+
+      // Hide error message
+      function hideError() {
+        const error = document.getElementById('sports-error');
+        if (error) {
+          error.style.display = 'none';
+        }
+      }
+
+      // Real-time search functionality (no API call needed - search locally)
+      let searchTimeout;
+      document.getElementById('sportSearch').addEventListener('input', function(e) {
+        clearTimeout(searchTimeout);
+        searchQuery = e.target.value.trim();
+        
+        // Hide dropdown search results when typing in main search
+        document.getElementById('searchResults').style.display = 'none';
+        
+        // Real-time filter of displayed sports
+        searchTimeout = setTimeout(() => {
+          isSearching = searchQuery.length > 0;
+          displayedSportsCount = isSearching ? 100 : INITIAL_LOAD; // Show all when searching
+          renderAvailableSports(displayedSportsCount);
+        }, 150); // Very short delay for instant feel
+      });
+
+      // Dropdown search for quick selection (shows top matches)
+      let dropdownSearchTimeout;
+      document.getElementById('sportSearch').addEventListener('input', function(e) {
+        clearTimeout(dropdownSearchTimeout);
+        const query = e.target.value.trim();
+        
+        if (query.length < 2) {
+          document.getElementById('searchResults').style.display = 'none';
+          return;
+        }
+        
+        dropdownSearchTimeout = setTimeout(() => {
+          const filteredSports = allSports.filter(sport => {
+            const notSelected = !selectedSports.has(sport.id);
+            const matchesQuery = sport.name.toLowerCase().includes(query.toLowerCase());
+            return notSelected && matchesQuery;
+          }).slice(0, 8); // Show top 8 matches
+          
+          if (filteredSports.length > 0) {
+            const resultsContainer = document.getElementById('searchResults');
+            resultsContainer.innerHTML = filteredSports.map(sport => `
+              <div class="sport-search-item" onclick="selectSportById(${sport.id}); document.getElementById('sportSearch').value = ''; searchQuery = ''; displayedSportsCount = INITIAL_LOAD; renderAvailableSports(displayedSportsCount); document.getElementById('searchResults').style.display = 'none';">
+                <div class="sport-search-item-content">
+                  <span class="sport-search-icon">${sport.emoji}</span>
+                  <span class="sport-search-name">${sport.name}</span>
+                  <span class="sport-search-category">${sport.category}</span>
+                </div>
+              </div>
+            `).join('');
+            resultsContainer.style.display = 'block';
+          } else {
+            document.getElementById('searchResults').style.display = 'none';
+          }
+        }, 200);
+      });
+
+      // Close search results when clicking outside
+      document.addEventListener('click', function(e) {
+        if (!e.target.closest('#sportSearch') && !e.target.closest('#searchResults')) {
+          document.getElementById('searchResults').style.display = 'none';
+        }
+      });
+
+      // Category filter
+      document.querySelectorAll('.category-filter').forEach(button => {
+        button.addEventListener('click', function() {
+          document.querySelectorAll('.category-filter').forEach(btn => btn.classList.remove('active'));
+          this.classList.add('active');
+          currentCategory = this.dataset.category;
+          
+          // Reset search when changing category
+          searchQuery = '';
+          document.getElementById('sportSearch').value = '';
+          isSearching = false;
+          displayedSportsCount = INITIAL_LOAD;
+          
+          renderAvailableSports(displayedSportsCount);
+        });
+      });
+
+      // Initialize on page load
+      document.addEventListener('DOMContentLoaded', function() {
+        loadSports();
+      });
+
       // Client-side validation for signup step 2
       document
         .getElementById('signupStep2Form')
@@ -620,9 +900,6 @@
           const genderRadios = document.querySelectorAll('input[name="gender"]');
           const country = document.getElementById('country');
           const availability = document.getElementById('availability');
-          const sportsCheckboxes = document.querySelectorAll(
-            'input[name="sports"]:checked'
-          );
           const sportsError = document.getElementById('sports-error');
           const genderError = document.getElementById('gender-error');
 
@@ -692,7 +969,7 @@
           }
 
           // Sports validation
-          if (sportsCheckboxes.length === 0) {
+          if (selectedSports.size === 0) {
             e.preventDefault();
             sportsError.style.display = 'block';
             isValid = false;
@@ -769,21 +1046,6 @@
         .getElementById('availability')
         .addEventListener('input', function () {
           this.classList.remove('is-invalid');
-        });
-
-      // Hide sports error when a checkbox is selected
-      document
-        .querySelectorAll('input[name="sports"]')
-        .forEach(function (checkbox) {
-          checkbox.addEventListener('change', function () {
-            const sportsError = document.getElementById('sports-error');
-            const sportsCheckboxes = document.querySelectorAll(
-              'input[name="sports"]:checked'
-            );
-            if (sportsCheckboxes.length > 0) {
-              sportsError.style.display = 'none';
-            }
-          });
         });
     </script>
   </body>
