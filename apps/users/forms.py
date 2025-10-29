@@ -14,7 +14,7 @@ class ProfileEditForm(forms.ModelForm):
         model = UserProfile
         fields = [
             'first_name', 'last_name', 'gender', 'country', 'avatar',
-            'date_of_birth', 'age', 'city', 'phone', 'bio'
+            'date_of_birth', 'city', 'phone', 'bio'
         ]
         widgets = {
             'first_name': forms.TextInput(attrs={
@@ -42,12 +42,6 @@ class ProfileEditForm(forms.ModelForm):
                 'class': 'form-control',
                 'type': 'date',
                 'placeholder': 'YYYY-MM-DD'
-            }),
-            'age': forms.NumberInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Age',
-                'min': 1,
-                'max': 150
             }),
             'city': forms.TextInput(attrs={
                 'class': 'form-control',
@@ -92,13 +86,23 @@ class ProfileEditForm(forms.ModelForm):
             raise forms.ValidationError('Country is required.')
         return country
     
-    def clean_age(self):
-        """Validate age is reasonable"""
-        age = self.cleaned_data.get('age')
-        if age is not None:
-            if age < 1 or age > 150:
-                raise forms.ValidationError('Please enter a valid age between 1 and 150.')
-        return age
+    def clean_phone(self):
+        """Validate phone number format"""
+        phone = self.cleaned_data.get('phone', '').strip()
+        
+        if phone:
+            # Remove common separators for validation
+            phone_digits = re.sub(r'[\s\-\(\)\+]', '', phone)
+            
+            # Check if it contains only digits and common phone symbols
+            if not re.match(r'^[\d\s\-\(\)\+]+$', phone):
+                raise forms.ValidationError('Please enter a valid phone number.')
+            
+            # Check reasonable length
+            if len(phone_digits) < 7 or len(phone_digits) > 15:
+                raise forms.ValidationError('Phone number must be between 7 and 15 digits.')
+        
+        return phone
     
     def clean_date_of_birth(self):
         """Validate date of birth is not in the future"""
@@ -132,33 +136,72 @@ class ProfileEditForm(forms.ModelForm):
 
 class ContactEditForm(forms.Form):
     """
-    Form for editing contact information
+    Form for changing email address
+    Email changes require password confirmation for security
     """
-    phone = forms.CharField(
-        max_length=20,
-        required=False,
-        widget=forms.TextInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Contact Number'
-        })
-    )
-    
     email = forms.EmailField(
-        required=False,
+        required=True,
+        label='Email Address',
         widget=forms.EmailInput(attrs={
             'class': 'form-control',
-            'placeholder': 'Email Address',
-            'readonly': 'readonly'
-        })
+            'placeholder': 'Email Address'
+        }),
+        error_messages={
+            'required': 'Email address is required.',
+            'invalid': 'Please enter a valid email address.'
+        }
     )
     
-    url = forms.URLField(
+    password = forms.CharField(
         required=False,
-        widget=forms.URLInput(attrs={
+        label='Current Password (required to change email)',
+        widget=forms.PasswordInput(attrs={
             'class': 'form-control',
-            'placeholder': 'Website URL'
-        })
+            'placeholder': 'Enter password to confirm email change'
+        }),
+        help_text='Only required if you change your email address'
     )
+    
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        
+        # Pre-populate email with current value
+        if self.user and not self.is_bound:
+            self.fields['email'].initial = self.user.email
+    
+    def clean_email(self):
+        """Validate email is unique and properly formatted"""
+        email = self.cleaned_data.get('email', '').strip().lower()
+        
+        if not email:
+            raise forms.ValidationError('Email address is required.')
+        
+        # Check if email has changed
+        if self.user and email != self.user.email.lower():
+            # Check if email is already taken by another user
+            if User.objects.filter(email=email).exclude(pk=self.user.pk).exists():
+                raise forms.ValidationError('This email address is already in use by another account.')
+        
+        return email
+    
+    def clean(self):
+        """Validate that password is provided if email is changed"""
+        cleaned_data = super().clean()
+        email = cleaned_data.get('email', '').strip().lower()
+        password = cleaned_data.get('password')
+        
+        # Check if email has changed
+        if self.user and email != self.user.email.lower():
+            # Password is required when changing email
+            if not password:
+                raise forms.ValidationError('Please enter your current password to change your email address.')
+            
+            # Verify the password is correct
+            if not self.user.check_password(password):
+                raise forms.ValidationError('The password you entered is incorrect.')
+        
+        return cleaned_data
 
 
 class CustomPasswordChangeForm(PasswordChangeForm):

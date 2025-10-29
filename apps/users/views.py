@@ -486,3 +486,44 @@ def change_password(request):
     }
     
     return render(request, 'users/change_password.html', context)
+
+
+@login_required
+def manage_contact(request):
+    """
+    Manage email address
+    Email changes require password confirmation
+    """
+    from .forms import ContactEditForm
+    
+    if request.method == 'POST':
+        form = ContactEditForm(request.POST, user=request.user)
+        
+        if form.is_valid():
+            # Check if email has changed
+            new_email = form.cleaned_data.get('email', '').strip().lower()
+            if new_email != request.user.email.lower():
+                # Update email
+                request.user.email = new_email
+                request.user.save()
+                messages.success(request, 'Your email address has been changed successfully!')
+            else:
+                messages.info(request, 'No changes were made to your email address.')
+            
+            return redirect('users:manage_contact')
+        else:
+            # Add form errors to messages for better visibility
+            for field, errors in form.errors.items():
+                for error in errors:
+                    if field == '__all__':
+                        messages.error(request, error)
+    else:
+        form = ContactEditForm(user=request.user)
+    
+    context = {
+        'form': form,
+        'user': request.user,
+        'active_tab': 'manage-contact'
+    }
+    
+    return render(request, 'users/manage_contact.html', context)

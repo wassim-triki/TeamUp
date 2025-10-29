@@ -157,8 +157,8 @@
                                     </a>
                                 </li>
                                 <li class="col-md-4 p-0">
-                                    <a class="nav-link" href="#manage-contact">
-                                        Manage Contact
+                                    <a class="nav-link {% if active_tab == 'manage-contact' %}active{% endif %}" href="{% url 'users:manage_contact' %}">
+                                        Change Email
                                     </a>
                                 </li>
                             </ul>
@@ -331,37 +331,36 @@
                                                 {% endif %}
                                             </div>
                                             
-                                            <!-- Age (Optional) -->
-                                            <div class="form-group col-sm-6">
-                                                <label for="{{ form.age.id_for_label }}" class="form-label">
-                                                    Age <small class="text-muted">(Optional)</small>
-                                                </label>
-                                                <input type="number" 
-                                                       name="age" 
-                                                       class="form-control {% if form.age.errors %}is-invalid{% endif %}" 
-                                                       id="{{ form.age.id_for_label }}"
-                                                       value="{{ form.age.value|default:'' }}"
-                                                       placeholder="Age"
-                                                       min="1"
-                                                       max="150">
-                                                {% if form.age.errors %}
-                                                    <div class="invalid-feedback">{{ form.age.errors.0 }}</div>
-                                                {% endif %}
-                                            </div>
-                                            
                                             <!-- Phone (Optional) -->
                                             <div class="form-group col-sm-6">
                                                 <label for="{{ form.phone.id_for_label }}" class="form-label">
                                                     Phone <small class="text-muted">(Optional)</small>
                                                 </label>
-                                                <input type="text" 
+                                                <input type="tel" 
                                                        name="phone" 
                                                        class="form-control {% if form.phone.errors %}is-invalid{% endif %}" 
                                                        id="{{ form.phone.id_for_label }}"
                                                        value="{{ form.phone.value|default:'' }}"
                                                        placeholder="Phone Number">
+                                                <small class="form-text">Format: +1234567890 or (123) 456-7890</small>
                                                 {% if form.phone.errors %}
                                                     <div class="invalid-feedback">{{ form.phone.errors.0 }}</div>
+                                                {% endif %}
+                                            </div>
+                                            
+                                            <!-- City (Optional) -->
+                                            <div class="form-group col-sm-6">
+                                                <label for="{{ form.city.id_for_label }}" class="form-label">
+                                                    City <small class="text-muted">(Optional)</small>
+                                                </label>
+                                                <input type="text" 
+                                                       name="city" 
+                                                       class="form-control {% if form.city.errors %}is-invalid{% endif %}" 
+                                                       id="{{ form.city.id_for_label }}"
+                                                       value="{{ form.city.value|default:'' }}"
+                                                       placeholder="City">
+                                                {% if form.city.errors %}
+                                                    <div class="invalid-feedback">{{ form.city.errors.0 }}</div>
                                                 {% endif %}
                                             </div>
                                             
