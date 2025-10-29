@@ -504,6 +504,50 @@ def edit_profile(request):
     return render(request, 'users/profile_edit.html', context)
 
 
+
+@login_required
+def edit_sports(request):
+    """
+    Edit user sports interests - Uses the same component as signup
+    """
+    from apps.core.models import Sport
+    
+    # Get or create profile for the user
+    profile, created = UserProfile.objects.get_or_create(user=request.user)
+    
+    # Get all available sports
+    all_sports = Sport.objects.all().order_by('name')
+    
+    # Get user's current sports (from interested_sports M2M relationship)
+    user_sports = list(profile.interested_sports.values_list('id', flat=True))
+    
+    if request.method == 'POST':
+        # Get selected sports IDs from form
+        selected_sports_ids = request.POST.getlist('sports')
+        
+        # Validate that at least one sport is selected
+        if not selected_sports_ids:
+            messages.error(request, 'Please select at least one sport.')
+        else:
+            # Update user's sports interests
+            selected_sports_ids = [int(sid) for sid in selected_sports_ids]
+            profile.interested_sports.set(selected_sports_ids)
+            profile.save()
+            
+            messages.success(request, 'Sports interests updated successfully!')
+            return redirect('users:edit_sports')
+    
+    context = {
+        'profile': profile,
+        'user': request.user,
+        'all_sports': all_sports,
+        'user_sports': user_sports,
+        'active_tab': 'edit-sports'
+    }
+    
+    return render(request, 'users/profile_edit_sports.html', context)
+
+
 @login_required
 def change_password(request):
     """
