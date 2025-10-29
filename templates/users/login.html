@@ -1,0 +1,255 @@
+{% extends 'core/auth_base.html' %} {% load static %} {% block title %}Sign in -
+TeamUp{% endblock %} {% block head %}
+<style>
+  .alert-solid {
+    color: #fff;
+    border: none;
+  }
+  .alert-solid .btn-close {
+    filter: brightness(0) invert(1);
+  }
+  .alert-solid i {
+    font-size: 18px;
+    margin-right: 8px;
+  }
+</style>
+{% endblock %} {% block content %}
+<section class="sign-in-page">
+  <div id="container-inside">
+    <div id="circle-small"></div>
+    <div id="circle-medium"></div>
+    <div id="circle-large"></div>
+    <div id="circle-xlarge"></div>
+    <div id="circle-xxlarge"></div>
+  </div>
+
+  <div class="container p-0">
+    <div class="row no-gutters">
+      <div class="col-md-6 text-center pt-5">
+        <div class="sign-in-detail text-white">
+          <a class="sign-in-logo mb-5" href="{% url 'core:index' %}">
+            <img
+              src="{% static 'core/images/logo-full.png' %}"
+              class="img-fluid"
+              alt="TeamUp Logo"
+            />
+          </a>
+          <div class="sign-slider overflow-hidden">
+            <ul class="swiper-wrapper list-inline m-0 p-0">
+              <li class="swiper-slide">
+                <img
+                  src="{% static 'core/images/login/1.png' %}"
+                  class="img-fluid mb-4"
+                  alt="Find training partners"
+                />
+                <h4 class="mb-1 text-white">Find training partners</h4>
+                <p>
+                  Discover teammates who share your sport, level and goals —
+                  locally or online.
+                </p>
+              </li>
+              <li class="swiper-slide">
+                <img
+                  src="{% static 'core/images/login/2.png' %}"
+                  class="img-fluid mb-4"
+                  alt="AI-powered recommendations"
+                />
+                <h4 class="mb-1 text-white">AI-powered recommendations</h4>
+                <p>
+                  Our AI analyzes profiles, goals and availability to surface
+                  the best matches for you.
+                </p>
+              </li>
+              <li class="swiper-slide">
+                <img
+                  src="{% static 'core/images/login/3.png' %}"
+                  class="img-fluid mb-4"
+                  alt="Smart scheduling"
+                />
+                <h4 class="mb-1 text-white">Smart scheduling</h4>
+                <p>
+                  Get suggested meeting times that work for everyone so planning
+                  is fast and painless.
+                </p>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6 bg-white pt-5 pt-5 pb-lg-0 pb-5">
+        <div class="sign-in-from">
+          <h1 class="mb-0">Sign in to TeamUp</h1>
+          <p>
+            Enter your email and password to access TeamUp — your AI-powered
+            partner-matching and scheduling hub.
+          </p>
+
+          <!-- Error/Warning/Success Messages -->
+          {% if error_message %}
+          <div
+            class="alert alert-solid alert-danger alert-dismissible fade show mb-3"
+            role="alert"
+          >
+            <span><i class="ri-alert-line"></i></span>
+            <span> {{ error_message }}</span>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="alert"
+              aria-label="Close"
+            ></button>
+          </div>
+          {% endif %} {% if warning_message %}
+          <div
+            class="alert alert-solid alert-warning alert-dismissible fade show mb-3"
+            role="alert"
+          >
+            <span><i class="ri-error-warning-line"></i></span>
+            <span> {{ warning_message }}</span>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="alert"
+              aria-label="Close"
+            ></button>
+          </div>
+          {% endif %} {% for message in success_messages %}
+          <div
+            class="alert alert-solid alert-success alert-dismissible fade show mb-3"
+            role="alert"
+          >
+            <span><i class="ri-checkbox-circle-line"></i></span>
+            <span> {{ message }}</span>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="alert"
+              aria-label="Close"
+            ></button>
+          </div>
+          {% endfor %}
+
+          <form class="mt-4" method="post" action="" id="loginForm" novalidate>
+            {% csrf_token %}
+
+            <div class="form-group">
+              <label class="form-label" for="id_email">Email address</label>
+              <input
+                type="email"
+                name="email"
+                class="form-control mb-0"
+                id="id_email"
+                placeholder="Enter email"
+                value="{{ request.POST.email|default:'' }}"
+                required
+              />
+              <div class="invalid-feedback">
+                Please enter a valid email address.
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="id_password">Password</label>
+              <a href="#" class="float-end">Forgot password?</a>
+              <input
+                type="password"
+                name="password"
+                class="form-control mb-0"
+                id="id_password"
+                placeholder="Password"
+                required
+              />
+              <div class="invalid-feedback">Please enter your password.</div>
+            </div>
+
+            <div class="d-inline-block w-100">
+              <div class="form-check d-inline-block mt-2 pt-1">
+                <input
+                  type="checkbox"
+                  class="form-check-input"
+                  id="customCheck11"
+                  name="remember"
+                />
+                <label class="form-check-label" for="customCheck11"
+                  >Remember Me</label
+                >
+              </div>
+              <button type="submit" class="btn btn-primary float-end">
+                Sign in
+              </button>
+            </div>
+
+            <div class="sign-info mt-3">
+              <span class="dark-color d-inline-block line-height-2">
+                Don't have an account?
+                <a href="{% url 'users:signup' %}">Sign up</a>
+              </span>
+              <ul class="iq-social-media">
+                <li>
+                  <a href="#"><i class="ri-facebook-box-line"></i></a>
+                </li>
+                <li>
+                  <a href="#"><i class="ri-twitter-line"></i></a>
+                </li>
+                <li>
+                  <a href="#"><i class="ri-instagram-line"></i></a>
+                </li>
+              </ul>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  // Client-side validation for login form
+  document.getElementById('loginForm').addEventListener('submit', function (e) {
+    const emailInput = document.getElementById('id_email');
+    const passwordInput = document.getElementById('id_password');
+    const email = emailInput.value.trim();
+    const password = passwordInput.value.trim();
+
+    let isValid = true;
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email) {
+      e.preventDefault();
+      emailInput.classList.add('is-invalid');
+      isValid = false;
+    } else if (!emailRegex.test(email)) {
+      e.preventDefault();
+      emailInput.classList.add('is-invalid');
+      isValid = false;
+    } else {
+      emailInput.classList.remove('is-invalid');
+      emailInput.classList.add('is-valid');
+    }
+
+    // Password validation
+    if (!password) {
+      e.preventDefault();
+      passwordInput.classList.add('is-invalid');
+      isValid = false;
+    } else {
+      passwordInput.classList.remove('is-invalid');
+      passwordInput.classList.add('is-valid');
+    }
+
+    return isValid;
+  });
+
+  // Remove invalid state on input
+  document.getElementById('id_email').addEventListener('input', function () {
+    this.classList.remove('is-invalid');
+  });
+
+  document.getElementById('id_password').addEventListener('input', function () {
+    this.classList.remove('is-invalid');
+  });
+</script>
+
+{% endblock %}

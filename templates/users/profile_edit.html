@@ -1,0 +1,429 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Edit Profile - TeamUp{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-img-edit {
+        position: relative;
+        display: inline-block;
+    }
+    
+    .profile-img-edit .profile-pic {
+        width: 200px;
+        /* height: 200px; */
+        border-radius: 50%;
+        object-fit: cover;
+        object-position: center;
+        aspect-ratio: 1/1;
+        border: 4px solid #f0f0f0;
+        display: block;
+    }
+    
+    .profile-img-edit .p-image {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        background: #667eea;
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .profile-img-edit .p-image:hover {
+        background: #5568d3;
+    }
+    
+    .profile-img-edit .p-image .upload-button {
+        font-size: 20px;
+        margin: 0;
+    }
+    
+    .profile-img-edit .file-upload {
+        display: none;
+    }
+    
+    .iq-edit-list ul {
+        display: flex;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        border-bottom: 2px solid #e6e6e6;
+    }
+    
+    .iq-edit-list ul li {
+        flex: 1;
+    }
+    
+    .iq-edit-list ul li a {
+        display: block;
+        padding: 20px;
+        text-align: center;
+        text-decoration: none;
+        color: #6c757d;
+        font-weight: 500;
+        border-bottom: 3px solid transparent;
+        transition: all 0.3s ease;
+    }
+    
+    .iq-edit-list ul li a:hover {
+        color: #667eea;
+        background: #f8f9fa;
+    }
+    
+    .iq-edit-list ul li a.active {
+        color: #667eea;
+        border-bottom-color: #667eea;
+        background: #f8f9fa;
+    }
+    
+    .alert {
+        border-radius: 8px;
+        border: none;
+    }
+    
+    .form-label {
+        font-weight: 500;
+        color: #495057;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-label .text-danger {
+        color: #dc3545 !important;
+    }
+    
+    .form-control, .form-select {
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+        padding: 0.75rem 1rem;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+    
+    .form-control.is-invalid, .form-select.is-invalid {
+        border-color: #dc3545;
+    }
+    
+    .form-control.is-invalid:focus, .form-select.is-invalid:focus {
+        box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+    }
+    
+    .invalid-feedback {
+        display: block;
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+    
+    .form-check-input[type="radio"] {
+        width: 1.25rem;
+        height: 1.25rem;
+        margin-top: 0.125rem;
+    }
+    
+    .form-check-input:checked {
+        background-color: #667eea;
+        border-color: #667eea;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="content-page" class="content-page">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-body p-0">
+                        <div class="iq-edit-list">
+                            <ul class="iq-edit-profile row nav nav-pills">
+                                <li class="col-md-4 p-0">
+                                    <a class="nav-link {% if active_tab == 'personal-information' %}active{% endif %}" href="{% url 'users:edit_profile' %}">
+                                        Personal Information
+                                    </a>
+                                </li>
+                                <li class="col-md-4 p-0">
+                                    <a class="nav-link {% if active_tab == 'change-pwd' %}active{% endif %}" href="{% url 'users:change_password' %}">
+                                        Change Password
+                                    </a>
+                                </li>
+                                <li class="col-md-4 p-0">
+                                    <a class="nav-link {% if active_tab == 'manage-contact' %}active{% endif %}" href="{% url 'users:manage_contact' %}">
+                                        Change Email
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-12">
+                <div class="iq-edit-list-data">
+                    <!-- Personal Information Content -->
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between">
+                            <div class="header-title">
+                                <h4 class="card-title">Personal Information</h4>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <!-- Success Messages -->
+                            <!-- {% if messages %}
+                                {% for message in messages %}
+                                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                        <i class="ri-check-line me-2"></i>{{ message }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                             -->
+                            <form method="post" enctype="multipart/form-data" id="profile-form" novalidate>
+                                        {% csrf_token %}
+                                        
+                                        <!-- Avatar Upload -->
+                                        <div class="form-group row align-items-center mb-4">
+                                            <div class="col-md-12 text-center">
+                                                <div class="profile-img-edit">
+                                                    {% if profile.avatar %}
+                                                        <img class="profile-pic" src="{{ profile.avatar.url }}" alt="Profile Picture" id="avatar-preview">
+                                                    {% else %}
+                                                        <img class="profile-pic" src="{% static 'assets/images/user/default-avatar.jpg' %}" alt="Default Profile Picture" id="avatar-preview">
+                                                    {% endif %}
+                                                    <div class="p-image">
+                                                        <i class="ri-pencil-line upload-button text-white"></i>
+                                                        {{ form.avatar }}
+                                                    </div>
+                                                </div>
+                                                {% if form.avatar.errors %}
+                                                    <div class="invalid-feedback d-block">
+                                                        {{ form.avatar.errors.0 }}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="row">
+                                            <!-- First Name (Required) -->
+                                            <div class="form-group col-sm-6">
+                                                <label for="{{ form.first_name.id_for_label }}" class="form-label">
+                                                    First Name <span class="text-danger">*</span>
+                                                </label>
+                                                <input type="text" 
+                                                       name="first_name" 
+                                                       class="form-control {% if form.first_name.errors %}is-invalid{% endif %}" 
+                                                       id="{{ form.first_name.id_for_label }}"
+                                                       value="{{ form.first_name.value|default:'' }}"
+                                                       placeholder="First Name"
+                                                       required>
+                                                {% if form.first_name.errors %}
+                                                    <div class="invalid-feedback">{{ form.first_name.errors.0 }}</div>
+                                                {% endif %}
+                                            </div>
+                                            
+                                            <!-- Last Name (Required) -->
+                                            <div class="form-group col-sm-6">
+                                                <label for="{{ form.last_name.id_for_label }}" class="form-label">
+                                                    Last Name <span class="text-danger">*</span>
+                                                </label>
+                                                <input type="text" 
+                                                       name="last_name" 
+                                                       class="form-control {% if form.last_name.errors %}is-invalid{% endif %}" 
+                                                       id="{{ form.last_name.id_for_label }}"
+                                                       value="{{ form.last_name.value|default:'' }}"
+                                                       placeholder="Last Name"
+                                                       required>
+                                                {% if form.last_name.errors %}
+                                                    <div class="invalid-feedback">{{ form.last_name.errors.0 }}</div>
+                                                {% endif %}
+                                            </div>
+                                            
+                                            <!-- Gender (Required) -->
+                                            <div class="form-group col-sm-6">
+                                                <label class="form-label">
+                                                    Gender <span class="text-danger">*</span>
+                                                </label>
+                                                <div class="d-flex gap-4">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input {% if form.gender.errors %}is-invalid{% endif %}" 
+                                                               type="radio" 
+                                                               name="gender" 
+                                                               id="gender-male" 
+                                                               value="male" 
+                                                               {% if form.gender.value == 'male' %}checked{% endif %}
+                                                               required>
+                                                        <label class="form-check-label" for="gender-male">Male</label>
+                                                    </div>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input {% if form.gender.errors %}is-invalid{% endif %}" 
+                                                               type="radio" 
+                                                               name="gender" 
+                                                               id="gender-female" 
+                                                               value="female"
+                                                               {% if form.gender.value == 'female' %}checked{% endif %}
+                                                               required>
+                                                        <label class="form-check-label" for="gender-female">Female</label>
+                                                    </div>
+                                                </div>
+                                                {% if form.gender.errors %}
+                                                    <div class="invalid-feedback d-block">{{ form.gender.errors.0 }}</div>
+                                                {% endif %}
+                                            </div>
+                                            
+                                            <!-- Country (Required) -->
+                                            <div class="form-group col-sm-6">
+                                                <label for="{{ form.country.id_for_label }}" class="form-label">
+                                                    Country <span class="text-danger">*</span>
+                                                </label>
+                                                <select name="country" 
+                                                        class="form-select {% if form.country.errors %}is-invalid{% endif %}" 
+                                                        id="{{ form.country.id_for_label }}"
+                                                        required>
+                                                    <option value="">Select Country</option>
+                                                    {% for value, label in form.fields.country.choices %}
+                                                        {% if value %}
+                                                            <option value="{{ value }}" {% if form.country.value == value %}selected{% endif %}>{{ label }}</option>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                </select>
+                                                {% if form.country.errors %}
+                                                    <div class="invalid-feedback">{{ form.country.errors.0 }}</div>
+                                                {% endif %}
+                                            </div>
+                                            
+                                            <!-- City (Optional) -->
+                                            <div class="form-group col-sm-6">
+                                                <label for="{{ form.city.id_for_label }}" class="form-label">
+                                                    City <small class="text-muted">(Optional)</small>
+                                                </label>
+                                                <input type="text" 
+                                                       name="city" 
+                                                       class="form-control {% if form.city.errors %}is-invalid{% endif %}" 
+                                                       id="{{ form.city.id_for_label }}"
+                                                       value="{{ form.city.value|default:'' }}"
+                                                       placeholder="City">
+                                                {% if form.city.errors %}
+                                                    <div class="invalid-feedback">{{ form.city.errors.0 }}</div>
+                                                {% endif %}
+                                            </div>
+                                            
+                                            <!-- Date of Birth (Optional) -->
+                                            <div class="form-group col-sm-6">
+                                                <label for="{{ form.date_of_birth.id_for_label }}" class="form-label">
+                                                    Date Of Birth <small class="text-muted">(Optional)</small>
+                                                </label>
+                                                <input type="date" 
+                                                       name="date_of_birth" 
+                                                       class="form-control {% if form.date_of_birth.errors %}is-invalid{% endif %}" 
+                                                       id="{{ form.date_of_birth.id_for_label }}"
+                                                       value="{{ form.date_of_birth.value|date:'Y-m-d'|default:'' }}">
+                                                {% if form.date_of_birth.errors %}
+                                                    <div class="invalid-feedback">{{ form.date_of_birth.errors.0 }}</div>
+                                                {% endif %}
+                                            </div>
+                                            
+                                            <!-- Phone (Optional) -->
+                                            <div class="form-group col-sm-6">
+                                                <label for="{{ form.phone.id_for_label }}" class="form-label">
+                                                    Phone <small class="text-muted">(Optional)</small>
+                                                </label>
+                                                <input type="tel" 
+                                                       name="phone" 
+                                                       class="form-control {% if form.phone.errors %}is-invalid{% endif %}" 
+                                                       id="{{ form.phone.id_for_label }}"
+                                                       value="{{ form.phone.value|default:'' }}"
+                                                       placeholder="Phone Number">
+                                                <small class="form-text">Format: +1234567890 or (123) 456-7890</small>
+                                                {% if form.phone.errors %}
+                                                    <div class="invalid-feedback">{{ form.phone.errors.0 }}</div>
+                                                {% endif %}
+                                            </div>
+                                            
+                                            <!-- City (Optional) -->
+                                            <div class="form-group col-sm-6">
+                                                <label for="{{ form.city.id_for_label }}" class="form-label">
+                                                    City <small class="text-muted">(Optional)</small>
+                                                </label>
+                                                <input type="text" 
+                                                       name="city" 
+                                                       class="form-control {% if form.city.errors %}is-invalid{% endif %}" 
+                                                       id="{{ form.city.id_for_label }}"
+                                                       value="{{ form.city.value|default:'' }}"
+                                                       placeholder="City">
+                                                {% if form.city.errors %}
+                                                    <div class="invalid-feedback">{{ form.city.errors.0 }}</div>
+                                                {% endif %}
+                                            </div>
+                                            
+                                            <!-- Bio (Optional) -->
+                                            <div class="form-group col-sm-12">
+                                                <label for="{{ form.bio.id_for_label }}" class="form-label">
+                                                    Bio <small class="text-muted">(Optional)</small>
+                                                </label>
+                                                <textarea name="bio" 
+                                                          class="form-control {% if form.bio.errors %}is-invalid{% endif %}" 
+                                                          id="{{ form.bio.id_for_label }}"
+                                                          rows="3"
+                                                          placeholder="Tell us about yourself...">{{ form.bio.value|default:'' }}</textarea>
+                                                {% if form.bio.errors %}
+                                                    <div class="invalid-feedback">{{ form.bio.errors.0 }}</div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        
+                                        <button type="submit" class="btn btn-primary me-2">Save Changes</button>
+                                        <a href="/" class="btn bg-soft-danger">Cancel</a>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+    // Avatar preview on file select
+    document.querySelector('.file-upload').addEventListener('change', function(e) {
+        if (e.target.files && e.target.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('avatar-preview').src = e.target.result;
+            };
+            reader.readAsDataURL(e.target.files[0]);
+        }
+    });
+    
+    // Click on pencil icon to trigger file input
+    document.querySelector('.p-image').addEventListener('click', function() {
+        document.querySelector('.file-upload').click();
+    });
+    
+    // Form validation
+    (function () {
+        'use strict'
+        var form = document.getElementById('profile-form')
+        form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+                event.preventDefault()
+                event.stopPropagation()
+            }
+            form.classList.add('was-validated')
+        }, false)
+    })()
+</script>
+{% endblock %}

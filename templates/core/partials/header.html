@@ -1,0 +1,68 @@
+{% load static %}
+<header class="iq-top-navbar">
+  <div class="iq-navbar-custom">
+    <nav class="navbar navbar-expand-lg navbar-light p-0">
+      <div class="iq-navbar-logo d-flex justify-content-between">
+        <a href="{% url 'core:index' %}">
+          <img
+            src="{% static 'core/images/logo.png' %}"
+            class="img-fluid"
+            alt=""
+          />
+          <span>TeamUp</span>
+        </a>
+        <div class="iq-menu-bt align-self-center">
+          <div class="wrapper-menu">
+            <div class="main-circle"><i class="ri-menu-line"></i></div>
+          </div>
+        </div>
+      </div>
+      <div class="iq-search-bar device-search">
+        <form action="#" class="searchbox">
+          <a class="search-link" href="#"><i class="ri-search-line"></i></a>
+          <input
+            type="text"
+            class="text search-input"
+            placeholder="Search here..."
+          />
+        </form>
+      </div>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent"
+        aria-label="Toggle navigation"
+      >
+        <i class="ri-menu-3-line"></i>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav ms-auto navbar-list d-flex align-items-center">
+          <li class="nav-item me-2">
+            <a
+              href="{% url 'core:index' %}"
+              class="nav-link d-flex align-items-center"
+            >
+              <i class="ri-home-line"></i>
+            </a>
+          </li>
+          <!-- Right-aligned auth buttons -->
+          <li class="nav-item ms-3">
+            <div class="d-flex align-items-center">
+              <a
+                href="{% url 'users:login' %}"
+                class="btn btn-outline-primary me-2"
+                >Login</a
+              >
+              <a href="{% url 'users:signup' %}" class="btn btn-primary"
+                >Sign up</a
+              >
+            </div>
+          </li>
+        </ul>
+      </div>
+    </nav>
+  </div>
+</header>

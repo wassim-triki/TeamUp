@@ -1,0 +1,287 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Manage Contact - TeamUp{% endblock %}
+
+{% block extra_css %}
+<style>
+    .iq-edit-list ul {
+        display: flex;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        border-bottom: 2px solid #e6e6e6;
+    }
+    
+    .iq-edit-list ul li {
+        flex: 1;
+    }
+    
+    .iq-edit-list ul li a {
+        display: block;
+        padding: 20px;
+        text-align: center;
+        text-decoration: none;
+        color: #6c757d;
+        font-weight: 500;
+        border-bottom: 3px solid transparent;
+        transition: all 0.3s ease;
+    }
+    
+    .iq-edit-list ul li a:hover {
+        color: #667eea;
+        background: #f8f9fa;
+    }
+    
+    .iq-edit-list ul li a.active {
+        color: #667eea;
+        border-bottom-color: #667eea;
+        background: #f8f9fa;
+    }
+    
+    .alert {
+        border-radius: 8px;
+        border: none;
+    }
+    
+    .form-label {
+        font-weight: 500;
+        color: #495057;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-label .text-danger {
+        color: #dc3545 !important;
+    }
+    
+    .form-control, .form-select {
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+        padding: 0.75rem 1rem;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+    
+    .form-control.is-invalid, .form-select.is-invalid {
+        border-color: #dc3545;
+    }
+    
+    .form-control.is-invalid:focus, .form-select.is-invalid:focus {
+        box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+    }
+    
+    .invalid-feedback {
+        display: block;
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+    
+    .contact-info-box {
+        background-color: #f8f9fa;
+        border-left: 3px solid #667eea;
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 5px;
+    }
+    
+    .contact-info-box h6 {
+        color: #667eea;
+        font-weight: 600;
+        margin-bottom: 10px;
+        font-size: 0.95rem;
+    }
+    
+    .contact-info-box ul {
+        margin: 0;
+        padding-left: 20px;
+    }
+    
+    .contact-info-box li {
+        color: #6c757d;
+        font-size: 0.875rem;
+        margin-bottom: 5px;
+    }
+    
+    .form-text {
+        font-size: 0.875rem;
+        color: #6c757d;
+        margin-top: 0.25rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="content-page" class="content-page">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-body p-0">
+                        <div class="iq-edit-list">
+                            <ul class="iq-edit-profile row nav nav-pills">
+                                <li class="col-md-4 p-0">
+                                    <a class="nav-link {% if active_tab == 'personal-information' %}active{% endif %}" href="{% url 'users:edit_profile' %}">
+                                        Personal Information
+                                    </a>
+                                </li>
+                                <li class="col-md-4 p-0">
+                                    <a class="nav-link {% if active_tab == 'change-pwd' %}active{% endif %}" href="{% url 'users:change_password' %}">
+                                        Change Password
+                                    </a>
+                                </li>
+                                <li class="col-md-4 p-0">
+                                    <a class="nav-link {% if active_tab == 'manage-contact' %}active{% endif %}" href="{% url 'users:manage_contact' %}">
+                                        Change Email
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-12">
+                <div class="iq-edit-list-data">
+                    <!-- Manage Contact Content -->
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between">
+                            <div class="header-title">
+                                <h4 class="card-title">Change Email Address</h4>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <!-- Success/Error Messages -->
+                            <!-- {% if messages %}
+                                {% for message in messages %}
+                                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                        {% if message.tags == 'success' %}
+                                            <i class="ri-check-line me-2"></i>
+                                        {% elif message.tags == 'error' %}
+                                            <i class="ri-error-warning-line me-2"></i>
+                                        {% elif message.tags == 'info' %}
+                                            <i class="ri-information-line me-2"></i>
+                                        {% endif %}
+                                        {{ message }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                    </div>
+                                {% endfor %}
+                            {% endif %} -->
+                            
+                            <!-- Email Change Notice -->
+                            <div class="contact-info-box">
+                                <h6><i class="ri-information-line me-2"></i>Important Information</h6>
+                                <ul>
+                                    <li>Changing your email requires your current password for security</li>
+                                    <li>Make sure you have access to the new email address</li>
+                                </ul>
+                            </div>
+                            
+                            <form method="post" id="contact-form" novalidate>
+                                {% csrf_token %}
+                                
+                                <!-- Non-field errors -->
+                                {% if form.non_field_errors %}
+                                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                        <i class="ri-error-warning-line me-2"></i>
+                                        {% for error in form.non_field_errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                    </div>
+                                {% endif %}
+                                
+                                <div class="row">
+                                    <!-- Email Address (Required) -->
+                                    <div class="form-group col-sm-12">
+                                        <label for="{{ form.email.id_for_label }}" class="form-label">
+                                            Email Address <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="email" 
+                                               name="email" 
+                                               class="form-control {% if form.email.errors %}is-invalid{% endif %}" 
+                                               id="{{ form.email.id_for_label }}"
+                                               value="{{ form.email.value|default:user.email }}"
+                                               placeholder="Email Address"
+                                               required>
+                                        <small class="form-text">This is your login email address</small>
+                                        {% if form.email.errors %}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.email.errors %}
+                                                    {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <!-- Password (Required only when changing email) -->
+                                    <div class="form-group col-sm-12">
+                                        <label for="{{ form.password.id_for_label }}" class="form-label">
+                                            Current Password
+                                        </label>
+                                        <input type="password" 
+                                               name="password" 
+                                               class="form-control {% if form.password.errors %}is-invalid{% endif %}" 
+                                               id="{{ form.password.id_for_label }}"
+                                               placeholder="Enter password to confirm email change">
+                                        <small class="form-text text-warning">
+                                            <i class="ri-lock-line"></i> Required only if you change your email address
+                                        </small>
+                                        {% if form.password.errors %}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.password.errors %}
+                                                    {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary me-2">Update Email</button>
+                                <a href="/" class="btn bg-soft-danger">Cancel</a>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+    // Form validation
+    (function () {
+        'use strict'
+        var form = document.getElementById('contact-form')
+        var emailField = document.querySelector('input[name="email"]')
+        var passwordField = document.querySelector('input[name="password"]')
+        var initialEmail = "{{ user.email }}"
+        
+        // Show/hide password requirement based on email change
+        emailField.addEventListener('input', function() {
+            if (emailField.value.toLowerCase() !== initialEmail.toLowerCase()) {
+                passwordField.setAttribute('required', 'required')
+                passwordField.parentElement.querySelector('label').innerHTML = 
+                    'Current Password <span class="text-danger">*</span>'
+            } else {
+                passwordField.removeAttribute('required')
+                passwordField.parentElement.querySelector('label').textContent = 'Current Password'
+            }
+        })
+        
+        form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+                event.preventDefault()
+                event.stopPropagation()
+            }
+            form.classList.add('was-validated')
+        }, false)
+    })()
+</script>
+{% endblock %}
