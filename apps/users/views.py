@@ -470,6 +470,12 @@ def change_password(request):
             
             messages.success(request, 'Your password has been changed successfully!')
             return redirect('users:change_password')
+        else:
+            # Add form errors to messages for better visibility
+            for field, errors in form.errors.items():
+                for error in errors:
+                    if field == '__all__':
+                        messages.error(request, error)
     else:
         form = CustomPasswordChangeForm(user=request.user)
     

@@ -204,11 +204,15 @@ class CustomPasswordChangeForm(PasswordChangeForm):
         old_password = self.cleaned_data.get('old_password')
         if not old_password:
             raise forms.ValidationError('Current password is required.')
-        return old_password
+        
+        # Django's PasswordChangeForm will automatically check if old password is correct
+        # We just need to call the parent method
+        return super().clean_old_password()
     
     def clean_new_password1(self):
         """Validate new password strength"""
         password = self.cleaned_data.get('new_password1')
+        old_password = self.cleaned_data.get('old_password')
         
         if not password:
             raise forms.ValidationError('New password is required.')
@@ -222,6 +226,10 @@ class CustomPasswordChangeForm(PasswordChangeForm):
         
         if not re.search(r'\d', password):
             raise forms.ValidationError('Password must contain at least one number.')
+        
+        # Check if new password is different from old password
+        if old_password and password == old_password:
+            raise forms.ValidationError('New password must be different from your current password.')
         
         return password
     
