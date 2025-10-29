@@ -1,13 +1,17 @@
-# search/views.py
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
-from django.contrib.auth.models import User
 from django.http import JsonResponse
-from .models import UserProfile, SearchFilter, PartnerRecommendation, SearchHistory
-from .forms import SearchFilterForm
+from django.conf import settings
 import json
 from math import radians, sin, cos, sqrt, atan2
+
+# Import User and UserProfile from apps.users
+from apps.users.models import User, UserProfile
+
+# Import local models
+from .models import SearchFilter, PartnerRecommendation, SearchHistory
+from .forms import SearchFilterForm
 
 
 def calculate_distance(lat1, lon1, lat2, lon2):
@@ -23,7 +27,20 @@ def calculate_distance(lat1, lon1, lat2, lon2):
     return R * c
 
 
-# @login_required  # Comment this out for now
+def parse_sports(sports_field):
+    """Helper function to parse sports JSON field"""
+    try:
+        if isinstance(sports_field, str):
+            sports = json.loads(sports_field or '[]')
+            return sports if isinstance(sports, list) else []
+        elif isinstance(sports_field, list):
+            return sports_field
+        return []
+    except (json.JSONDecodeError, TypeError):
+        return []
+
+
+@login_required
 def search_partners(request):
     """Main search view with filters"""
     
@@ -35,49 +52,26 @@ def search_partners(request):
     availability = request.GET.get('availability', '')
     
     # Start with all profiles
-    results = UserProfile.objects.all()
+    profiles = UserProfile.objects.select_related('user').all()
     
     # Exclude current user if authenticated
     if request.user.is_authenticated:
-        results = results.exclude(user=request.user)
+        profiles = profiles.exclude(user=request.user)
     
-    # Apply filters
+    # Apply sport filter
     if sport:
-        results = results.filter(sports__contains=sport)
-    
-    if level:
-        results = results.filter(level=level)
-    
-    # Location-based filtering - only if user is authenticated and has a profile
-    if request.user.is_authenticated:
-        try:
-            user_profile = UserProfile.objects.get(user=request.user)
-            if user_profile.latitude and user_profile.longitude and max_distance:
-                try:
-                    max_dist = float(max_distance)
-                    nearby_profiles = []
-                    
-                    for profile in results:
-                        if profile.latitude and profile.longitude:
-                            distance = calculate_distance(
-                                user_profile.latitude, 
-                                user_profile.longitude,
-                                profile.latitude,
-                                profile.longitude
-                            )
-                            if distance <= max_dist:
-                                profile.distance = round(distance, 1)
-                                nearby_profiles.append(profile)
-                    
-                    results = sorted(nearby_profiles, key=lambda x: x.distance)
-                except ValueError:
-                    results = list(results)
-            else:
-                results = list(results)
-        except UserProfile.DoesNotExist:
-            results = list(results)
+        filtered_profiles = []
+        for profile in profiles:
+            profile_sports = parse_sports(profile.sports)
+            if sport in profile_sports:
+                filtered_profiles.append(profile)
+        profiles = filtered_profiles
     else:
-        results = list(results)
+        profiles = list(profiles)
+    
+    # Add parsed sports to each profile for template
+    for profile in profiles:
+        profile.sports_list = parse_sports(profile.sports)
     
     # Save search history only if authenticated
     if request.user.is_authenticated:
@@ -91,7 +85,7 @@ def search_partners(request):
                 'level': level,
                 'availability': availability
             },
-            results_count=len(results)
+            results_count=len(profiles)
         )
     
     # Get saved filters only if authenticated
@@ -100,32 +94,41 @@ def search_partners(request):
         saved_filters = SearchFilter.objects.filter(user=request.user)
     
     context = {
-        'results': results[:20],  # Limit to 20 results
+        'results': profiles[:20],  # Limit to 20 results
         'sport': sport,
         'location': location,
         'max_distance': max_distance,
         'level': level,
-        'total_results': len(results),
+        'total_results': len(profiles),
         'saved_filters': saved_filters
     }
     
     return render(request, 'search/search_partners.html', context)
 
 
-# @login_required  # Comment this out for now
+@login_required
 def recommendations(request):
     """View showing AI-based partner recommendations"""
     
     # Get recommendations only if authenticated
     recommendations_list = []
     if request.user.is_authenticated:
-        recommendations_list = PartnerRecommendation.objects.filter(
+        recommendations_list = PartnerRecommendation.objects.select_related(
+            'recommended_user', 
+            'recommended_user__profile'
+        ).filter(
             user=request.user,
             is_dismissed=False
         )[:10]
         
         # Mark as viewed
         recommendations_list.update(is_viewed=True)
+        
+        # Add parsed sports to each recommendation
+        for rec in recommendations_list:
+            rec.recommended_user.profile.sports_list = parse_sports(
+                rec.recommended_user.profile.sports
+            )
     
     context = {
         'recommendations': recommendations_list,
@@ -133,8 +136,7 @@ def recommendations(request):
     
     return render(request, 'search/recommendations.html', context)
 
-
-# @login_required  # Comment this out for now
+@login_required
 def save_search_filter(request):
     """Save a search filter for quick access"""
     
@@ -196,7 +198,8 @@ def search_history_view(request):
 # @login_required  # Comment this out for now
 def partner_detail(request, user_id):
     """View detailed profile of a potential partner"""
-    partner_profile = get_object_or_404(UserProfile, user_id=user_id)
+    partner_user = get_object_or_404(User, id=user_id)
+    partner_profile = get_object_or_404(UserProfile, user=partner_user)
     
     # Calculate distance only if user is authenticated and has a profile
     distance = None
@@ -206,23 +209,21 @@ def partner_detail(request, user_id):
         try:
             user_profile = UserProfile.objects.get(user=request.user)
             
-            # Calculate distance if coordinates available
-            if (user_profile.latitude and user_profile.longitude and 
-                partner_profile.latitude and partner_profile.longitude):
-                distance = round(calculate_distance(
-                    user_profile.latitude,
-                    user_profile.longitude,
-                    partner_profile.latitude,
-                    partner_profile.longitude
-                ), 1)
+            # Parse sports from JSON
+            user_sports = parse_sports(user_profile.sports)
+            partner_sports = parse_sports(partner_profile.sports)
             
             # Find common sports
-            common_sports = list(set(user_profile.sports) & set(partner_profile.sports))
+            common_sports = list(set(user_sports) & set(partner_sports))
         except UserProfile.DoesNotExist:
             pass
     
+    # Parse partner sports for display
+    partner_sports_list = parse_sports(partner_profile.sports)
+    
     context = {
         'partner': partner_profile,
+        'partner_sports': partner_sports_list,
         'distance': distance,
         'common_sports': common_sports,
     }

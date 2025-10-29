@@ -1,38 +1,14 @@
 from django.contrib import admin
-from .models import UserProfile, SearchFilter, PartnerRecommendation, SearchHistory
+from .models import SearchFilter, PartnerRecommendation, SearchHistory
 
-
-@admin.register(UserProfile)
-class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ['user', 'level', 'location', 'created_at']
-    list_filter = ['level', 'created_at']
-    search_fields = ['user__username', 'location', 'bio']
-    readonly_fields = ['created_at']
-    
-    fieldsets = (
-        ('User Info', {
-            'fields': ('user', 'bio')
-        }),
-        ('Sports & Level', {
-            'fields': ('sports', 'level', 'goals')
-        }),
-        ('Location', {
-            'fields': ('location', 'latitude', 'longitude')
-        }),
-        ('Availability', {
-            'fields': ('availability',)
-        }),
-        ('Metadata', {
-            'fields': ('created_at',)
-        }),
-    )
+# DON'T import or register UserProfile - it's managed by apps.users
 
 
 @admin.register(SearchFilter)
 class SearchFilterAdmin(admin.ModelAdmin):
     list_display = ['name', 'user', 'sport_type', 'level', 'is_favorite', 'created_at']
     list_filter = ['is_favorite', 'sport_type', 'level', 'created_at']
-    search_fields = ['name', 'user__username', 'location']
+    search_fields = ['name', 'user__username', 'user__email', 'location']
     readonly_fields = ['created_at']
     
     fieldsets = (
@@ -55,7 +31,7 @@ class SearchFilterAdmin(admin.ModelAdmin):
 class PartnerRecommendationAdmin(admin.ModelAdmin):
     list_display = ['user', 'recommended_user', 'match_score', 'is_viewed', 'is_dismissed', 'created_at']
     list_filter = ['is_viewed', 'is_dismissed', 'created_at']
-    search_fields = ['user__username', 'recommended_user__username']
+    search_fields = ['user__username', 'user__email', 'recommended_user__username', 'recommended_user__email']
     readonly_fields = ['created_at']
     
     fieldsets = (
@@ -79,7 +55,7 @@ class PartnerRecommendationAdmin(admin.ModelAdmin):
 class SearchHistoryAdmin(admin.ModelAdmin):
     list_display = ['user', 'search_query', 'results_count', 'created_at']
     list_filter = ['created_at']
-    search_fields = ['user__username', 'search_query']
+    search_fields = ['user__username', 'user__email', 'search_query']
     readonly_fields = ['created_at']
     
     fieldsets = (

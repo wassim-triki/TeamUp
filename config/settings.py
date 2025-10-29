@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'apps.users',        # user accounts, auth, profiles
     'apps.api',          # REST API endpoints (if/when added)
     'apps.sessions',     # Sessions app - simplified
+    'apps.search',       # Search functionality
 ]
 
 MIDDLEWARE = [
