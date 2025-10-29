@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth.forms import PasswordChangeForm
 from .models import UserProfile, User
 from datetime import date
+import re
 
 
 class ProfileEditForm(forms.ModelForm):
@@ -162,26 +163,75 @@ class ContactEditForm(forms.Form):
 
 class CustomPasswordChangeForm(PasswordChangeForm):
     """
-    Custom password change form with Bootstrap styling
+    Custom password change form with Bootstrap styling and enhanced validation
     """
     old_password = forms.CharField(
         label='Current Password',
         widget=forms.PasswordInput(attrs={
             'class': 'form-control',
-            'placeholder': 'Current Password'
-        })
+            'placeholder': 'Enter your current password',
+            'required': True
+        }),
+        error_messages={
+            'required': 'Current password is required.',
+        }
     )
     new_password1 = forms.CharField(
         label='New Password',
         widget=forms.PasswordInput(attrs={
             'class': 'form-control',
-            'placeholder': 'New Password'
-        })
+            'placeholder': 'Enter new password (min 8 characters)',
+            'required': True
+        }),
+        error_messages={
+            'required': 'New password is required.',
+        }
     )
     new_password2 = forms.CharField(
         label='Verify Password',
         widget=forms.PasswordInput(attrs={
             'class': 'form-control',
-            'placeholder': 'Verify Password'
-        })
+            'placeholder': 'Re-enter new password',
+            'required': True
+        }),
+        error_messages={
+            'required': 'Please verify your new password.',
+        }
     )
+    
+    def clean_old_password(self):
+        """Validate the old password"""
+        old_password = self.cleaned_data.get('old_password')
+        if not old_password:
+            raise forms.ValidationError('Current password is required.')
+        return old_password
+    
+    def clean_new_password1(self):
+        """Validate new password strength"""
+        password = self.cleaned_data.get('new_password1')
+        
+        if not password:
+            raise forms.ValidationError('New password is required.')
+        
+        if len(password) < 8:
+            raise forms.ValidationError('Password must be at least 8 characters long.')
+        
+        # Check if password contains both letters and numbers
+        if not re.search(r'[A-Za-z]', password):
+            raise forms.ValidationError('Password must contain at least one letter.')
+        
+        if not re.search(r'\d', password):
+            raise forms.ValidationError('Password must contain at least one number.')
+        
+        return password
+    
+    def clean_new_password2(self):
+        """Validate that the two password fields match"""
+        password1 = self.cleaned_data.get('new_password1')
+        password2 = self.cleaned_data.get('new_password2')
+        
+        if password1 and password2:
+            if password1 != password2:
+                raise forms.ValidationError('The two password fields must match.')
+        
+        return password2

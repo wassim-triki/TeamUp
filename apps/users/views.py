@@ -9,6 +9,7 @@ from django.utils import timezone
 from django.urls import reverse
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
+from django.contrib.auth.decorators import login_required
 from .models import User, UserProfile, EmailVerificationToken
 import json
 import uuid
@@ -417,15 +418,13 @@ def signup_view(request):
 
 # ===== Profile Management =====
 
-from django.contrib.auth.decorators import login_required
 from .forms import ProfileEditForm
 
 
 @login_required
 def edit_profile(request):
     """
-    Edit user profile with tabs for Personal Information, Change Password, and Manage Contact.
-    Only Personal Information is functional for now.
+    Edit user profile - Personal Information only
     """
     # Get or create profile for the user
     profile, created = UserProfile.objects.get_or_create(user=request.user)
@@ -446,6 +445,38 @@ def edit_profile(request):
         'form': form,
         'profile': profile,
         'user': request.user,
+        'active_tab': 'personal-information'
     }
     
     return render(request, 'users/profile_edit.html', context)
+
+
+@login_required
+def change_password(request):
+    """
+    Change user password
+    """
+    from .forms import CustomPasswordChangeForm
+    from django.contrib.auth import update_session_auth_hash
+    
+    if request.method == 'POST':
+        form = CustomPasswordChangeForm(user=request.user, data=request.POST)
+        
+        if form.is_valid():
+            # Save the new password
+            user = form.save()
+            # Update session to prevent logout
+            update_session_auth_hash(request, user)
+            
+            messages.success(request, 'Your password has been changed successfully!')
+            return redirect('users:change_password')
+    else:
+        form = CustomPasswordChangeForm(user=request.user)
+    
+    context = {
+        'form': form,
+        'user': request.user,
+        'active_tab': 'change-pwd'
+    }
+    
+    return render(request, 'users/change_password.html', context)
