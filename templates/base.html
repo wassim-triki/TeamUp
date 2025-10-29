@@ -50,6 +50,8 @@
         margin-right: 0.5rem;
       }
     </style>
+    <!-- HTMX for instant updates (optional but recommended) -->
+<script src="https://unpkg.com/htmx.org@1.9.12"></script>
   </head>
 
   <body>
@@ -103,156 +105,128 @@
               <ul class="navbar-nav ms-auto navbar-list">
                 {% if user.is_authenticated %}
                 <!-- Friend Request / Group Icon -->
-                <li class="nav-item dropdown">
-                  <a
-                    href="#"
-                    class="dropdown-toggle"
-                    id="group-drop"
-                    data-bs-toggle="dropdown"
-                    aria-haspopup="true"
-                    aria-expanded="false"
-                  >
-                    <i class="ri-group-line"></i>
-                  </a>
-                  <div
-                    class="sub-drop sub-drop-large dropdown-menu"
-                    aria-labelledby="group-drop"
-                  >
-                    <div class="card shadow-none m-0">
-                      <div
-                        class="card-header d-flex justify-content-between bg-primary"
-                      >
-                        <div class="header-title">
-                          <h5 class="mb-0 text-white">Friend Request</h5>
-                        </div>
-                        <small class="badge bg-light text-dark">4</small>
-                      </div>
-                      <div class="card-body p-0">
-                        <div class="iq-friend-request">
-                          <div
-                            class="iq-sub-card iq-sub-card-big d-flex align-items-center justify-content-between"
-                          >
-                            <div class="d-flex align-items-center">
-                              <img
-                                class="avatar-40 rounded"
-                                src="{% static 'assets/images/user/01.jpg' %}"
-                                alt=""
-                              />
-                              <div class="ms-3">
-                                <h6 class="mb-0">Jaques Amole</h6>
-                                <p class="mb-0">40 friends</p>
-                              </div>
-                            </div>
-                            <div class="d-flex align-items-center">
-                              <a
-                                href="javascript:void();"
-                                class="me-3 btn btn-primary rounded"
-                                >Confirm</a
-                              >
-                              <a
-                                href="javascript:void();"
-                                class="me-3 btn btn-secondary rounded"
-                                >Delete Request</a
-                              >
-                            </div>
-                          </div>
-                        </div>
-                        <div class="iq-friend-request">
-                          <div
-                            class="iq-sub-card iq-sub-card-big d-flex align-items-center justify-content-between"
-                          >
-                            <div class="d-flex align-items-center">
-                              <img
-                                class="avatar-40 rounded"
-                                src="{% static 'assets/images/user/02.jpg' %}"
-                                alt=""
-                              />
-                              <div class="ms-3">
-                                <h6 class="mb-0">Lucy Tania</h6>
-                                <p class="mb-0">12 friends</p>
-                              </div>
-                            </div>
-                            <div class="d-flex align-items-center">
-                              <a
-                                href="javascript:void();"
-                                class="me-3 btn btn-primary rounded"
-                                >Confirm</a
-                              >
-                              <a
-                                href="javascript:void();"
-                                class="me-3 btn btn-secondary rounded"
-                                >Delete Request</a
-                              >
-                            </div>
-                          </div>
-                        </div>
-                        <div class="iq-friend-request">
-                          <div
-                            class="iq-sub-card iq-sub-card-big d-flex align-items-center justify-content-between"
-                          >
-                            <div class="d-flex align-items-center">
-                              <img
-                                class="avatar-40 rounded"
-                                src="{% static 'assets/images/user/03.jpg' %}"
-                                alt=""
-                              />
-                              <div class="ms-3">
-                                <h6 class="mb-0">Manny Petty</h6>
-                                <p class="mb-0">3 friends</p>
-                              </div>
-                            </div>
-                            <div class="d-flex align-items-center">
-                              <a
-                                href="javascript:void();"
-                                class="me-3 btn btn-primary rounded"
-                                >Confirm</a
-                              >
-                              <a
-                                href="javascript:void();"
-                                class="me-3 btn btn-secondary rounded"
-                                >Delete Request</a
-                              >
-                            </div>
-                          </div>
-                        </div>
-                        <div class="iq-friend-request">
-                          <div
-                            class="iq-sub-card iq-sub-card-big d-flex align-items-center justify-content-between"
-                          >
-                            <div class="d-flex align-items-center">
-                              <img
-                                class="avatar-40 rounded"
-                                src="{% static 'assets/images/user/04.jpg' %}"
-                                alt=""
-                              />
-                              <div class="ms-3">
-                                <h6 class="mb-0">Marsha Mello</h6>
-                                <p class="mb-0">15 friends</p>
-                              </div>
-                            </div>
-                            <div class="d-flex align-items-center">
-                              <a
-                                href="javascript:void();"
-                                class="me-3 btn btn-primary rounded"
-                                >Confirm</a
-                              >
-                              <a
-                                href="javascript:void();"
-                                class="me-3 btn btn-secondary rounded"
-                                >Delete Request</a
-                              >
-                            </div>
-                          </div>
-                        </div>
-                        <div class="text-center">
-                          <a href="#" class="btn text-primary"
-                            >View More Request</a
-                          >
-                        </div>
-                      </div>
-                    </div>
+               <!-- Session Invitations Dropdown -->
+<li class="nav-item dropdown">
+  <a
+    href="#"
+    class="dropdown-toggle position-relative"
+    id="invitations-drop"
+    data-bs-toggle="dropdown"
+    aria-haspopup="true"
+    aria-expanded="false"
+  >
+    <i class="ri-group-line"></i>
+    {% if pending_invitations_count > 0 %}
+      <span class="badge bg-danger rounded-pill position-absolute top-0 start-100 translate-middle p-1">
+        {{ pending_invitations_count }}
+      </span>
+    {% endif %}
+  </a>
+
+  <div
+    class="sub-drop sub-drop-large dropdown-menu"
+    aria-labelledby="invitations-drop"
+    style="width: 360px;"
+  >
+    <div class="card shadow-none m-0">
+      <div class="card-header d-flex justify-content-between bg-primary">
+        <div class="header-title">
+          <h5 class="mb-0 text-white">Session Invitations</h5>
+        </div>
+        <small class="badge bg-light text-dark">
+          {{ pending_invitations_count|default:"0" }}
+        </small>
+      </div>
+
+      <div class="card-body p-0" id="invitations-list">
+        {% if pending_invitations %}
+          {% for inv in pending_invitations %}
+            <div class="iq-sub-card iq-sub-card-big p-3 border-bottom" id="invitation-{{ inv.id }}">
+              <div class="d-flex align-items-start">
+                <!-- Sport Icon -->
+                <div class="me-3">
+                  <div class="sport-icon-mini rounded-circle bg-white bg-opacity-25 d-flex align-items-center justify-content-center"
+                       style="width: 40px; height: 40px;">
+                    <i class="{% if inv.session.sport_type == 'soccer' %}ri-football-fill
+                              {% elif inv.session.sport_type == 'basketball' %}ri-basketball-fill
+                              {% elif inv.session.sport_type == 'tennis' %}ri-ping-pong-fill
+                              {% elif inv.session.sport_type == 'running' %}ri-run-fill
+                              {% else %}ri-trophy-fill{% endif %}"
+                       style="font-size: 1.4rem; color: white;"></i>
                   </div>
-                </li>
+                </div>
+
+                <!-- Session Info -->
+                <div class="flex-grow-1">
+                  <h6 class="mb-1 text-truncate" style="max-width: 180px;">
+                    {{ inv.session.get_sport_type_display }}
+                  </h6>
+                  <p class="mb-1 text-muted small">
+                    {{ inv.session.start_datetime|date:"M d, Y @ g:i A" }}
+                  </p>
+                  <p class="mb-0 text-muted small text-truncate" style="max-width: 180px;">
+                    {{ inv.session.location }}
+                  </p>
+                </div>
+
+                <!-- Accept / Decline -->
+                <div class="d-flex gap-1 ms-2">
+                  <!-- Accept -->
+                  <form method="post"
+                        action="{% url 'sessions:respond' inv.id %}"
+                        class="d-inline"
+                        hx-post="{% url 'sessions:respond' inv.id %}"
+                        hx-target="#invitation-{{ inv.id }}"
+                        hx-swap="outerHTML"
+                        hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="accept">
+                    <button type="submit"
+                            class="btn btn-sm btn-success rounded-pill px-2"
+                            title="Accept">
+                      <i class="ri-check-line"></i>
+                    </button>
+                  </form>
+
+                  <!-- Decline -->
+                  <form method="post"
+                        action="{% url 'sessions:respond' inv.id %}"
+                        class="d-inline"
+                        hx-post="{% url 'sessions:respond' inv.id %}"
+                        hx-target="#invitation-{{ inv.id }}"
+                        hx-swap="outerHTML"
+                        hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="refuse">
+                    <button type="submit"
+                            class="btn btn-sm btn-danger rounded-pill px-2"
+                            title="Decline">
+                      <i class="ri-close-line"></i>
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <div class="text-center py-4 text-muted">
+            <i class="ri-notification-off-line fs-3 mb-2 d-block"></i>
+            <p class="mb-0">No pending invitations</p>
+          </div>
+        {% endif %}
+
+        <!-- View All -->
+        {% if pending_invitations %}
+          <div class="text-center border-top pt-2">
+            <a href="{% url 'sessions:list' %}" class="btn btn-link btn-sm text-primary">
+              View All Sessions
+            </a>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</li>
 
                 <!-- Sessions Link (Functional) -->
                 <li class="nav-item dropdown">

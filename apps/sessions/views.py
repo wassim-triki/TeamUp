@@ -188,13 +188,10 @@ def invite_users(request, pk):
 
 @login_required
 def respond_invitation(request, invitation_id):
-    """Respond to a session invitation."""
-    invitation = get_object_or_404(Invitation, id=invitation_id)
-    
-    if invitation.invitee != request.user:
-        messages.warning(request, 'You can only respond to your own invitations.')
-        return redirect('sessions:list')
+    """Respond to a session invitation (supports HTMX + form)."""
+    invitation = get_object_or_404(Invitation, id=invitation_id, invitee=request.user)
 
+    # Prevent responding twice
     if invitation.status != 'pending':
         messages.info(request, 'This invitation has already been responded to.')
         return redirect('sessions:list')
@@ -205,15 +202,24 @@ def respond_invitation(request, invitation_id):
             action = form.cleaned_data['action']
             invitation.status = action
             invitation.response_notes = form.cleaned_data.get('notes', '')
-            
+
+            # Optional: reschedule support
             if action == 'rescheduled' and form.cleaned_data.get('new_datetime'):
                 invitation.rescheduled_datetime = form.cleaned_data['new_datetime']
-            
+
             invitation.save()
-            messages.success(request, f'Response submitted for {invitation.session.get_sport_type_display()} session.')
+            messages.success(
+                request,
+                f'Response submitted for {invitation.session.get_sport_type_display()} session.'
+            )
+
+            # If HTMX request, send empty response to remove the row
+            if getattr(request, "htmx", False):
+                return HttpResponse("")
+
             return redirect('sessions:list')
     else:
-        form = ResponseForm()  # No initial for pending
+        form = ResponseForm()
 
     return render(request, 'sessions/respond.html', {
         'session': invitation.session,
