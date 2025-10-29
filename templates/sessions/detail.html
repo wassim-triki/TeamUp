@@ -1,6 +1,7 @@
 <!-- templates/sessions/detail.html -->
 {% extends '../base.html' %}
 {% load static %}
+{% load user_extras %}
 
 {% block title %}{{ session.get_sport_type_display }} Session - TeamUp{% endblock %}
 
@@ -136,7 +137,11 @@
           <!-- Creator Card -->
           <div class="creator-card d-flex align-items-center p-3 rounded-3 mb-4" style="background: linear-gradient(135deg, #f8f9ff 0%, #fff 100%); border: 1px solid #e8ecff;">
             <div class="position-relative">
-              <img src="{% static 'assets/images/user/1.jpg' %}" class="rounded-circle shadow-sm" alt="{{ session.creator.username }}" style="width: 60px; height: 60px; object-fit: cover; border: 3px solid #fff;">
+              {% if session.creator|user_avatar_url %}
+                <img src="{{ session.creator|user_avatar_url }}" class="rounded-circle shadow-sm" alt="{{ session.creator.username }}" style="width: 60px; height: 60px; object-fit: cover; border: 3px solid #fff;">
+              {% else %}
+                <img src="{% static 'assets/images/user/default-avatar.jpg' %}" class="rounded-circle shadow-sm" alt="{{ session.creator.username }}" style="width: 60px; height: 60px; object-fit: cover; border: 3px solid #fff;">
+              {% endif %}
               <span class="position-absolute bottom-0 end-0 bg-success rounded-circle" style="width: 16px; height: 16px; border: 2px solid #fff;"></span>
             </div>
             <div class="flex-grow-1 ms-3">
@@ -238,7 +243,11 @@
               {% for invitation in invitations %}
               <div class="member-item d-flex align-items-center p-3 border-bottom position-relative" style="transition: background 0.2s ease;">
                 <div class="position-relative flex-shrink-0">
-                  <img src="{% static 'assets/images/user/' %}{{ forloop.counter|add:1 }}.jpg" class="rounded-circle shadow-sm" alt="{{ invitation.invitee.username }}" style="width: 48px; height: 48px; object-fit: cover; border: 2px solid #fff;">
+                  {% if invitation.invitee|user_avatar_url %}
+                    <img src="{{ invitation.invitee|user_avatar_url }}" class="rounded-circle shadow-sm" alt="{{ invitation.invitee.username }}" style="width: 48px; height: 48px; object-fit: cover; border: 2px solid #fff;">
+                  {% else %}
+                    <img src="{% static 'assets/images/user/default-avatar.jpg' %}" class="rounded-circle shadow-sm" alt="{{ invitation.invitee.username }}" style="width: 48px; height: 48px; object-fit: cover; border: 2px solid #fff;">
+                  {% endif %}
                   <span class="position-absolute bottom-0 end-0 bg-{% if invitation.status == 'accepted' %}success{% elif invitation.status == 'refused' %}danger{% else %}secondary{% endif %} rounded-circle" style="width: 14px; height: 14px; border: 2px solid #fff;"></span>
                 </div>
                 <div class="flex-grow-1 ms-3">

@@ -1,6 +1,7 @@
 <!-- templates/sessions/invite.html -->
 {% extends '../base.html' %}
 {% load static %}
+{% load user_extras %}
 
 {% block title %}Invite Users - TeamUp{% endblock %}
 
@@ -103,7 +104,11 @@
                 <div class="form-check position-absolute top-0 end-0 m-2">
                   <input class="form-check-input" type="checkbox" value="{{ user.pk }}" id="id_users_{{ user.pk }}" name="users">
                 </div>
-                <img src="{% static 'assets/images/user/' %}{{ forloop.counter }}.jpg" class="rounded-circle mb-3" width="72" height="72" alt="{{ user.username }}" style="object-fit: cover;">
+                {% if user|user_avatar_url %}
+                  <img src="{{ user|user_avatar_url }}" class="rounded-circle mb-3" width="72" height="72" alt="{{ user.username }}" style="object-fit: cover;">
+                {% else %}
+                  <img src="{% static 'assets/images/user/default-avatar.jpg' %}" class="rounded-circle mb-3" width="72" height="72" alt="{{ user.username }}" style="object-fit: cover;">
+                {% endif %}
                 <h6 class="fw-semibold mb-1">{{ user.username }}</h6>
                 <small class="text-muted d-block mb-2">{{ user.email|truncatechars:28 }}</small>
               </div>
