@@ -22,7 +22,7 @@ The following changes have been made to prepare the application for Render deplo
    - Added `dj_database_url` and `os` imports
    - Added `WhiteNoiseMiddleware` for serving static files
    - Updated database configuration to support `DATABASE_URL` environment variable
-   - Updated static files configuration with WhiteNoise
+   - Updated static files configuration with WhiteNoise (using `CompressedStaticFilesStorage` to avoid source map errors)
    - Changed `STATIC_URL` and `MEDIA_URL` to use leading slashes
 
 ### 3. **build.sh** - Created build script for Render:
