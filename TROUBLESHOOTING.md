@@ -1,5 +1,30 @@
 # Common Deployment Issues and Fixes
 
+## Issue: HTTP 400 Bad Request on Render
+
+### Error Message:
+```
+127.0.0.1 - - [29/Oct/2025:19:47:20 +0000] "GET / HTTP/1.1" 400 143
+```
+
+### Cause:
+Django returns a 400 error when the request's hostname is not in the `ALLOWED_HOSTS` setting. This was happening because the Render URL wasn't included.
+
+### Solution:
+The app now automatically detects the Render hostname using the `RENDER_EXTERNAL_HOSTNAME` environment variable. The following code was added to `config/settings.py`:
+
+```python
+# Add Render.com domain automatically
+RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+```
+
+### Status:
+✅ **FIXED** - This change has been applied and your app should now work on Render!
+
+---
+
 ## Issue: WhiteNoise "MissingFileError" for .map files
 
 ### Error Message:
