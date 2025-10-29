@@ -527,3 +527,47 @@ def manage_contact(request):
     }
     
     return render(request, 'users/manage_contact.html', context)
+
+
+def profile_view(request, username):
+    """
+    Display user profile page with About tab showing user information.
+    """
+    from django.shortcuts import get_object_or_404
+    from apps.sessions.models import Session
+    
+    # Get the user whose profile we're viewing
+    profile_user = get_object_or_404(User, username=username)
+    
+    # Check if this is the authenticated user's own profile
+    is_own_profile = request.user.is_authenticated and request.user.username == username
+    
+    # Get the user's profile (one-to-one relationship)
+    try:
+        user_profile = profile_user.profile
+    except UserProfile.DoesNotExist:
+        user_profile = None
+    
+    # Parse sports if available
+    sports_list = []
+    if user_profile and user_profile.sports:
+        try:
+            import json
+            sports_list = json.loads(user_profile.sports)
+        except:
+            sports_list = []
+    
+    # Get session statistics
+    sessions_created = Session.objects.filter(creator=profile_user).count()
+    sessions_joined = Session.objects.filter(invitees=profile_user).count()
+    
+    context = {
+        'profile_user': profile_user,
+        'user_profile': user_profile,
+        'is_own_profile': is_own_profile,
+        'sports_list': sports_list,
+        'sessions_created': sessions_created,
+        'sessions_joined': sessions_joined,
+    }
+    
+    return render(request, 'users/profile.html', context)
