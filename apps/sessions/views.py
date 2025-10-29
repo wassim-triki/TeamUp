@@ -6,36 +6,35 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.urls import reverse_lazy
 from django.views.generic.edit import UpdateView, DeleteView
 from django.db.models import Q
-from django.core.mail import send_mail  # For optional email notification
-from django.conf import settings  # For email config
-from django.core.paginator import Paginator  # For pagination
-from django.views.decorators.cache import cache_page  # Optional caching for AI
-from .models import Session, Invitation, SuggestedSlot
+from django.core.mail import send_mail
+from django.conf import settings
+from django.core.paginator import Paginator
+from django.views.decorators.cache import cache_page
+from django.http import HttpResponse
+from markdown import markdown
+
+from .models import Session, Invitation
 from .forms import SessionForm, InviteForm, ResponseForm
-from .services import generate_ai_insight  # Import the service for AI insights
-from markdown import markdown  # For AI Markdown rendering (pip install markdown)
+from .services import generate_ai_insight
 
 User = get_user_model()
 
+
 def session_list(request):
-    """List all sessions for authenticated users (discovery mode); limited public for anonymous."""
+    """List all sessions for authenticated users; limited public view for anonymous."""
     if request.user.is_authenticated:
-        # Show ALL sessions for discovery
         queryset = Session.objects.all().select_related('creator').prefetch_related('invitation_set__invitee').order_by('-start_datetime')
 
-        # Optional: Filter to personal if ?view=my
         if request.GET.get('view') == 'my':
             queryset = Session.objects.filter(
                 Q(creator=request.user) |
                 Q(invitees=request.user)
             ).select_related('creator').prefetch_related('invitation_set__invitee').distinct().order_by('-start_datetime')
 
-        # Pre-compute flags for template (avoid list conversion for performance)
         invited_session_ids = set(Invitation.objects.filter(invitee=request.user).values_list('session_id', flat=True))
         is_creator_ids = set(Session.objects.filter(creator=request.user).values_list('id', flat=True))
 
-        # Pagination
-        paginator = Paginator(queryset, 20)  # 20 per page
+        paginator = Paginator(queryset, 20)
         page_number = request.GET.get('page')
         sessions = paginator.get_page(page_number)
 
@@ -45,35 +44,52 @@ def session_list(request):
             'is_creator_ids': is_creator_ids,
         }
     else:
-        # Limited public for anonymous
         queryset = Session.objects.filter(status__in=['proposed', 'confirmed']).order_by('-start_datetime')[:10]
         context = {'object_list': queryset}
+
     return render(request, 'sessions/list.html', context)
 
 
+@login_required
 def session_detail(request, pk):
-    """Show session details: accessible to all authenticated users."""
+    """Show session details and handle join requests."""
     session = get_object_or_404(Session, pk=pk)
-    
-    # Anonymous: only public sessions
+
+    # Anonymous users: only public sessions
     if not request.user.is_authenticated and session.status not in ['proposed', 'confirmed']:
         messages.warning(request, 'This session is private. Log in to view.')
         return redirect('sessions:list')
-    
-    # Pre-compute for template
-    invitations = session.invitation_set.select_related('invitee').all()
-    responses_count = session.invitation_set.filter(status__in=['accepted', 'refused', 'rescheduled']).count()
-    responses_with_notes = session.invitation_set.filter(response_notes__isnull=False).select_related('invitee').all()
-    user_invitation = None
-    if request.user.is_authenticated:
-        user_invitation = session.invitation_set.filter(invitee=request.user).first()
+
+    # All invitations
+    invitations = session.invitation_set.select_related('invitee__profile').all()
+
+    # Current user's invitation (if any)
+    user_invitation = invitations.filter(invitee=request.user).first() if request.user.is_authenticated else None
+
+    # Participant count: creator + accepted
+    participant_count = 1 + invitations.filter(status='accepted').count()
+
+    # Pending count
+    pending_count = invitations.exclude(status='accepted').count()
+
+    # Responses count (non-pending)
+    responses_count = invitations.exclude(status='pending').count()
+
+    # AI visibility: creator OR accepted invitee
+    can_see_ai = (
+        request.user.is_authenticated and
+        (request.user == session.creator or
+         (user_invitation and user_invitation.status == 'accepted'))
+    )
 
     context = {
         'session': session,
         'invitations': invitations,
-        'responses_count': responses_count,
-        'responses_with_notes': responses_with_notes,
         'user_invitation': user_invitation,
+        'participant_count': participant_count,
+        'pending_count': pending_count,
+        'responses_count': responses_count,
+        'can_see_ai': can_see_ai,
     }
 
     # Handle join request (POST)
@@ -83,15 +99,14 @@ def session_detail(request, pk):
         elif user_invitation:
             messages.info(request, 'You are already invited.')
         else:
-            # Create pending invitation as join request
             Invitation.objects.get_or_create(
                 session=session,
                 invitee=request.user,
                 defaults={'status': 'pending'}
             )
             messages.success(request, 'Join request sent! The creator will be notified.')
-            
-            # Optional: Email creator (use settings)
+
+            # Optional: notify creator via email
             try:
                 send_mail(
                     subject='Join Request for Your Session',
@@ -101,8 +116,8 @@ def session_detail(request, pk):
                     fail_silently=True,
                 )
             except Exception:
-                # Log if needed, but fail silently
                 pass
+
         return redirect('sessions:detail', pk=pk)
 
     return render(request, 'sessions/detail.html', context)
@@ -115,7 +130,7 @@ def request_join(request, pk):
     if session.creator == request.user or session.invitation_set.filter(invitee=request.user).exists():
         messages.info(request, 'You are already involved in this session.')
         return redirect('sessions:detail', pk=pk)
-    
+
     Invitation.objects.get_or_create(
         session=session,
         invitee=request.user,
@@ -125,7 +140,7 @@ def request_join(request, pk):
     return redirect('sessions:detail', pk=pk)
 
 
-@login_required  # Block anonymous creates
+@login_required
 def create_session(request):
     """Create a new session (authenticated only)."""
     if request.method == 'POST':
@@ -133,12 +148,13 @@ def create_session(request):
         if form.is_valid():
             session = form.save(commit=False)
             session.creator = request.user
-            session.status = 'draft'  # Use model default
+            session.status = 'draft'
             session.save()
             messages.success(request, 'Session created successfully!')
             return redirect('sessions:detail', pk=session.pk)
     else:
         form = SessionForm()
+
     return render(request, 'sessions/session_form.html', {
         'form': form,
         'title': 'Create Session',
@@ -150,30 +166,28 @@ def create_session(request):
 def invite_users(request, pk):
     """Invite users to a session (only by creator)."""
     session = get_object_or_404(Session, pk=pk)
-    
     if session.creator != request.user:
         messages.warning(request, 'Only the creator can invite users.')
         return redirect('sessions:detail', pk=pk)
 
-    # Get users who are not already invited and not the creator
     excluded_users = [request.user.id] + list(session.invitation_set.values_list('invitee_id', flat=True))
     available_users = User.objects.exclude(id__in=excluded_users)
 
     if request.method == 'POST':
         form = InviteForm(request.POST)
-        form.fields['users'].queryset = available_users  # Set queryset post-init
+        form.fields['users'].queryset = available_users
         if form.is_valid():
             selected_users = form.cleaned_data['users']
             created_count = 0
             for user in selected_users:
-                invitation, created_new = Invitation.objects.get_or_create(
+                _, created = Invitation.objects.get_or_create(
                     session=session,
                     invitee=user,
                     defaults={'status': 'pending'}
                 )
-                if created_new:
+                if created:
                     created_count += 1
-            
+
             if created_count > 0:
                 messages.success(request, f'{created_count} invitation(s) sent!')
             else:
@@ -181,19 +195,19 @@ def invite_users(request, pk):
             return redirect('sessions:detail', pk=pk)
     else:
         form = InviteForm()
-        form.fields['users'].queryset = available_users  # Set for GET
+        form.fields['users'].queryset = available_users
 
-    return render(request, 'sessions/invite.html', {'session': session, 'form': form, 'available_users': available_users})
+    return render(request, 'sessions/invite.html', {
+        'session': session,
+        'form': form,
+        'available_users': available_users
+    })
 
 
 @login_required
 def respond_invitation(request, invitation_id):
     """Respond to a session invitation."""
-    invitation = get_object_or_404(Invitation, id=invitation_id)
-    
-    if invitation.invitee != request.user:
-        messages.warning(request, 'You can only respond to your own invitations.')
-        return redirect('sessions:list')
+    invitation = get_object_or_404(Invitation, id=invitation_id, invitee=request.user)
 
     if invitation.status != 'pending':
         messages.info(request, 'This invitation has already been responded to.')
@@ -205,15 +219,19 @@ def respond_invitation(request, invitation_id):
             action = form.cleaned_data['action']
             invitation.status = action
             invitation.response_notes = form.cleaned_data.get('notes', '')
-            
+
             if action == 'rescheduled' and form.cleaned_data.get('new_datetime'):
                 invitation.rescheduled_datetime = form.cleaned_data['new_datetime']
-            
+
             invitation.save()
             messages.success(request, f'Response submitted for {invitation.session.get_sport_type_display()} session.')
+
+            if getattr(request, "htmx", False):
+                return HttpResponse("")
+
             return redirect('sessions:list')
     else:
-        form = ResponseForm()  # No initial for pending
+        form = ResponseForm()
 
     return render(request, 'sessions/respond.html', {
         'session': invitation.session,
@@ -223,36 +241,30 @@ def respond_invitation(request, invitation_id):
 
 
 @login_required
-@cache_page(60 * 5)  # Cache for 5 minutes (optional, for API savings)
+@cache_page(60 * 5)
 def ai_insight(request, pk):
     """Generate and display AI insights for a session."""
     session = get_object_or_404(Session, pk=pk)
-    
-    # Generate fresh insights (no model persistence; use cache decorator for reuse)
     raw_insights = generate_ai_insight(session)
-    
-    # Convert to HTML if valid
+
+    insights_html = None
     if raw_insights and not raw_insights.startswith(('No insights', 'Failed', 'Gemini returned')):
         insights_html = markdown(raw_insights, extensions=['extra', 'fenced_code'])
     else:
-        insights_html = None
         messages.warning(request, raw_insights or 'AI generation failed—try richer session details.')
-    
-    context = {
+
+    return render(request, 'sessions/ai_insight.html', {
         'session': session,
         'insights_html': insights_html,
-    }
-    return render(request, 'sessions/ai_insight.html', context)
+    })
 
 
-# Creator management for invitations (accept/refuse)
 @login_required
 def manage_invitation(request, invitation_id):
-    """Allow the session creator to accept or refuse a pending invitation (join request)."""
+    """Creator: accept or refuse a pending invitation."""
     invitation = get_object_or_404(Invitation, id=invitation_id)
     session = invitation.session
 
-    # Only the session creator can manage invitations
     if request.user != session.creator:
         messages.warning(request, 'Only the session creator can manage invitations.')
         return redirect('sessions:detail', pk=session.pk)
@@ -263,7 +275,7 @@ def manage_invitation(request, invitation_id):
             invitation.status = 'accepted'
             invitation.response_notes = request.POST.get('notes', '')
             invitation.save()
-            messages.success(request, f"{invitation.invitee.username} has been accepted to the session.")
+            messages.success(request, f"{invitation.invitee.username} has been accepted.")
         elif action in ['refuse', 'decline']:
             invitation.status = 'refused'
             invitation.response_notes = request.POST.get('notes', '')
@@ -277,7 +289,7 @@ def manage_invitation(request, invitation_id):
 
 @login_required
 def manage_requests(request, pk):
-    """Page for the session creator to view and manage pending join requests."""
+    """Creator: view and manage all pending join requests."""
     session = get_object_or_404(Session, pk=pk)
     if request.user != session.creator:
         messages.warning(request, 'Only the session creator can manage requests.')
@@ -286,7 +298,6 @@ def manage_requests(request, pk):
     pending = session.invitation_set.filter(status='pending').select_related('invitee')
 
     if request.method == 'POST':
-        # Bulk actions: accept_all / decline_all (add notes if needed via form)
         action = request.POST.get('action')
         if action == 'accept_all':
             updated = pending.update(status='accepted')
@@ -302,7 +313,6 @@ def manage_requests(request, pk):
     })
 
 
-# New views for edit and delete
 class SessionUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Session
     form_class = SessionForm
@@ -314,8 +324,7 @@ class SessionUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return super().form_valid(form)
 
     def test_func(self):
-        session = self.get_object()
-        return self.request.user == session.creator
+        return self.request.user == self.get_object().creator
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -331,17 +340,15 @@ class SessionDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
     def delete(self, request, *args, **kwargs):
         session = self.get_object()
-        # Decline all invitations ('refused' as 'cancelled' not in choices)
         Invitation.objects.filter(session=session).update(status='refused')
-        messages.success(self.request, f'Session "{session.get_sport_type_display()}" deleted. All invites have been declined.')
+        messages.success(self.request, f'Session "{session.get_sport_type_display()}" deleted. All invites declined.')
         return super().delete(request, *args, **kwargs)
 
     def test_func(self):
-        session = self.get_object()
-        return self.request.user == session.creator
+        return self.request.user == self.get_object().creator
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Delete Session'
-        context['session'] = self.get_object()  # For display in template
+        context['session'] = self.get_object()
         return context
