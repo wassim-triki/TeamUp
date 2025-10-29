@@ -99,6 +99,7 @@ class UserProfile(models.Model):
     
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     display_name = models.CharField(max_length=100, blank=True, null=True)
+    avatar = models.ImageField(upload_to='avatars/', blank=True, null=True, help_text="User profile picture")
     city = models.CharField(max_length=100, blank=True, null=True)
     
     # Sports can be stored as JSON array or comma-separated values

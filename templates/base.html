@@ -5,42 +5,287 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{% block title %}TeamUp{% endblock %}</title>
 
-    {% load static %}
-    <!-- Main CSS -->
+    {% load static %} {% load user_extras %}
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="{% static 'assets/images/favicon.ico' %}" />
+
+    <!-- Template CSS -->
+    <link rel="stylesheet" href="{% static 'assets/css/libs.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'assets/css/socialv.css' %}" />
+
+    <!-- Icon Libraries -->
+    <link
+      rel="stylesheet"
+      href="{% static 'assets/vendor/@fortawesome/fontawesome-free/css/all.min.css' %}"
+    />
+    <link
+      rel="stylesheet"
+      href="{% static 'assets/vendor/remixicon/fonts/remixicon.css' %}"
+    />
+    <link
+      rel="stylesheet"
+      href="{% static 'assets/vendor/line-awesome/dist/line-awesome/css/line-awesome.min.css' %}"
+    />
+
+    <!-- Custom CSS -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}" />
-    <!-- Bootstrap CSS (add if not in style.css) -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
     {% block extra_css %}{% endblock %}
+
+    <style>
+      /* Avatar circle with initials */
+      .avatar-initials {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 16px;
+        text-transform: uppercase;
+      }
+
+      .navbar-nav .dropdown-menu {
+        min-width: 300px;
+      }
+    </style>
   </head>
 
   <body>
+    <!-- Loader -->
+    <div id="loading" style="display: none">
+      <div id="loading-center"></div>
+    </div>
+
     <!-- Header Section -->
     <header>
-      <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <div class="container">
-          <a class="navbar-brand" href="/">TeamUp</a>
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-          </button>
-          <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav me-auto">
-              <li class="nav-item"><a class="nav-link" href="/">Dashboard</a></li>  <!-- FIXED: Use '/' instead of 'dashboard:index' -->
-              {% if user.is_authenticated %}
-                <li class="nav-item"><a class="nav-link" href="{% url 'sessions:list' %}">Sessions</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'sessions:create' %}">Create Session</a></li>
-              {% endif %}
-            </ul>
-            <ul class="navbar-nav ms-auto">
-              {% if user.is_authenticated %}
-                <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Logout ({{ user.username }})</a></li>
-              {% else %}
-                <li class="nav-item"><a class="nav-link" href="{% url 'users:login' %}">Login</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'users:signup' %}">Sign Up</a></li>
-              {% endif %}
-            </ul>
-          </div>
+      <div class="iq-top-navbar">
+        <div class="iq-navbar-custom">
+          <nav class="navbar navbar-expand-lg navbar-light p-0">
+            <div class="container-fluid px-4">
+              <!-- Logo -->
+              <a class="navbar-brand d-flex align-items-center" href="/">
+                <img
+                  src="{% static 'assets/images/logo.png' %}"
+                  class="img-fluid me-2"
+                  alt="TeamUp"
+                  style="height: 40px"
+                  onerror="this.style.display='none'"
+                />
+                <span class="fw-bold fs-4">TeamUp</span>
+              </a>
+
+              <!-- Mobile Toggle -->
+              <button
+                class="navbar-toggler"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#navbarSupportedContent"
+              >
+                <i class="ri-menu-3-line"></i>
+              </button>
+
+              <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <!-- Left Navigation -->
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                  <li class="nav-item">
+                    <a class="nav-link" href="/"
+                      ><i class="ri-home-line"></i> Home</a
+                    >
+                  </li>
+                  {% if user.is_authenticated %}
+                  <li class="nav-item">
+                    <a class="nav-link" href="{% url 'sessions:list' %}"
+                      ><i class="ri-calendar-line"></i> Sessions</a
+                    >
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="{% url 'sessions:create' %}"
+                      ><i class="ri-add-circle-line"></i> Create Session</a
+                    >
+                  </li>
+                  {% endif %}
+                </ul>
+
+                <!-- Right Navigation -->
+                <ul class="navbar-nav ms-auto navbar-list align-items-center">
+                  {% if user.is_authenticated %}
+                  <!-- Notifications Dropdown (Placeholder) -->
+                  <li class="nav-item dropdown me-3">
+                    <a
+                      href="#"
+                      class="nav-link dropdown-toggle"
+                      id="notification-drop"
+                      data-bs-toggle="dropdown"
+                      aria-expanded="false"
+                    >
+                      <i class="ri-notification-4-line fs-5"></i>
+                      <span
+                        class="badge bg-danger rounded-pill position-absolute"
+                        style="font-size: 0.6rem; top: 5px; margin-left: -10px"
+                        >0</span
+                      >
+                    </a>
+                    <div
+                      class="dropdown-menu dropdown-menu-end shadow"
+                      aria-labelledby="notification-drop"
+                    >
+                      <div class="card border-0">
+                        <div class="card-header bg-primary text-white">
+                          <h6 class="mb-0">Notifications</h6>
+                        </div>
+                        <div class="card-body">
+                          <p class="mb-0 text-muted">No new notifications</p>
+                        </div>
+                      </div>
+                    </div>
+                  </li>
+
+                  <!-- User Profile Dropdown -->
+                  <li class="nav-item dropdown">
+                    <a
+                      href="#"
+                      class="nav-link d-flex align-items-center dropdown-toggle"
+                      id="user-drop"
+                      data-bs-toggle="dropdown"
+                      aria-expanded="false"
+                    >
+                      {% if user|user_avatar_url %}
+                      <img
+                        src="{{ user|user_avatar_url }}"
+                        class="img-fluid rounded-circle me-2"
+                        alt="{{ user|user_display_name }}"
+                        style="width: 40px; height: 40px; object-fit: cover"
+                      />
+                      {% else %}
+                      <div class="avatar-initials me-2">
+                        {{ user|user_initials }}
+                      </div>
+                      {% endif %}
+                      <div class="caption d-none d-lg-block">
+                        <h6 class="mb-0">{{ user|user_display_name }}</h6>
+                      </div>
+                    </a>
+                    <div
+                      class="dropdown-menu dropdown-menu-end shadow caption-menu"
+                      aria-labelledby="user-drop"
+                    >
+                      <div class="card border-0">
+                        <div class="card-header bg-primary text-white">
+                          <h6 class="mb-0">
+                            Hello {{ user|user_display_name }}
+                          </h6>
+                          <small>Available</small>
+                        </div>
+                        <div class="card-body p-0">
+                          <!-- Profile Link -->
+                          <a
+                            href="#"
+                            class="dropdown-item d-flex align-items-center py-3 border-bottom"
+                          >
+                            <div
+                              class="rounded card-icon bg-soft-primary p-2 me-3"
+                            >
+                              <i class="ri-file-user-line text-primary"></i>
+                            </div>
+                            <div>
+                              <h6 class="mb-0">My Profile</h6>
+                              <small class="text-muted"
+                                >View personal profile details</small
+                              >
+                            </div>
+                          </a>
+
+                          <!-- Edit Profile -->
+                          <a
+                            href="#"
+                            class="dropdown-item d-flex align-items-center py-3 border-bottom"
+                          >
+                            <div
+                              class="rounded card-icon bg-soft-warning p-2 me-3"
+                            >
+                              <i class="ri-profile-line text-warning"></i>
+                            </div>
+                            <div>
+                              <h6 class="mb-0">Edit Profile</h6>
+                              <small class="text-muted"
+                                >Modify your personal details</small
+                              >
+                            </div>
+                          </a>
+
+                          <!-- Account Settings -->
+                          <a
+                            href="#"
+                            class="dropdown-item d-flex align-items-center py-3 border-bottom"
+                          >
+                            <div
+                              class="rounded card-icon bg-soft-info p-2 me-3"
+                            >
+                              <i class="ri-account-box-line text-info"></i>
+                            </div>
+                            <div>
+                              <h6 class="mb-0">Account Settings</h6>
+                              <small class="text-muted"
+                                >Manage account parameters</small
+                              >
+                            </div>
+                          </a>
+
+                          <!-- Privacy Settings -->
+                          <a
+                            href="#"
+                            class="dropdown-item d-flex align-items-center py-3 border-bottom"
+                          >
+                            <div
+                              class="rounded card-icon bg-soft-danger p-2 me-3"
+                            >
+                              <i class="ri-lock-line text-danger"></i>
+                            </div>
+                            <div>
+                              <h6 class="mb-0">Privacy Settings</h6>
+                              <small class="text-muted"
+                                >Control your privacy parameters</small
+                              >
+                            </div>
+                          </a>
+
+                          <!-- Logout -->
+                          <div class="text-center p-3">
+                            <a
+                              class="btn btn-primary w-100"
+                              href="{% url 'users:logout' %}"
+                            >
+                              Sign Out <i class="ri-login-box-line ms-2"></i>
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </li>
+                  {% else %}
+                  <!-- Guest Navigation -->
+                  <li class="nav-item">
+                    <a class="nav-link" href="{% url 'users:login' %}">Login</a>
+                  </li>
+                  <li class="nav-item">
+                    <a
+                      class="btn btn-primary btn-sm ms-2"
+                      href="{% url 'users:signup' %}"
+                      >Sign Up</a
+                    >
+                  </li>
+                  {% endif %}
+                </ul>
+              </div>
+            </div>
+          </nav>
         </div>
-      </nav>
+      </div>
     </header>
 
     <!-- Header placeholder for custom page headers -->
@@ -48,18 +293,38 @@
 
     <!-- Main Page Content -->
     <main class="container mt-4">
-      {% block content %}
+      <!-- Django Messages -->
+      {% if messages %}
+      <div class="messages mb-3">
+        {% for message in messages %}
+        <div
+          class="alert alert-{{ message.tags }} alert-dismissible fade show"
+          role="alert"
+        >
+          {{ message }}
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="alert"
+            aria-label="Close"
+          ></button>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %} {% block content %}
       <!-- Page-specific content will appear here -->
       {% endblock %}
     </main>
 
     <!-- Footer -->
     <footer class="bg-light text-center py-3 mt-5">
-      <p>&copy; 2025 TeamUp Team</p>
+      <p class="mb-0">&copy; 2025 TeamUp Team. All rights reserved.</p>
     </footer>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Template JS Libraries -->
+    <script src="{% static 'assets/js/libs.min.js' %}"></script>
+    <script src="{% static 'assets/js/socialv.js' %}"></script>
+
     <!-- Extra JavaScript for child templates -->
     {% block extra_js %}{% endblock %}
   </body>

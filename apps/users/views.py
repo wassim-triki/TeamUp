@@ -44,7 +44,7 @@ def login_view(request):
                     if user.is_active:
                         login(request, user)
                         messages.success(request, f'Welcome back, {user.username}!')
-                        return redirect('core:dashboard')
+                        return redirect('/')
                     else:
                         warning_message = 'Please verify your email before logging in. Check your inbox for the verification link.'
                 else:
