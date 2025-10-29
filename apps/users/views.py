@@ -121,7 +121,10 @@ def signup_step2_details(request):
         password_confirm = request.POST.get('password_confirm', '')
         sports = request.POST.getlist('sports')  # Multiple sports selection
         availability = request.POST.get('availability', '')
-        display_name = request.POST.get('display_name', '').strip()
+        first_name = request.POST.get('first_name', '').strip()
+        last_name = request.POST.get('last_name', '').strip()
+        gender = request.POST.get('gender', '').strip()
+        country = request.POST.get('country', '').strip()
         city = request.POST.get('city', '').strip()
         
         # Validation with detailed messages
@@ -138,6 +141,19 @@ def signup_step2_details(request):
             if not re.search(r'[A-Za-z]', password) or not re.search(r'\d', password):
                 warning_message = 'For better security, consider using a password with both letters and numbers.'
         
+        # Required field validation
+        if not first_name:
+            error_messages.append('First name is required.')
+        
+        if not last_name:
+            error_messages.append('Last name is required.')
+        
+        if not gender:
+            error_messages.append('Gender is required.')
+        
+        if not country:
+            error_messages.append('Country is required.')
+        
         # Sports validation
         if not sports:
             error_messages.append('Please select at least one sport.')
@@ -152,7 +168,10 @@ def signup_step2_details(request):
             request.session['signup_password'] = password
             request.session['signup_sports'] = sports
             request.session['signup_availability'] = availability
-            request.session['signup_display_name'] = display_name
+            request.session['signup_first_name'] = first_name
+            request.session['signup_last_name'] = last_name
+            request.session['signup_gender'] = gender
+            request.session['signup_country'] = country
             request.session['signup_city'] = city
             
             return redirect('users:signup_step3')
@@ -162,7 +181,10 @@ def signup_step2_details(request):
                 'email': request.session.get('signup_email'),
                 'sports': sports,
                 'availability': availability,
-                'display_name': display_name,
+                'first_name': first_name,
+                'last_name': last_name,
+                'gender': gender,
+                'country': country,
                 'city': city,
                 'error_messages': error_messages,
                 'warning_message': warning_message,
@@ -197,14 +219,17 @@ def signup_step3_confirm(request):
             password = request.session['signup_password']
             sports = request.session['signup_sports']
             availability = request.session['signup_availability']
-            display_name = request.session.get('signup_display_name', '')
+            first_name = request.session.get('signup_first_name', '')
+            last_name = request.session.get('signup_last_name', '')
+            gender = request.session.get('signup_gender', '')
+            country = request.session.get('signup_country', '')
             city = request.session.get('signup_city', '')
             
             # Double-check email doesn't exist (in case user opened multiple tabs)
             if User.objects.filter(email=email).exists():
                 error_message = 'An account with this email already exists.'
                 # Clear session
-                for key in required_keys + ['signup_display_name', 'signup_city']:
+                for key in required_keys + ['signup_first_name', 'signup_last_name', 'signup_gender', 'signup_country', 'signup_city']:
                     request.session.pop(key, None)
                 
                 # Clear messages and store success message for login page
@@ -226,7 +251,10 @@ def signup_step3_confirm(request):
                 user=user,
                 sports=json.dumps(sports),
                 availability=availability,
-                display_name=display_name,
+                first_name=first_name,
+                last_name=last_name,
+                gender=gender,
+                country=country,
                 city=city
             )
             
@@ -385,3 +413,39 @@ def resend_verification(request):
 def signup_view(request):
     """Redirect to new multi-step signup wizard."""
     return redirect('users:signup_step1')
+
+
+# ===== Profile Management =====
+
+from django.contrib.auth.decorators import login_required
+from .forms import ProfileEditForm
+
+
+@login_required
+def edit_profile(request):
+    """
+    Edit user profile with tabs for Personal Information, Change Password, and Manage Contact.
+    Only Personal Information is functional for now.
+    """
+    # Get or create profile for the user
+    profile, created = UserProfile.objects.get_or_create(user=request.user)
+    
+    if request.method == 'POST':
+        form = ProfileEditForm(request.POST, request.FILES, instance=profile)
+        
+        if form.is_valid():
+            # Save profile
+            form.save()
+            
+            messages.success(request, 'Profile updated successfully!')
+            return redirect('users:edit_profile')
+    else:
+        form = ProfileEditForm(instance=profile)
+    
+    context = {
+        'form': form,
+        'profile': profile,
+        'user': request.user,
+    }
+    
+    return render(request, 'users/profile_edit.html', context)

@@ -193,17 +193,103 @@
                   </div>
 
                   <div class="form-group">
-                    <label class="form-label" for="display_name"
-                      >Display Name (Optional)</label
+                    <label class="form-label" for="first_name"
+                      >First Name <span class="text-danger">*</span></label
                     >
                     <input
                       type="text"
                       class="form-control mb-0"
-                      id="display_name"
-                      name="display_name"
-                      placeholder="How should we call you?"
-                      value="{{ display_name|default:'' }}"
+                      id="first_name"
+                      name="first_name"
+                      placeholder="First name"
+                      value="{{ first_name|default:'' }}"
+                      required
                     />
+                    <div class="invalid-feedback">First name is required.</div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label" for="last_name"
+                      >Last Name <span class="text-danger">*</span></label
+                    >
+                    <input
+                      type="text"
+                      class="form-control mb-0"
+                      id="last_name"
+                      name="last_name"
+                      placeholder="Last name"
+                      value="{{ last_name|default:'' }}"
+                      required
+                    />
+                    <div class="invalid-feedback">Last name is required.</div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label">Gender <span class="text-danger">*</span></label>
+                    <div class="d-flex gap-4">
+                      <div class="form-check">
+                        <input
+                          class="form-check-input"
+                          type="radio"
+                          name="gender"
+                          id="gender-male"
+                          value="male"
+                          {% if gender == 'male' %}checked{% endif %}
+                          required
+                        />
+                        <label class="form-check-label" for="gender-male">Male</label>
+                      </div>
+                      <div class="form-check">
+                        <input
+                          class="form-check-input"
+                          type="radio"
+                          name="gender"
+                          id="gender-female"
+                          value="female"
+                          {% if gender == 'female' %}checked{% endif %}
+                          required
+                        />
+                        <label class="form-check-label" for="gender-female">Female</label>
+                      </div>
+                    </div>
+                    <div class="invalid-feedback d-block" id="gender-error" style="display:none !important;">Please select your gender.</div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label" for="country">Country <span class="text-danger">*</span></label>
+                    <select
+                      class="form-control mb-0"
+                      id="country"
+                      name="country"
+                      required
+                    >
+                      <option value="">Select Country</option>
+                      <option value="TN" {% if country == 'TN' %}selected{% endif %}>Tunisia</option>
+                      <option value="DZ" {% if country == 'DZ' %}selected{% endif %}>Algeria</option>
+                      <option value="MA" {% if country == 'MA' %}selected{% endif %}>Morocco</option>
+                      <option value="EG" {% if country == 'EG' %}selected{% endif %}>Egypt</option>
+                      <option value="LY" {% if country == 'LY' %}selected{% endif %}>Libya</option>
+                      <option value="SA" {% if country == 'SA' %}selected{% endif %}>Saudi Arabia</option>
+                      <option value="AE" {% if country == 'AE' %}selected{% endif %}>UAE</option>
+                      <option value="QA" {% if country == 'QA' %}selected{% endif %}>Qatar</option>
+                      <option value="KW" {% if country == 'KW' %}selected{% endif %}>Kuwait</option>
+                      <option value="BH" {% if country == 'BH' %}selected{% endif %}>Bahrain</option>
+                      <option value="OM" {% if country == 'OM' %}selected{% endif %}>Oman</option>
+                      <option value="JO" {% if country == 'JO' %}selected{% endif %}>Jordan</option>
+                      <option value="LB" {% if country == 'LB' %}selected{% endif %}>Lebanon</option>
+                      <option value="PS" {% if country == 'PS' %}selected{% endif %}>Palestine</option>
+                      <option value="SY" {% if country == 'SY' %}selected{% endif %}>Syria</option>
+                      <option value="IQ" {% if country == 'IQ' %}selected{% endif %}>Iraq</option>
+                      <option value="YE" {% if country == 'YE' %}selected{% endif %}>Yemen</option>
+                      <option value="FR" {% if country == 'FR' %}selected{% endif %}>France</option>
+                      <option value="GB" {% if country == 'GB' %}selected{% endif %}>United Kingdom</option>
+                      <option value="DE" {% if country == 'DE' %}selected{% endif %}>Germany</option>
+                      <option value="IT" {% if country == 'IT' %}selected{% endif %}>Italy</option>
+                      <option value="ES" {% if country == 'ES' %}selected{% endif %}>Spain</option>
+                      <option value="US" {% if country == 'US' %}selected{% endif %}>United States</option>
+                      <option value="CA" {% if country == 'CA' %}selected{% endif %}>Canada</option>
+                    </select>
+                    <div class="invalid-feedback">Please select your country.</div>
                   </div>
 
                   <div class="form-group">
@@ -410,13 +496,58 @@
         .addEventListener('submit', function (e) {
           const password = document.getElementById('password');
           const passwordConfirm = document.getElementById('password_confirm');
+          const firstName = document.getElementById('first_name');
+          const lastName = document.getElementById('last_name');
+          const genderRadios = document.querySelectorAll('input[name="gender"]');
+          const country = document.getElementById('country');
           const availability = document.getElementById('availability');
           const sportsCheckboxes = document.querySelectorAll(
             'input[name="sports"]:checked'
           );
           const sportsError = document.getElementById('sports-error');
+          const genderError = document.getElementById('gender-error');
 
           let isValid = true;
+
+          // First name validation
+          if (!firstName.value.trim()) {
+            e.preventDefault();
+            firstName.classList.add('is-invalid');
+            isValid = false;
+          } else {
+            firstName.classList.remove('is-invalid');
+            firstName.classList.add('is-valid');
+          }
+
+          // Last name validation
+          if (!lastName.value.trim()) {
+            e.preventDefault();
+            lastName.classList.add('is-invalid');
+            isValid = false;
+          } else {
+            lastName.classList.remove('is-invalid');
+            lastName.classList.add('is-valid');
+          }
+
+          // Gender validation
+          const genderChecked = Array.from(genderRadios).some(radio => radio.checked);
+          if (!genderChecked) {
+            e.preventDefault();
+            genderError.style.display = 'block';
+            isValid = false;
+          } else {
+            genderError.style.display = 'none';
+          }
+
+          // Country validation
+          if (!country.value || country.value === '') {
+            e.preventDefault();
+            country.classList.add('is-invalid');
+            isValid = false;
+          } else {
+            country.classList.remove('is-invalid');
+            country.classList.add('is-valid');
+          }
 
           // Password validation
           if (!password.value.trim() || password.value.length < 8) {
@@ -463,7 +594,38 @@
           return isValid;
         });
 
-      // Remove invalid state on input
+      // Remove invalid state on input - First Name
+      document
+        .getElementById('first_name')
+        .addEventListener('input', function () {
+          this.classList.remove('is-invalid');
+        });
+
+      // Remove invalid state on input - Last Name
+      document
+        .getElementById('last_name')
+        .addEventListener('input', function () {
+          this.classList.remove('is-invalid');
+        });
+
+      // Remove invalid state on change - Gender
+      document
+        .querySelectorAll('input[name="gender"]')
+        .forEach(function (radio) {
+          radio.addEventListener('change', function () {
+            const genderError = document.getElementById('gender-error');
+            genderError.style.display = 'none';
+          });
+        });
+
+      // Remove invalid state on change - Country
+      document
+        .getElementById('country')
+        .addEventListener('change', function () {
+          this.classList.remove('is-invalid');
+        });
+
+      // Remove invalid state on input - Password
       document
         .getElementById('password')
         .addEventListener('input', function () {
@@ -476,12 +638,14 @@
           }
         });
 
+      // Remove invalid state on input - Password Confirm
       document
         .getElementById('password_confirm')
         .addEventListener('input', function () {
           this.classList.remove('is-invalid');
         });
 
+      // Remove invalid state on input - Availability
       document
         .getElementById('availability')
         .addEventListener('input', function () {

@@ -97,10 +97,52 @@ class UserProfile(models.Model):
         ('other', 'Other'),
     ]
     
+    GENDER_CHOICES = [
+        ('male', 'Male'),
+        ('female', 'Female'),
+    ]
+    
+    # ISO 3166-1 alpha-2 country codes - commonly used countries
+    COUNTRY_CHOICES = [
+        ('', 'Select Country'),
+        ('TN', 'Tunisia'),
+        ('DZ', 'Algeria'),
+        ('MA', 'Morocco'),
+        ('EG', 'Egypt'),
+        ('LY', 'Libya'),
+        ('FR', 'France'),
+        ('DE', 'Germany'),
+        ('GB', 'United Kingdom'),
+        ('US', 'United States'),
+        ('CA', 'Canada'),
+        ('IT', 'Italy'),
+        ('ES', 'Spain'),
+        ('PT', 'Portugal'),
+        ('BE', 'Belgium'),
+        ('NL', 'Netherlands'),
+        ('SA', 'Saudi Arabia'),
+        ('AE', 'United Arab Emirates'),
+        ('QA', 'Qatar'),
+        ('KW', 'Kuwait'),
+        ('TR', 'Turkey'),
+        ('XX', 'Other'),
+    ]
+    
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
-    display_name = models.CharField(max_length=100, blank=True, null=True)
+    
+    # Personal Information (Required fields)
+    first_name = models.CharField(max_length=50, help_text="Required", default='')
+    last_name = models.CharField(max_length=50, help_text="Required", default='')
+    gender = models.CharField(max_length=10, choices=GENDER_CHOICES, help_text="Required", default='male')
+    country = models.CharField(max_length=10, choices=COUNTRY_CHOICES, help_text="Required", default='TN')
+    
+    # Personal Information (Optional fields)
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True, help_text="User profile picture")
-    city = models.CharField(max_length=100, blank=True, null=True)
+    date_of_birth = models.DateField(blank=True, null=True, help_text="Date of birth")
+    age = models.PositiveIntegerField(blank=True, null=True, help_text="Age in years")
+    city = models.CharField(max_length=100, blank=True, default='', help_text="City name")
+    phone = models.CharField(max_length=20, blank=True, default='', help_text="Contact phone number")
+    bio = models.TextField(blank=True, default='', help_text="Short bio or description")
     
     # Sports can be stored as JSON array or comma-separated values
     # For simplicity, using TextField to store JSON
@@ -118,6 +160,15 @@ class UserProfile(models.Model):
     
     def __str__(self):
         return f"Profile of {self.user.email}"
+    
+    @property
+    def full_name(self):
+        """Return the full name of the user"""
+        if self.first_name and self.last_name:
+            return f"{self.first_name} {self.last_name}"
+        elif self.first_name:
+            return self.first_name
+        return self.user.username
 
 
 class EmailVerificationToken(models.Model):
