@@ -182,10 +182,10 @@
         <div class="col-lg-12 session-item" 
              data-sport="{{ session.sport_type }}" 
              data-status="{{ session.status|default:'proposed' }}"
-             data-role="{% if session.creator == user %}creator{% elif session.user_invited %}invited{% else %}other{% endif %}"
+             data-role="{% if session.creator == user %}creator{% elif session.id in invited_session_ids %}invited{% else %}other{% endif %}"
              data-search="{{ session.get_sport_type_display|lower }} {{ session.location|lower }}">
           <div class="card card-block card-stretch card-height blog-list {% cycle '' 'list-even' %} mb-4">
-            <div class="card-body p-0">
+            <div class="card-body p-0" style="position: relative;">
               <div class="row g-0 align-items-stretch">
                 {% if forloop.counter0|divisibleby:2 %}
                   <!-- Image on left -->
@@ -252,7 +252,7 @@
 
                       <div>
                         <div class="d-flex gap-2 mb-3">
-                          <a href="{% url 'sessions:detail' session.pk %}" class="btn btn-sm btn-soft-primary" tabindex="-1">
+                          <a href="{% url 'sessions:detail' session.pk %}" class="btn btn-sm btn-soft-primary">
                             <i class="ri-eye-line me-1"></i>View Details
                             <i class="ri-arrow-right-s-line ms-1"></i>
                           </a>
@@ -287,8 +287,8 @@
                               </form>
                             {% else %}
                               {% if user.is_authenticated %}
-                                {% if session.user_invited %}
-                                  <span class="badge bg-secondary rounded-pill px-3 py-2">Requested</span>
+                                {% if session.id in invited_session_ids %}
+                                  <span class="badge bg-secondary rounded-pill px-3 py-2">Invited</span>
                                 {% else %}
                                   <form method="post" action="{% url 'sessions:detail' session.pk %}" class="d-inline" style="margin: 0;">
                                     {% csrf_token %}
@@ -349,7 +349,7 @@
 
                       <div>
                         <div class="d-flex gap-2 mb-3">
-                          <a href="{% url 'sessions:detail' session.pk %}" class="btn btn-sm btn-soft-primary" tabindex="-1">
+                          <a href="{% url 'sessions:detail' session.pk %}" class="btn btn-sm btn-soft-primary">
                             <i class="ri-eye-line me-1"></i>View Details
                             <i class="ri-arrow-right-s-line ms-1"></i>
                           </a>
@@ -384,8 +384,8 @@
                               </form>
                             {% else %}
                               {% if user.is_authenticated %}
-                                {% if session.user_invited %}
-                                  <span class="badge bg-secondary rounded-pill px-3 py-2">Requested</span>
+                                {% if session.id in invited_session_ids %}
+                                  <span class="badge bg-secondary rounded-pill px-3 py-2">Invited</span>
                                 {% else %}
                                   <form method="post" action="{% url 'sessions:detail' session.pk %}" class="d-inline" style="margin: 0;">
                                     {% csrf_token %}
@@ -560,6 +560,7 @@
     opacity: 0;
     transition: var(--transition);
     z-index: 0;
+    pointer-events: none;
   }
 
   .blog-list:hover::before {
@@ -616,6 +617,7 @@
     right: 20px;
     z-index: 2;
     animation: slideInDown 0.5s ease-out;
+    pointer-events: none;
   }
 
   .live-badge {
@@ -624,6 +626,7 @@
     left: 20px;
     z-index: 2;
     animation: pulse 2s infinite;
+    pointer-events: none;
   }
 
   @keyframes pulse {
@@ -684,18 +687,37 @@
     transition: var(--transition);
   }
 
-  .btn-soft-primary, .btn-soft-warning, .btn-soft-danger {
+  .btn-soft-primary, .btn-soft-warning, .btn-soft-danger, .btn-soft-info {
     border: 1px solid;
     transition: var(--transition);
+    position: relative;
+    z-index: 20;
   }
 
-  .btn-soft-primary:hover, .btn-soft-warning:hover, .btn-soft-danger:hover {
+  .btn-soft-primary:hover, .btn-soft-warning:hover, .btn-soft-danger:hover, .btn-soft-info:hover {
     transform: translateY(-2px);
+  }
+  
+  .btn, button, a.btn {
+    position: relative;
+    z-index: 20;
+    pointer-events: auto;
+  }
+  
+  form {
+    position: relative;
+    z-index: 20;
+  }
+  
+  form button {
+    cursor: pointer;
   }
 
   /* Session Description */
   .blog-description {
     background: var(--card-bg-light);
+    position: relative;
+    z-index: 10;
   }
 
   [data-theme="dark"] .blog-description {
@@ -711,6 +733,8 @@
     margin-top: auto;
     padding-top: 1.5rem;
     border-top: 1px solid rgba(0, 0, 0, 0.08);
+    position: relative;
+    z-index: 15;
   }
 
   [data-theme="dark"] .position-right-side {
@@ -720,6 +744,8 @@
   .date a {
     color: #6c757d;
     transition: var(--transition);
+    position: relative;
+    z-index: 20;
   }
 
   .date a:hover {

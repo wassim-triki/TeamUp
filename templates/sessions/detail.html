@@ -346,9 +346,14 @@
   .session-hero {
     position: relative;
   }
+  
+  .hero-overlay {
+    pointer-events: none;
+  }
 
   .sport-icon-wrapper {
     animation: float 3s ease-in-out infinite;
+    pointer-events: none;
   }
 
   @keyframes float {
@@ -423,6 +428,12 @@
     background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
     transform: rotate(45deg);
     animation: shine 3s infinite;
+    pointer-events: none;
+  }
+  
+  .ai-card .btn, .ai-card a {
+    position: relative;
+    z-index: 10;
   }
 
   @keyframes shine {
@@ -432,6 +443,7 @@
 
   .ai-icon-wrapper {
     animation: pulse 2s ease-in-out infinite;
+    pointer-events: none;
   }
 
   @keyframes pulse {
@@ -442,6 +454,17 @@
   /* Icon Badge */
   .icon-badge {
     box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  }
+  
+  /* Ensure buttons and links are always clickable */
+  .btn, button, a, form {
+    position: relative;
+    z-index: 10;
+    pointer-events: auto;
+  }
+  
+  .action-section .btn {
+    z-index: 15;
   }
 
   /* Responsive Adjustments */

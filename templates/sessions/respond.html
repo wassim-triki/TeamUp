@@ -156,6 +156,14 @@
   .response-option label {
     transition: all 0.3s ease;
     cursor: pointer;
+    position: relative;
+    z-index: 10;
+  }
+  
+  .response-option input {
+    cursor: pointer;
+    position: relative;
+    z-index: 11;
   }
 
   .response-option input:checked + label {
@@ -168,6 +176,23 @@
   .response-option label:hover {
     transform: translateY(-1px);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Hero Overlay */
+  .hero-overlay {
+    z-index: 1;
+    pointer-events: none;
+  }
+  
+  .sport-icon {
+    pointer-events: none;
+  }
+  
+  /* Ensure buttons and links are clickable */
+  .btn, button, a {
+    position: relative;
+    z-index: 10;
+    pointer-events: auto;
   }
 
   /* Form Enhancements */

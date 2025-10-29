@@ -142,6 +142,8 @@
 <style>
   .user-card {
     transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
   }
   .user-card:hover {
     transform: translateY(-5px);
@@ -153,6 +155,15 @@
   [data-theme="dark"] .user-card {
     background: #1e1e1e;
     border-color: #333;
+  }
+  .user-card .form-check-input {
+    cursor: pointer;
+    z-index: 10;
+    position: relative;
+  }
+  .btn {
+    z-index: 10;
+    position: relative;
   }
 </style>
 
