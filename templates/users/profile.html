@@ -129,7 +129,6 @@
                           >Contact and Basic Info</a
                         >
                       </li>
-                      {% if interested_sports %}
                       <li>
                         <a
                           class="nav-link"
@@ -138,22 +137,8 @@
                           data-bs-target="#v-pills-sports"
                           role="button"
                           >Sports & Interests</a
-                          >Feedback</a
                         >
                       </li>
-                      <li>
-                        <a
-                          class="nav-link"
-                          href="#v-pills-family"
-                          data-bs-toggle="pill"
-                          data-bs-target="#v-pills-family"
-                          role="button"
-                          
-                          >Feedback</a
-                        >
-                      </li>
-                      {% endif %}
-                      {% if availability_patterns %}
                       <li>
                         <a
                           class="nav-link"
@@ -164,8 +149,6 @@
                           >Availability</a
                         >
                       </li>
-                      {% endif %}
-                      {% if user_profile and user_profile.bio %}
                       <li>
                         <a
                           class="nav-link"
@@ -176,7 +159,16 @@
                           >About Me</a
                         >
                       </li>
-                      {% endif %}
+                      <li>
+                        <a
+                          class="nav-link"
+                          href="#v-pills-family"
+                          data-bs-toggle="pill"
+                          data-bs-target="#v-pills-family"
+                          role="button"
+                          >Feedback</a
+                        >
+                      </li>
                     </ul>
                   </div>
                   <div class="col-md-9 ps-4">
@@ -298,17 +290,10 @@
                           </div>
                           {% endfor %}
                         </div>
+                        {% else %}
+                        <p class="text-muted">No sports interests specified yet.</p>
                         {% endif %}
                         
-                        {% if user_profile and user_profile.availability %}
-                        <h4 class="mt-3">Availability</h4>
-                        <hr />
-                        <div class="row">
-                          <div class="col-12">
-                            <p>{{ user_profile.availability }}</p>
-                          </div>
-                        </div>
-                        {% endif %}
                       </div>
                       
                       <div
@@ -400,7 +385,13 @@
                           <strong>Note:</strong> These are the general time windows when {{ profile_user.username }} is typically available for sports activities.
                         </div>
                         {% else %}
-                        <p class="text-muted">No availability schedule specified.</p>
+                        <p class="text-muted">No availability schedule specified yet.</p>
+                        {% if is_own_profile %}
+                        <div class="alert alert-info mt-3" role="alert">
+                          <i class="ri-information-line me-2"></i>
+                          You can set your availability preferences in your <a href="{% url 'users:edit_profile' %}" class="alert-link">profile settings</a>.
+                        </div>
+                        {% endif %}
                         {% endif %}
                       </div>
                       
@@ -419,7 +410,13 @@
                           </div>
                         </div>
                         {% else %}
-                        <p class="text-muted">No bio available.</p>
+                        <p class="text-muted">No bio added yet.</p>
+                        {% if is_own_profile %}
+                        <div class="alert alert-info mt-3" role="alert">
+                          <i class="ri-information-line me-2"></i>
+                          Add a bio to tell others about yourself in your <a href="{% url 'users:edit_profile' %}" class="alert-link">profile settings</a>.
+                        </div>
+                        {% endif %}
                         {% endif %}
                       </div>
                     </div>
