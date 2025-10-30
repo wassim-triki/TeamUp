@@ -326,24 +326,39 @@ def signup_step4_availability(request):
             token = EmailVerificationToken.objects.create(user=user)
             
             # Send verification email
-            verification_link = request.build_absolute_uri(
-                reverse('users:verify_email', kwargs={'token': token.token})
-            )
-            
-            html_message = render_to_string('users/email_verification.html', {
-                'user': user,
-                'verification_link': verification_link,
-            })
-            plain_message = strip_tags(html_message)
-            
-            send_mail(
-                subject='Verify your TeamUp account',
-                message=plain_message,
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[user.email],
-                html_message=html_message,
-                fail_silently=False,
-            )
+            try:
+                verification_link = request.build_absolute_uri(
+                    reverse('users:verify_email', kwargs={'token': token.token})
+                )
+                
+                html_message = render_to_string('users/email_verification.html', {
+                    'user': user,
+                    'verification_link': verification_link,
+                })
+                plain_message = strip_tags(html_message)
+                
+                send_mail(
+                    subject='Verify your TeamUp account',
+                    message=plain_message,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[user.email],
+                    html_message=html_message,
+                    fail_silently=False,
+                )
+            except Exception as email_error:
+                # Log the email error but don't fail the signup
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f"Failed to send verification email to {user.email}: {email_error}")
+                
+                # Clear session data
+                for key in ['signup_email', 'signup_password', 'signup_sports', 'signup_availability',
+                           'signup_first_name', 'signup_last_name', 'signup_gender', 'signup_country', 'signup_city']:
+                    request.session.pop(key, None)
+                
+                # Show error message but allow user to request resend
+                messages.error(request, 'Your account was created but we could not send the verification email. Please contact support or try resending the verification email.')
+                return redirect('users:login')
             
             # Clear session data
             for key in ['signup_email', 'signup_password', 'signup_sports', 'signup_availability',
@@ -358,6 +373,11 @@ def signup_step4_availability(request):
             return redirect('users:email_sent')
             
         except Exception as e:
+            # Log the full error for debugging
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Signup error: {str(e)}", exc_info=True)
+            
             error_message = 'An error occurred while creating your account. Please try again.'
             context = {
                 'email': request.session.get('signup_email'),
@@ -442,34 +462,48 @@ def resend_verification(request):
                 token = EmailVerificationToken.objects.create(user=user)
                 
                 # Send verification email
-                verification_link = request.build_absolute_uri(
-                    reverse('users:verify_email', kwargs={'token': token.token})
-                )
-                
-                html_message = render_to_string('users/email_verification.html', {
-                    'user': user,
-                    'verification_link': verification_link,
-                })
-                plain_message = strip_tags(html_message)
-                
-                send_mail(
-                    subject='Verify your TeamUp account',
-                    message=plain_message,
-                    from_email=settings.DEFAULT_FROM_EMAIL,
-                    recipient_list=[user.email],
-                    html_message=html_message,
-                    fail_silently=False,
-                )
-                
-                # Clear any stale messages before redirect
-                storage = messages.get_messages(request)
-                storage.used = True
-                
-                # Success - redirect to email_sent page (has its own success display)
-                return redirect('users:email_sent')
+                try:
+                    verification_link = request.build_absolute_uri(
+                        reverse('users:verify_email', kwargs={'token': token.token})
+                    )
+                    
+                    html_message = render_to_string('users/email_verification.html', {
+                        'user': user,
+                        'verification_link': verification_link,
+                    })
+                    plain_message = strip_tags(html_message)
+                    
+                    send_mail(
+                        subject='Verify your TeamUp account',
+                        message=plain_message,
+                        from_email=settings.DEFAULT_FROM_EMAIL,
+                        recipient_list=[user.email],
+                        html_message=html_message,
+                        fail_silently=False,
+                    )
+                    
+                    # Clear any stale messages before redirect
+                    storage = messages.get_messages(request)
+                    storage.used = True
+                    
+                    # Success - redirect to email_sent page (has its own success display)
+                    return redirect('users:email_sent')
+                    
+                except Exception as email_error:
+                    # Log the email error
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.error(f"Failed to send verification email to {user.email}: {email_error}")
+                    error_message = 'Failed to send verification email. Please try again later or contact support.'
             
             except User.DoesNotExist:
                 error_message = 'No inactive account found with this email address. The account may already be verified or does not exist.'
+            except Exception as e:
+                # Log unexpected errors
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f"Resend verification error: {str(e)}", exc_info=True)
+                error_message = 'An unexpected error occurred. Please try again later.'
     
     # Clear any stale messages from other pages
     storage = messages.get_messages(request)
