@@ -410,31 +410,56 @@ def verify_email(request, token):
     Email verification handler.
     Validates token, activates user, and redirects to login.
     """
+    import logging
+    logger = logging.getLogger(__name__)
+    
     try:
+        logger.info(f"Attempting to verify email with token: {token}")
         verification_token = EmailVerificationToken.objects.get(token=token)
+        logger.info(f"Token found for user: {verification_token.user.email}")
         
         if verification_token.is_valid():
+            logger.info(f"Token is valid. Activating user: {verification_token.user.email}")
             # Activate user
             user = verification_token.user
-            user.is_active = True
-            user.email_verified_at = timezone.now()
-            user.save()
+            
+            try:
+                user.is_active = True
+                user.email_verified_at = timezone.now()
+                user.save()
+                logger.info(f"User {user.email} activated successfully")
+            except Exception as save_error:
+                logger.error(f"Error saving user {user.email}: {str(save_error)}", exc_info=True)
+                raise
             
             # Mark token as used
-            verification_token.used = True
-            verification_token.save()
+            try:
+                verification_token.used = True
+                verification_token.save()
+                logger.info(f"Token marked as used for user {user.email}")
+            except Exception as token_error:
+                logger.error(f"Error marking token as used: {str(token_error)}", exc_info=True)
+                # Continue anyway since user was activated
             
             messages.success(request, 'Email verified successfully! You can now sign in to your account.')
             return redirect('users:login')
         else:
             # Token expired or already used
+            logger.warning(f"Token invalid/expired for user: {verification_token.user.email}")
             messages.error(request, 'This verification link has expired or has already been used. Please request a new verification email.')
             return render(request, 'users/verification_failed_minimal.html', {
                 'user': verification_token.user
             })
     
     except EmailVerificationToken.DoesNotExist:
+        logger.warning(f"Token not found: {token}")
         messages.error(request, 'Invalid verification link. Please check the link or request a new verification email.')
+        return render(request, 'users/verification_failed_minimal.html')
+    
+    except Exception as e:
+        # Log unexpected errors
+        logger.error(f"Email verification error for token {token}: {str(e)}", exc_info=True)
+        messages.error(request, 'An error occurred while verifying your email. Please try again or contact support.')
         return render(request, 'users/verification_failed_minimal.html')
 
 
