@@ -10,8 +10,10 @@ from django.urls import reverse
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
 from .models import User, UserProfile, EmailVerificationToken
-from .utils import generate_profile_tags
+from .utils import generate_profile_tags, generate_user_bio
 import json
 import uuid
 import re
@@ -727,3 +729,38 @@ def profile_view(request, username):
     }
     
     return render(request, 'users/profile.html', context)
+
+
+@login_required
+@require_POST
+def generate_bio(request):
+    """
+    AJAX endpoint to generate an AI-powered bio for the current user.
+    """
+    try:
+        # Get or create profile for the user
+        profile, created = UserProfile.objects.get_or_create(user=request.user)
+        
+        # Generate bio using AI
+        bio = generate_user_bio(profile)
+        
+        if bio:
+            return JsonResponse({
+                'success': True,
+                'bio': bio
+            })
+        else:
+            return JsonResponse({
+                'success': False,
+                'error': 'Failed to generate bio. Please try again.'
+            }, status=500)
+            
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error in generate_bio view: {e}")
+        
+        return JsonResponse({
+            'success': False,
+            'error': 'An error occurred while generating the bio.'
+        }, status=500)

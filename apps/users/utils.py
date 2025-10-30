@@ -247,3 +247,142 @@ def generate_fallback_tags(user_profile, sports_list=None):
         tags.append("Team player")
     
     return tags[:3]
+
+
+def generate_user_bio(user_profile):
+    """
+    Generate an AI-powered bio for a user based on their profile information.
+    
+    Args:
+        user_profile: UserProfile instance with user information
+        
+    Returns:
+        String containing generated bio, or error message if generation fails
+    """
+    import logging
+    from django.conf import settings
+    import google.generativeai as genai
+    
+    logger = logging.getLogger(__name__)
+    
+    try:
+        # Configure Gemini API
+        genai.configure(api_key=settings.GEMINI_API_KEY)
+        
+        # Gather profile information
+        sports_list = []
+        if user_profile.interested_sports.exists():
+            sports_list = [sport.name for sport in user_profile.interested_sports.all()]
+        elif user_profile.sports:
+            # Fallback to old sports field
+            import json
+            try:
+                sports_list = json.loads(user_profile.sports)
+            except:
+                pass
+        
+        # Format availability patterns
+        availability_display = format_availability_for_display(user_profile.availability)
+        
+        # Build profile context
+        profile_context = []
+        
+        name = user_profile.full_name or user_profile.user.username
+        profile_context.append(f"Name: {name}")
+        
+        if user_profile.gender:
+            profile_context.append(f"Gender: {user_profile.gender.title()}")
+        
+        if user_profile.age:
+            profile_context.append(f"Age: {user_profile.age}")
+        
+        if user_profile.city:
+            location = user_profile.city
+            if user_profile.country:
+                location += f", {user_profile.get_country_display()}"
+            profile_context.append(f"Location: {location}")
+        
+        if sports_list:
+            profile_context.append(f"Sports interests: {', '.join(sports_list)}")
+        
+        if user_profile.availability:
+            profile_context.append(f"Availability: {availability_display}")
+        
+        # Get existing tags if any
+        if user_profile.profile_tags:
+            profile_context.append(f"Profile tags: {', '.join(user_profile.profile_tags)}")
+        
+        profile_text = "\n".join(profile_context) if profile_context else "Basic profile with limited information"
+        
+        # Create prompt for Gemini
+        prompt = f"""Write a friendly, engaging bio (2-3 sentences, max 150 words) for this person's sports/fitness social profile:
+
+{profile_text}
+
+Requirements:
+- Write in first person ("I am...", "I love...")
+- Be enthusiastic and approachable
+- Mention their main sports interests and availability
+- Keep it natural and conversational
+- No hashtags or emojis
+- Just the bio text, nothing else
+
+Bio:"""
+
+        # Generate bio using Gemini
+        model_name = getattr(settings, 'GEMINI_MODEL', 'gemini-2.0-flash-exp')
+        model = genai.GenerativeModel(model_name)
+        response = model.generate_content(prompt)
+        
+        if response.text and len(response.text.strip()) > 20:
+            # Clean up the response
+            bio = response.text.strip()
+            # Remove any quotes if AI wrapped the text
+            bio = bio.strip('"\'')
+            return bio
+        else:
+            logger.warning(f"AI bio generation returned insufficient text for user {user_profile.user.id}")
+            return generate_fallback_bio(user_profile, sports_list)
+        
+    except Exception as e:
+        logger.error(f"Error generating bio for user {user_profile.user.id}: {e}")
+        return generate_fallback_bio(user_profile, sports_list if 'sports_list' in locals() else [])
+
+
+def generate_fallback_bio(user_profile, sports_list=None):
+    """
+    Generate a simple fallback bio when AI generation fails.
+    
+    Args:
+        user_profile: UserProfile instance
+        sports_list: List of sport names (optional)
+        
+    Returns:
+        String containing simple bio
+    """
+    name = user_profile.first_name or user_profile.user.username
+    
+    if sports_list and len(sports_list) > 0:
+        if len(sports_list) == 1:
+            sports_text = sports_list[0]
+        elif len(sports_list) == 2:
+            sports_text = f"{sports_list[0]} and {sports_list[1]}"
+        else:
+            sports_text = f"{', '.join(sports_list[:-1])}, and {sports_list[-1]}"
+        
+        bio = f"I'm {name}, passionate about {sports_text}. "
+    else:
+        bio = f"I'm {name}, an active sports enthusiast. "
+    
+    # Add availability if present
+    if user_profile.availability:
+        if 'flexible' in user_profile.availability:
+            bio += "I have a flexible schedule and love staying active. "
+        elif any('weekend' in avail for avail in user_profile.availability):
+            bio += "I'm usually free on weekends for sports and fitness activities. "
+        elif any('morning' in avail for avail in user_profile.availability):
+            bio += "I'm a morning person who loves to start the day with exercise. "
+    
+    bio += "Looking forward to connecting with fellow athletes!"
+    
+    return bio

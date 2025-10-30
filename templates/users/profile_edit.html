@@ -376,14 +376,18 @@
                                             
                                             <!-- Bio (Optional) -->
                                             <div class="form-group col-sm-12">
-                                                <label for="{{ form.bio.id_for_label }}" class="form-label">
-                                                    Bio <small class="text-muted">(Optional)</small>
+                                                <label for="{{ form.bio.id_for_label }}" class="form-label d-flex justify-content-between align-items-center">
+                                                    <span>Bio <small class="text-muted">(Optional)</small></span>
+                                                    <button type="button" class="btn btn-sm btn-soft-primary" id="generate-bio-btn">
+                                                        <i class="ri-sparkling-line me-1"></i>Generate with AI
+                                                    </button>
                                                 </label>
                                                 <textarea name="bio" 
                                                           class="form-control {% if form.bio.errors %}is-invalid{% endif %}" 
                                                           id="{{ form.bio.id_for_label }}"
-                                                          rows="3"
+                                                          rows="4"
                                                           placeholder="Tell us about yourself...">{{ form.bio.value|default:'' }}</textarea>
+                                                <small class="text-muted">AI will generate a bio based on your profile information</small>
                                                 {% if form.bio.errors %}
                                                     <div class="invalid-feedback">{{ form.bio.errors.0 }}</div>
                                                 {% endif %}
@@ -435,5 +439,62 @@
             form.classList.add('was-validated')
         }, false)
     })()
+    
+    // AI Bio Generation
+    document.getElementById('generate-bio-btn').addEventListener('click', function() {
+        const btn = this;
+        const bioTextarea = document.getElementById('{{ form.bio.id_for_label }}');
+        const originalBtnText = btn.innerHTML;
+        
+        // Disable button and show loading state
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Generating...';
+        
+        // Make AJAX request to generate bio
+        fetch('{% url "users:generate_bio" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                bioTextarea.value = data.bio;
+                // Show success message
+                showToast('Bio generated successfully!', 'success');
+            } else {
+                showToast(data.error || 'Failed to generate bio', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('An error occurred while generating bio', 'error');
+        })
+        .finally(() => {
+            // Re-enable button
+            btn.disabled = false;
+            btn.innerHTML = originalBtnText;
+        });
+    });
+    
+    // Simple toast notification function
+    function showToast(message, type) {
+        const toast = document.createElement('div');
+        toast.className = `alert alert-${type === 'success' ? 'success' : 'danger'} position-fixed`;
+        toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        toast.innerHTML = `
+            <div class="d-flex align-items-center">
+                <i class="ri-${type === 'success' ? 'check' : 'error-warning'}-circle-line me-2"></i>
+                <span>${message}</span>
+            </div>
+        `;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.remove();
+        }, 3000);
+    }
 </script>
 {% endblock %}
