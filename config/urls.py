@@ -18,6 +18,9 @@ urlpatterns = [
     # Sessions
     path('sessions/', include('apps.sessions.urls')),
 
+        # feedback
+    path('feedback/', include('apps.feedback.urls')),
+
     # API endpoints
     path('api/', include('apps.api.urls')),
 
