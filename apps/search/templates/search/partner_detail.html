@@ -143,8 +143,8 @@
                 <!-- Sports -->
                 <div class="info-card">
                     <h5><i class="ri-basketball-line"></i> Sports</h5>
-                    {% if partner.sports %}
-                        {% for sport in partner.sports %}
+                    {% if partner_sports %}
+                        {% for sport in partner_sports %}
                         <span class="sport-tag">
                             {{ sport }}
                             {% if sport in common_sports %}
@@ -173,14 +173,9 @@
                 <div class="info-card">
                     <h5><i class="ri-calendar-check-line"></i> Availability</h5>
                     {% if partner.availability %}
-                        {% for day, times in partner.availability.items %}
                         <div class="availability-day">
-                            <strong class="text-capitalize">{{ day }}:</strong>
-                            {% for time in times %}
-                            <span class="badge bg-primary ms-2">{{ time }}</span>
-                            {% endfor %}
+                            <p class="mb-0">{{ partner.availability }}</p>
                         </div>
-                        {% endfor %}
                     {% else %}
                         <p class="text-muted mb-0">Availability not specified</p>
                     {% endif %}
@@ -189,19 +184,14 @@
 
             <!-- Right Column -->
             <div class="col-lg-4">
-                <!-- Level -->
-                <div class="info-card">
-                    <h5><i class="ri-bar-chart-box-line"></i> Level</h5>
-                    <span class="level-badge level-{{ partner.level }}">
-                        {{ partner.get_level_display }}
-                    </span>
-                </div>
-
                 <!-- Location -->
                 <div class="info-card">
                     <h5><i class="ri-map-pin-line"></i> Location</h5>
                     <p class="mb-0">
-                        <i class="ri-map-marker-line"></i> {{ partner.location|default:"Not specified" }}
+                        <i class="ri-map-marker-line"></i> {{ partner.get_country_display }}
+                        {% if partner.city %}
+                        , {{ partner.city }}
+                        {% endif %}
                     </p>
                     {% if distance %}
                     <p class="text-muted mt-2 mb-0">
@@ -214,10 +204,10 @@
                 <div class="info-card">
                     <h5><i class="ri-line-chart-line"></i> Quick Stats</h5>
                     <div class="mb-2">
-                        <strong>Sports:</strong> {{ partner.sports|length }}
+                        <strong>Sports:</strong> {{ partner_sports|length }}
                     </div>
                     <div class="mb-2">
-                        <strong>Goals:</strong> {{ partner.goals|length }}
+                        <strong>Gender:</strong> {{ partner.gender|title }}
                     </div>
                     <div>
                         <strong>Member since:</strong> {{ partner.created_at|date:"M Y" }}
