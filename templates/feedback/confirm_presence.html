@@ -1,0 +1,21 @@
+{% if user.is_authenticated %}
+  {% if not user_feedback or not user_feedback.user_present %}
+    <div class="card border-0 shadow-sm mt-4">
+      <div class="card-body">
+        <h6 class="fw-bold mb-3 d-flex align-items-center">
+          <i class="ri-check-line me-2 text-success"></i>Confirmer votre présence
+        </h6>
+        <form method="POST" action="{% url 'confirm_presence' session.id %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-success w-100 rounded-pill py-2 shadow-sm">
+            ✅ Je confirme ma présence
+          </button>
+        </form>
+      </div>
+    </div>
+  {% else %}
+    <a href="{% url 'session_feedback' session.id %}" class="btn btn-outline-primary w-100 rounded-pill mt-2">
+      Voir  feedbacks du Session
+    </a>
+  {% endif %}
+{% endif %}

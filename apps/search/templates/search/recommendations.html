@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+    .recommendations-page {
+        background-color: #f8f9fa;
+        min-height: 100vh;
+        padding: 2rem;
+    }
+    .page-header {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 15px;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .recommendation-card {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        border-left: 5px solid #f093fb;
+        position: relative;
+        transition: all 0.3s;
+    }
+    .recommendation-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    }
+    .match-score {
+        position: absolute;
+        top: 1.5rem;
+        right: 1.5rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 0.6rem 1.2rem;
+        border-radius: 30px;
+        font-weight: bold;
+        font-size: 1.2rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    .reason-badge {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        background-color: #e7f3ff;
+        color: #0066cc;
+        border-radius: 20px;
+        margin-right: 0.5rem;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+    }
+    .dismiss-btn {
+        position: absolute;
+        top: 1.5rem;
+        left: 1.5rem;
+        background: white;
+        border: 2px solid #ddd;
+        color: #999;
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .dismiss-btn:hover {
+        background: #f5576c;
+        color: white;
+        border-color: #f5576c;
+    }
+    .sport-tag {
+        display: inline-block;
+        padding: 0.4rem 1rem;
+        background-color: #fff3cd;
+        color: #856404;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        margin-right: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    .ai-badge {
+        display: inline-block;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 0.6rem 1.2rem;
+        border-radius: 25px;
+        font-size: 0.95rem;
+        margin-bottom: 1rem;
+    }
+    .empty-state {
+        text-align: center;
+        padding: 5rem 2rem;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+</style>
+
+<div id="content-page" class="content-page">
+    <div class="container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h2 class="mb-2"><i class="ri-sparkling-line"></i> AI Recommendations</h2>
+            <p class="mb-0">Partners specially selected for you</p>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="mb-4">
+                    <span class="ai-badge">
+                        <i class="ri-robot-line"></i> Powered by TeamUp AI
+                    </span>
+                    <p class="text-muted mb-0">
+                        <i class="ri-information-line"></i> 
+                        These recommendations are based on your profile, preferences, and activity.
+                    </p>
+                </div>
+
+                {% if recommendations %}
+                    {% for rec in recommendations %}
+                    <div class="recommendation-card" id="rec-{{ rec.id }}">
+                        <button class="dismiss-btn" onclick="dismissRecommendation({{ rec.id }})" title="Dismiss">
+                            <i class="ri-close-line"></i>
+                        </button>
+                        
+                        <div class="match-score">
+                            {{ rec.match_score|floatformat:0 }}% <i class="ri-heart-fill"></i>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-md-2 text-center mb-3 mb-md-0">
+                                <div class="text-white rounded-circle d-inline-flex align-items-center justify-content-center" 
+                                     style="width: 90px; height: 90px; font-size: 2.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                    <i class="ri-user-3-line"></i>
+                                </div>
+                            </div>
+                            <div class="col-md-10">
+                                <h4 class="mb-2">{{ rec.recommended_user.username }}</h4>
+                                <p class="text-muted mb-3">
+                                    {{ rec.recommended_user.userprofile.bio|truncatewords:25|default:"No description available" }}
+                                </p>
+
+                                <div class="mb-3">
+                                    <strong class="d-block mb-2">
+                                        <i class="ri-basketball-line"></i> Sports:
+                                    </strong>
+                                    {% for sport in rec.recommended_user.userprofile.sports %}
+                                    <span class="sport-tag">{{ sport }}</span>
+                                    {% empty %}
+                                    <span class="text-muted">No sports listed</span>
+                                    {% endfor %}
+                                </div>
+
+                                <div class="mb-3">
+                                    <strong class="d-block mb-2">
+                                        <i class="ri-lightbulb-line"></i> Why this recommendation?
+                                    </strong>
+                                    {% for reason in rec.reasons %}
+                                    <span class="reason-badge">
+                                        <i class="ri-check-line"></i> {{ reason }}
+                                    </span>
+                                    {% empty %}
+                                    <span class="text-muted">Compatible profile</span>
+                                    {% endfor %}
+                                </div>
+
+                                {% if rec.explanation.distance_km %}
+                                <div class="mb-3">
+                                    <i class="ri-map-pin-line text-primary"></i>
+                                    <span class="text-muted">{{ rec.explanation.distance_km }} km away from you</span>
+                                </div>
+                                {% endif %}
+
+                                <div class="mt-3">
+                                    <a href="{% url 'search:partner_detail' rec.recommended_user.id %}" class="btn btn-primary me-2 mb-2">
+                                        <i class="ri-eye-line"></i> View Profile
+                                    </a>
+                                    <button class="btn btn-success mb-2">
+                                        <i class="ri-user-add-line"></i> Invite to Session
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    <div class="text-center mt-4">
+                        <a href="{% url 'search:search_partners' %}" class="btn btn-outline-primary">
+                            <i class="ri-search-line"></i> View All Partners
+                        </a>
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <i class="ri-robot-line" style="font-size: 5rem; color: #ddd;"></i>
+                        <h3 class="mt-3">No recommendations yet</h3>
+                        <p class="text-muted">
+                            Our AI is analyzing your profile to suggest the best partners for you.
+                            <br>Check back later!
+                        </p>
+                        <a href="{% url 'search:search_partners' %}" class="btn btn-primary mt-3">
+                            <i class="ri-search-line"></i> Search Manually
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function dismissRecommendation(recId) {
+        if (confirm('Do you really want to dismiss this recommendation?')) {
+            fetch(`/search/recommendations/${recId}/dismiss/`, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const card = document.getElementById(`rec-${recId}`);
+                    card.style.transition = 'opacity 0.3s, transform 0.3s';
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateX(-100px)';
+                    setTimeout(() => card.remove(), 300);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+    .detail-page {
+        background-color: #f8f9fa;
+        min-height: 100vh;
+        padding: 2rem;
+    }
+    .profile-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2.5rem;
+        border-radius: 15px;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .profile-avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: white;
+        color: #667eea;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3.5rem;
+        border: 5px solid rgba(255,255,255,0.3);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    .info-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .info-card h5 {
+        border-bottom: 2px solid #f0f0f0;
+        padding-bottom: 0.8rem;
+        margin-bottom: 1rem;
+        color: #667eea;
+    }
+    .sport-tag {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        background: linear-gradient(135deg, #e7f3ff 0%, #d4e9ff 100%);
+        color: #0066cc;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        margin-right: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    .goal-tag {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        background-color: #fff3cd;
+        color: #856404;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        margin-right: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    .level-badge {
+        padding: 0.6rem 1.2rem;
+        border-radius: 25px;
+        font-size: 1.1rem;
+        font-weight: bold;
+        display: inline-block;
+    }
+    .level-beginner { background-color: #d4edda; color: #155724; }
+    .level-intermediate { background-color: #fff3cd; color: #856404; }
+    .level-advanced { background-color: #cfe2ff; color: #084298; }
+    .level-expert { background-color: #f8d7da; color: #842029; }
+    .availability-day {
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 10px;
+        margin-bottom: 0.8rem;
+        border-left: 3px solid #667eea;
+    }
+    .common-badge {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 0.3rem 0.8rem;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        margin-left: 0.5rem;
+    }
+</style>
+
+<div id="content-page" class="content-page">
+    <div class="container">
+        <!-- Back Button -->
+        <div class="mb-3">
+            <a href="{% url 'search:search_partners' %}" class="btn btn-outline-secondary">
+                <i class="ri-arrow-left-line"></i> Back to Search
+            </a>
+        </div>
+
+        <!-- Profile Header -->
+        <div class="profile-header">
+            <div class="row align-items-center">
+                <div class="col-md-3 text-center mb-3 mb-md-0">
+                    <div class="profile-avatar">
+                        <i class="ri-user-3-line"></i>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h2 class="mb-2">{{ partner.user.username }}</h2>
+                    <p class="mb-2">
+                        <i class="ri-mail-line"></i> {{ partner.user.email }}
+                    </p>
+                    {% if distance %}
+                    <p class="mb-0">
+                        <i class="ri-map-pin-line"></i> {{ distance }} km away from you
+                    </p>
+                    {% endif %}
+                </div>
+                <div class="col-md-3 text-center text-md-end">
+                    <button class="btn btn-success btn-lg w-100 mb-2">
+                        <i class="ri-user-add-line"></i> Invite to Session
+                    </button>
+                    <button class="btn btn-outline-light w-100">
+                        <i class="ri-message-3-line"></i> Send Message
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Left Column -->
+            <div class="col-lg-8">
+                <!-- Bio -->
+                <div class="info-card">
+                    <h5><i class="ri-user-smile-line"></i> About</h5>
+                    <p class="mb-0">
+                        {{ partner.bio|default:"No description available at the moment." }}
+                    </p>
+                </div>
+
+                <!-- Sports -->
+                <div class="info-card">
+                    <h5><i class="ri-basketball-line"></i> Sports</h5>
+                    {% if partner_sports %}
+                        {% for sport in partner_sports %}
+                        <span class="sport-tag">
+                            {{ sport }}
+                            {% if sport in common_sports %}
+                            <span class="common-badge">Common</span>
+                            {% endif %}
+                        </span>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted mb-0">No sports listed</p>
+                    {% endif %}
+                </div>
+
+                <!-- Goals -->
+                <div class="info-card">
+                    <h5><i class="ri-focus-3-line"></i> Goals</h5>
+                    {% if partner.goals %}
+                        {% for goal in partner.goals %}
+                        <span class="goal-tag">{{ goal }}</span>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted mb-0">No goals listed</p>
+                    {% endif %}
+                </div>
+
+                <!-- Availability -->
+                <div class="info-card">
+                    <h5><i class="ri-calendar-check-line"></i> Availability</h5>
+                    {% if partner.availability %}
+                        <div class="availability-day">
+                            <p class="mb-0">{{ partner.availability }}</p>
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-0">Availability not specified</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="col-lg-4">
+                <!-- Location -->
+                <div class="info-card">
+                    <h5><i class="ri-map-pin-line"></i> Location</h5>
+                    <p class="mb-0">
+                        <i class="ri-map-marker-line"></i> {{ partner.get_country_display }}
+                        {% if partner.city %}
+                        , {{ partner.city }}
+                        {% endif %}
+                    </p>
+                    {% if distance %}
+                    <p class="text-muted mt-2 mb-0">
+                        <small>{{ distance }} km from you</small>
+                    </p>
+                    {% endif %}
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="info-card">
+                    <h5><i class="ri-line-chart-line"></i> Quick Stats</h5>
+                    <div class="mb-2">
+                        <strong>Sports:</strong> {{ partner_sports|length }}
+                    </div>
+                    <div class="mb-2">
+                        <strong>Gender:</strong> {{ partner.gender|title }}
+                    </div>
+                    <div>
+                        <strong>Member since:</strong> {{ partner.created_at|date:"M Y" }}
+                    </div>
+                </div>
+
+                <!-- Common Interests -->
+                {% if common_sports %}
+                <div class="info-card">
+                    <h5><i class="ri-heart-line"></i> In Common</h5>
+                    <p class="text-muted mb-2">You both practice:</p>
+                    {% for sport in common_sports %}
+                    <span class="sport-tag">{{ sport }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
