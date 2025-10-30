@@ -6,6 +6,7 @@ tzdata==2025.2
 
 # Database
 psycopg2-binary==2.9.9
+dj-database-url==2.2.0
 
 # Image handling
 Pillow==11.3.0
