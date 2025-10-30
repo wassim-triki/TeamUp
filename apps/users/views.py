@@ -11,6 +11,7 @@ from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from django.contrib.auth.decorators import login_required
 from .models import User, UserProfile, EmailVerificationToken
+from .utils import generate_profile_tags
 import json
 import uuid
 import re
@@ -306,6 +307,18 @@ def signup_step4_availability(request):
                 country=country,
                 city=city
             )
+            
+            # Generate AI-powered profile tags
+            try:
+                tags = generate_profile_tags(profile)
+                if tags:
+                    profile.profile_tags = tags
+                    profile.save(update_fields=['profile_tags'])
+            except Exception as e:
+                # Log error but don't fail signup if tagging fails
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.warning(f"Failed to generate profile tags for user {user.id}: {e}")
             
             # Generate Email Verification Token
             token = EmailVerificationToken.objects.create(user=user)
