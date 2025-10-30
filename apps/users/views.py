@@ -10,7 +10,10 @@ from django.urls import reverse
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
 from .models import User, UserProfile, EmailVerificationToken
+from .utils import generate_profile_tags, generate_user_bio
 import json
 import uuid
 import re
@@ -306,6 +309,18 @@ def signup_step4_availability(request):
                 country=country,
                 city=city
             )
+            
+            # Generate AI-powered profile tags
+            try:
+                tags = generate_profile_tags(profile)
+                if tags:
+                    profile.profile_tags = tags
+                    profile.save(update_fields=['profile_tags'])
+            except Exception as e:
+                # Log error but don't fail signup if tagging fails
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.warning(f"Failed to generate profile tags for user {user.id}: {e}")
             
             # Generate Email Verification Token
             token = EmailVerificationToken.objects.create(user=user)
@@ -714,3 +729,38 @@ def profile_view(request, username):
     }
     
     return render(request, 'users/profile.html', context)
+
+
+@login_required
+@require_POST
+def generate_bio(request):
+    """
+    AJAX endpoint to generate an AI-powered bio for the current user.
+    """
+    try:
+        # Get or create profile for the user
+        profile, created = UserProfile.objects.get_or_create(user=request.user)
+        
+        # Generate bio using AI
+        bio = generate_user_bio(profile)
+        
+        if bio:
+            return JsonResponse({
+                'success': True,
+                'bio': bio
+            })
+        else:
+            return JsonResponse({
+                'success': False,
+                'error': 'Failed to generate bio. Please try again.'
+            }, status=500)
+            
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error in generate_bio view: {e}")
+        
+        return JsonResponse({
+            'success': False,
+            'error': 'An error occurred while generating the bio.'
+        }, status=500)

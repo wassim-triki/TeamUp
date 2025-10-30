@@ -164,6 +164,14 @@ class UserProfile(models.Model):
         null=True
     )
     
+    # AI-generated profile tags (e.g., "Morning runner", "Social athlete")
+    profile_tags = models.JSONField(
+        help_text="AI-generated personality tags/labels (2-3 tags)",
+        blank=True,
+        default=list,
+        null=True
+    )
+    
     # Availability pattern choices
     AVAILABILITY_PATTERNS = [
         ('weekday_mornings', 'Weekday Mornings', '6 AM - 12 PM on weekdays'),
@@ -201,6 +209,12 @@ class UserProfile(models.Model):
         
         pattern_dict = {code: name for code, name, _ in self.AVAILABILITY_PATTERNS}
         return ", ".join([pattern_dict.get(code, code) for code in self.availability])
+    
+    def get_profile_tags_display(self):
+        """Return profile tags as a formatted string"""
+        if not self.profile_tags:
+            return "No tags yet"
+        return " · ".join(self.profile_tags)
     
     @classmethod
     def get_availability_choices(cls):
