@@ -16,6 +16,7 @@ from markdown import markdown
 from .models import Session, Invitation
 from .forms import SessionForm, InviteForm, ResponseForm
 from .services import generate_ai_insight
+from apps.feedback.models import SessionFeedback
 
 User = get_user_model()
 
