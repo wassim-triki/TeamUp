@@ -113,16 +113,21 @@ def recommendations(request):
     # Get recommendations only if authenticated
     recommendations_list = []
     if request.user.is_authenticated:
-        recommendations_list = PartnerRecommendation.objects.select_related(
+        # OPTION 1: Update BEFORE slicing
+        # Get the base queryset
+        base_queryset = PartnerRecommendation.objects.select_related(
             'recommended_user', 
             'recommended_user__profile'
         ).filter(
             user=request.user,
             is_dismissed=False
-        )[:10]
+        )
         
-        # Mark as viewed
-        recommendations_list.update(is_viewed=True)
+        # Mark as viewed BEFORE slicing
+        base_queryset.update(is_viewed=True)
+        
+        # Now slice to get the list
+        recommendations_list = base_queryset[:10]
         
         # Add parsed sports to each recommendation
         for rec in recommendations_list:
