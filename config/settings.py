@@ -10,13 +10,13 @@ import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-GEMINI_API_KEY = config('GEMINI_API_KEY')
+GEMINI_API_KEY = config("GEMINI_API_KEY")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-this-in-production')
+SECRET_KEY = config("SECRET_KEY", default="django-insecure-change-this-in-production")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=True, cast=bool)
@@ -32,18 +32,19 @@ if RENDER_EXTERNAL_HOSTNAME:
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
     # Local apps (project structure) - Medium layout: core, users, api
-    'apps.core',         # main public site / landing pages (+ dashboard UI)
-    'apps.users',        # user accounts, auth, profiles
-    'apps.api',          # REST API endpoints (if/when added)
-    'apps.sessions',     # Sessions app - simplified
-    'apps.search',       # Search functionality
+    "apps.core",  # main public site / landing pages (+ dashboard UI)
+    "apps.users",  # user accounts, auth, profiles
+    "apps.api",  # REST API endpoints (if/when added)
+    "apps.sessions",  # Sessions app - simplified
+    "apps.search",  # Search functionality
+    "apps.feedback",  # feedback app
 ]
 
 MIDDLEWARE = [
@@ -57,7 +58,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'config.urls'
+ROOT_URLCONF = "config.urls"
 
 TEMPLATES = [
     {
@@ -77,7 +78,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'config.wsgi.application'
+WSGI_APPLICATION = "config.wsgi.application"
 
 
 # Database
@@ -123,16 +124,16 @@ else:
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
@@ -140,9 +141,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = "UTC"
 
 USE_I18N = True
 
@@ -155,7 +156,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [
-    BASE_DIR / 'static',
+    BASE_DIR / "static",
 ]
 
 # WhiteNoise configuration for static files
@@ -170,22 +171,22 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Custom User Model
-AUTH_USER_MODEL = 'users.User'
+AUTH_USER_MODEL = "users.User"
 
 # Authentication Backends
 AUTHENTICATION_BACKENDS = [
-    'apps.users.backends.EmailAuthBackend',  # Custom email-based authentication
-    'django.contrib.auth.backends.ModelBackend',  # Fallback to default
+    "apps.users.backends.EmailAuthBackend",  # Custom email-based authentication
+    "django.contrib.auth.backends.ModelBackend",  # Fallback to default
 ]
 
 # Authentication URLs
 # Authentication URLs
-LOGIN_URL = 'users:login'  # This will now resolve to /accounts/login/
-LOGIN_REDIRECT_URL = 'sessions:list'
-LOGOUT_REDIRECT_URL = 'core:index'   # Changed from '/' to use named URL
+LOGIN_URL = "users:login"  # This will now resolve to /accounts/login/
+LOGIN_REDIRECT_URL = "sessions:list"
+LOGOUT_REDIRECT_URL = "core:index"  # Changed from '/' to use named URL
 
 # Email Configuration
 EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')

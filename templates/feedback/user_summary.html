@@ -1,0 +1,312 @@
+
+{% load static %} {% block content %}
+<style>
+    .ai-summary-collapsed {
+        display: -webkit-box;
+        -webkit-line-clamp: 1; /* show 1 line */
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        max-height: 1.5em; /* keeps height stable */
+        cursor: pointer;
+    }
+    #aiSummaryContent h3 {
+        margin-top: 1rem;
+        margin-bottom: 0.5rem;
+        font-size: 1.2rem;
+        color: #0d6efd; /* Bootstrap primary color */
+    }
+    #aiSummaryContent ul {
+        padding-left: 1.2rem;
+    }
+    #aiSummaryContent ul li {
+        margin-bottom: 0.5rem;
+    }
+</style>
+
+<div class="container mt-4">
+    <h2 class="fw-bold mb-4 text-center">Your Feedback Summary</h2>
+    <div class="d-flex justify-content-between align-items-center mt-3 mb-4">
+        <h2>Mon résumé</h2>
+        <button class="btn btn-primary" id="askCoachBtn">
+            Coach advice 🧠
+        </button>
+    </div>
+    <!-- Feedback others gave about the user -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">⭐ Feedback From Participants</h5>
+        </div>
+        <div class="card-body">
+            {% if participant_feedbacks %}
+            <div class="list-group">
+                {% for fb in participant_feedbacks %}
+                <div class="list-group-item">
+                    <div
+                        class="d-flex justify-content-between align-items-center"
+                    >
+                        <div>
+                            <strong class="text-dark"
+                            >{{ fb.author.username }}</strong>
+                            <span class="text-muted small">on <em>{{
+                                    fb.session.title }}</em></span>
+                            <br>
+
+                            {% if fb.rating == 1 %}
+                            <span class="badge bg-success">👍 Positive</span>
+                            {% elif fb.rating == 0 %}
+                            <span class="badge bg-danger">👎 Negative</span>
+                            {% else %}
+                            <span class="badge bg-secondary">No Rating</span>
+                            {% endif %} {% if fb.teamwork %}
+                            <span class="badge bg-info text-dark"
+                            >Team Player</span>
+                            {% endif %} {% if fb.punctual %}
+                            <span class="badge bg-warning text-dark"
+                            >Punctual</span>
+                            {% endif %}
+                        </div>
+                        <small class="text-muted"
+                        >{{ fb.created_at|date:"M d, Y" }}</small>
+                    </div>
+
+                    {% if fb.comment %}
+                    <p class="mt-2 fst-italic">{{ fb.comment }}</p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-muted">
+                You haven’t received any participant feedback yet.
+            </p>
+            {% endif %}
+        </div>
+    </div>
+    <!-- User Badges -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0">🎖 Your Badges</h5>
+        </div>
+
+        <div class="card-body">
+            {% if user_badges %}
+            <div class="row g-3">
+                {% for ub in user_badges %}
+                <div class="col-md-4 col-sm-6">
+                    <div
+                        class="d-flex align-items-center border rounded p-2 bg-light"
+                    >
+                        {% if ub.badge.icon %}
+                        <img
+                            src="{{ ub.badge.icon.url }}"
+                            alt="{{ ub.badge.name }}"
+                            class="me-3 rounded"
+                            style="width: 45px; height: 45px; object-fit: cover"
+                        >
+                        {% else %}
+                        <div class="me-3 fs-3">🏅</div>
+                        {% endif %}
+
+                        <div>
+                            <strong>{{ ub.badge.name }}</strong>
+                            <br>
+                            <small class="text-muted"
+                            >{{ ub.badge.description }}</small>
+                            <br>
+                            <small class="text-secondary"
+                            >Awarded: {{ ub.awarded_at|date:"M d, Y" }}</small>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-muted mb-0">
+                No badges earned yet — keep showing up 😄
+            </p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Session feedback the user gave -->
+    <div class="card shadow-sm mb-5">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0">📝 Your Session Feedback</h5>
+        </div>
+        <div class="card-body">
+            {% if session_feedbacks %}
+            <div class="list-group">
+                {% for fb in session_feedbacks %}
+                <div class="list-group-item">
+                    <div
+                        class="d-flex justify-content-between align-items-center"
+                    >
+                        <h6 class="fw-semibold mb-1">{{ fb.session.title }}</h6>
+                        <small class="text-muted"
+                        >{{ fb.created_at|date:"M d, Y" }}</small>
+                    </div>
+
+                    <div class="mt-1">
+                        {% if fb.user_present %}
+                        <span class="badge bg-success">Present ✅</span>
+                        {% else %}
+                        <span class="badge bg-danger">Absent ❌</span>
+                        {% endif %} {% if fb.rating == 1 %}
+                        <span class="badge bg-success">👍 Good Session</span>
+                        {% elif fb.rating == 0 %}
+                        <span class="badge bg-danger">👎 Weak Session</span>
+                        {% endif %} {% if fb.good_partner %}
+                        <span class="badge bg-info text-dark"
+                        >Good Partner</span>
+                        {% endif %} {% if fb.punctual %}
+                        <span class="badge bg-warning text-dark">Punctual</span>
+                        {% endif %}
+                    </div>
+
+                    {% if fb.comment %}
+                    <p class="mt-2">{{ fb.comment }}</p>
+                    {% endif %} {% if fb.ai_summary %}
+                    <div class="alert alert-light border mt-2">
+                        <strong>🤖 AI Summary:</strong>
+                        <br>
+
+                        <p class="ai-summary-collapsed" data-summary>
+                            {{ fb.ai_summary }}
+                        </p>
+
+                        <button
+                            type="button"
+                            class="btn btn-sm btn-link p-0"
+                            data-summary-toggle
+                        >
+                            Read more
+                        </button>
+                    </div>
+                    {% endif %}
+
+                    <div class="d-flex justify-content-end mt-2">
+                        <a
+                            href="{% url 'edit_feedback' fb.pk %}"
+                            class="btn btn-sm btn-outline-primary me-2"
+                        >
+                            ✏️ Edit
+                        </a>
+                        <a
+                            href="{% url 'delete_feedback' fb.pk %}"
+                            class="btn btn-sm btn-outline-danger"
+                        >
+                            🗑 Delete
+                        </a>
+                    </div>
+                </div>
+
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-muted">
+                You have not submitted session feedback yet.
+            </p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="aiSummaryModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Coach IA personnalisé</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal">
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="aiSummaryContent">
+                    <p class="text-muted">Génération des astuces en cours...</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal"
+                >
+                    Fermer
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll("[data-summary]").forEach(
+            function (summaryEl) {
+                const toggleBtn = summaryEl.parentElement.querySelector(
+                    "[data-summary-toggle]",
+                );
+                let expanded = false;
+
+                toggleBtn.addEventListener("click", function () {
+                    expanded = !expanded;
+                    if (expanded) {
+                        summaryEl.classList.remove(
+                            "ai-summary-collapsed",
+                        );
+                        toggleBtn.textContent = "Read less";
+                    } else {
+                        summaryEl.classList.add("ai-summary-collapsed");
+                        toggleBtn.textContent = "Read more";
+                    }
+                });
+            },
+        );
+    });
+    document.getElementById("askCoachBtn").addEventListener(
+        "click",
+        async () => {
+            const modalEl = document.getElementById("aiSummaryModal");
+            const modal = new bootstrap.Modal(modalEl);
+            const contentDiv = document.getElementById(
+                "aiSummaryContent",
+            );
+
+            // Show loading
+            contentDiv.innerHTML =
+                "<p class='text-muted'>Génération du résumé en cours...</p>";
+            modal.show();
+
+            try {
+                const response = await fetch(
+                    "{% url 'generate_user_summary_api' %}",
+                );
+                if (!response.ok) throw new Error("Erreur serveur");
+                const data = await response.json();
+                if (data.error) throw new Error(data.error);
+
+                // Split summary into sections by line breaks
+                const lines = data.summary.split("\n").filter((line) =>
+                    line.trim().length > 0
+                );
+
+                let html = "";
+                let currentSection = "";
+
+                lines.forEach((line) => {
+                    // Detect section headers by emoji pattern (🎉, 💪, 🗣️, 📈, 🎯, 💡)
+                    if (/^[🎉💪🗣️📈🎯💡]/.test(line)) {
+                        html += `<h3>${line}</h3><ul>`;
+                        currentSection = "</ul>";
+                    } else {
+                        html += `<li>${line}</li>`;
+                    }
+                });
+
+                html += currentSection; // Close the last section
+                contentDiv.innerHTML = html;
+            } catch (err) {
+                contentDiv.innerHTML =
+                    `<p class='text-danger'>Erreur : ${err.message}</p>`;
+            }
+        },
+    );
+</script>
+
+{% endblock %}

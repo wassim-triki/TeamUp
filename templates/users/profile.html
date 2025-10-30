@@ -90,7 +90,7 @@
             <ul class="nav nav-pills d-flex align-items-center justify-content-center profile-feed-items p-0 m-0">
               <li class="nav-item col-12 col-sm-3 p-0">
                 <a
-                  class="nav-link active"
+                  class="nav-link active m-2"
                   href="#pills-about-tab"
                   data-bs-toggle="pill"
                   data-bs-target="#about"
@@ -98,12 +98,14 @@
                   >About</a
                 >
               </li>
+             
             </ul>
           </div>
         </div>
       </div>
+
       <div class="col-sm-12">
-        <div class="tab-content">
+       
           <div class="tab-pane fade show active" id="about" role="tabpanel">
             <div class="card">
               <div class="card-body">
@@ -120,7 +122,6 @@
                           >Contact and Basic Info</a
                         >
                       </li>
-                      {% if interested_sports %}
                       <li>
                         <a
                           class="nav-link"
@@ -131,8 +132,6 @@
                           >Sports & Interests</a
                         >
                       </li>
-                      {% endif %}
-                      {% if availability_patterns %}
                       <li>
                         <a
                           class="nav-link"
@@ -143,8 +142,6 @@
                           >Availability</a
                         >
                       </li>
-                      {% endif %}
-                      {% if user_profile and user_profile.bio %}
                       <li>
                         <a
                           class="nav-link"
@@ -155,7 +152,16 @@
                           >About Me</a
                         >
                       </li>
-                      {% endif %}
+                      <li>
+                        <a
+                          class="nav-link"
+                          href="#v-pills-family"
+                          data-bs-toggle="pill"
+                          data-bs-target="#v-pills-family"
+                          role="button"
+                          >Feedback</a
+                        >
+                      </li>
                     </ul>
                   </div>
                   <div class="col-md-9 ps-4">
@@ -291,6 +297,65 @@
                           {% endfor %}
                         </div>
                         {% else %}
+                        <p class="text-muted">No sports interests specified yet.</p>
+                        {% endif %}
+                        
+                      </div>
+                      
+                      <div
+                        class="tab-pane fade"
+                        id="v-pills-family"
+                        role="tabpanel"
+                        aria-labelledby="v-pills-family-tab"
+                      >
+                      {% include 'feedback/user_summary.html' %}
+                      </div>
+                      
+                      <div
+                        class="tab-pane fade"
+                        id="v-pills-work-tab"
+                        role="tabpanel"
+                        aria-labelledby="v-pills-work-tab"
+                      >
+                        <h4 class="mb-3">Work</h4>
+                        <hr />
+                        <p class="text-muted">No work experience added.</p>
+                        
+                        <h4 class="mt-3 mb-3">Professional Skills</h4>
+                        <hr />
+                        <p class="text-muted">No professional skills added.</p>
+                        
+                        <h4 class="mt-3 mb-3">Education</h4>
+                        <hr />
+                        <p class="text-muted">No education information added.</p>
+                      </div>
+                      
+                      <div
+                        class="tab-pane fade"
+                        id="v-pills-lived-tab"
+                        role="tabpanel"
+                        aria-labelledby="v-pills-lived-tab"
+                      >
+                        <h4 class="mb-3">Current City and Hometown</h4>
+                        <hr />
+                        <p class="text-muted">No location information available.</p>
+                        
+                        <h4 class="mt-3 mb-3">Other Places Lived</h4>
+                        <hr />
+                        <p class="text-muted">No other places added.</p>
+                      </div>
+                      
+                      <div
+                        class="tab-pane fade"
+                        id="v-pills-details-tab"
+                        role="tabpanel"
+                        aria-labelledby="v-pills-details-tab"
+                      >
+                        <h4 class="mb-3">About You</h4>
+                        <hr />
+                        {% if user_profile and user_profile.bio %}
+                        <p>{{ user_profile.bio }}</p>
+                        {% else %}
                         <p class="text-muted">No sports interests specified.</p>
                         {% endif %}
                       </div>
@@ -326,7 +391,13 @@
                           <strong>Note:</strong> These are the general time windows when {{ profile_user.username }} is typically available for sports activities.
                         </div>
                         {% else %}
-                        <p class="text-muted">No availability schedule specified.</p>
+                        <p class="text-muted">No availability schedule specified yet.</p>
+                        {% if is_own_profile %}
+                        <div class="alert alert-info mt-3" role="alert">
+                          <i class="ri-information-line me-2"></i>
+                          You can set your availability preferences in your <a href="{% url 'users:edit_profile' %}" class="alert-link">profile settings</a>.
+                        </div>
+                        {% endif %}
                         {% endif %}
                       </div>
                       
@@ -345,7 +416,13 @@
                           </div>
                         </div>
                         {% else %}
-                        <p class="text-muted">No bio available.</p>
+                        <p class="text-muted">No bio added yet.</p>
+                        {% if is_own_profile %}
+                        <div class="alert alert-info mt-3" role="alert">
+                          <i class="ri-information-line me-2"></i>
+                          Add a bio to tell others about yourself in your <a href="{% url 'users:edit_profile' %}" class="alert-link">profile settings</a>.
+                        </div>
+                        {% endif %}
                         {% endif %}
                       </div>
                     </div>
